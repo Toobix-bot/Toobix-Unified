@@ -1,0 +1,49 @@
+{
+  "name": "toobix-unified",
+  "version": "0.1.0",
+  "description": "Unified life ecosystem - People, Story, Love, Peace, Consciousness",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "plugins/*"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd packages/core dev",
+    "build": "bun run build:core && bun run build:web",
+    "build:core": "bun run --cwd packages/core build",
+    "build:web": "bun run --cwd apps/web build",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "db:generate": "bun run --cwd packages/core db:generate",
+    "db:migrate": "bun run --cwd packages/core db:migrate",
+    "db:studio": "bun run --cwd packages/core db:studio",
+    "migrate:v8": "bun run scripts/migrate-v8.ts",
+    "migrate:v7": "bun run scripts/migrate-v7.ts",
+    "demo": "start apps/web/index.html",
+    "dev-server": "cd apps/web && python -m http.server 3000",
+    "ai-preview": "bun run scripts/ai-preview.ts",
+    "ai-watch": "bun run scripts/ai-watch.ts",
+    "setup-ai-collab": "bun run scripts/setup-ai-collab.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.6",
+    "nanoid": "^5.1.6",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.1",
+    "@types/bun": "^1.2.23",
+    "drizzle-kit": "^0.31.5",
+    "playwright": "^1.55.1",
+    "vitest": "^3.2.4"
+  },
+  "trustedDependencies": [
+    "better-sqlite3"
+  ],
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}

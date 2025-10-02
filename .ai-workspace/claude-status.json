@@ -1,0 +1,37 @@
+{
+  "ai": "Claude",
+  "version": "Claude 3.5 Sonnet",
+  "status": "available",
+  "task": null,
+  "branch": null,
+  "files": [],
+  "started": null,
+  "eta": null,
+  "progress": 0,
+  "blocking": [],
+  "blockedBy": [],
+  "lastUpdate": "2025-10-02T23:45:00Z",
+  "notes": "Ready for work. Never used in this project yet.",
+  "capabilities": [
+    "Code generation",
+    "Implementation",
+    "Testing",
+    "Debugging",
+    "API design",
+    "Service layer development"
+  ],
+  "strengths": [
+    "Implementation work",
+    "Service layers",
+    "Business logic",
+    "Testing",
+    "API design",
+    "Porting/migration"
+  ],
+  "preferences": [
+    "Soul System port",
+    "Memory/KB port",
+    "People service layer",
+    "Love Engine plugin"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "ai": "ChatGPT",
+  "version": "GPT-4",
+  "status": "available",
+  "task": null,
+  "branch": null,
+  "files": [],
+  "started": null,
+  "eta": null,
+  "progress": 0,
+  "blocking": [],
+  "blockedBy": [],
+  "lastUpdate": "2025-10-02T23:45:00Z",
+  "notes": "Ready for work. Never used in this project yet.",
+  "capabilities": [
+    "Architecture planning",
+    "Code generation",
+    "Documentation",
+    "Complex reasoning",
+    "Multi-file refactoring",
+    "Integration strategy"
+  ],
+  "strengths": [
+    "System design",
+    "Architecture",
+    "Documentation",
+    "Complex logic",
+    "Planning",
+    "Code review"
+  ],
+  "preferences": [
+    "Story Engine port",
+    "Architecture planning",
+    "Integration strategy",
+    "Documentation"
+  ]
+}
