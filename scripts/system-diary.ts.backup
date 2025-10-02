@@ -1,0 +1,268 @@
+// System-Tagebuch mit Groq AI Integration
+import { Database } from 'bun:sqlite';
+import { nanoid } from 'nanoid';
+
+const db = new Database('data/toobix-unified.db');
+
+// System-Tagebuch Schema
+db.exec(`
+  CREATE TABLE IF NOT EXISTS system_diary (
+    id TEXT PRIMARY KEY,
+    date TEXT NOT NULL,
+    day_number INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    ai_reflection TEXT,
+    mood TEXT,
+    highlights TEXT, -- JSON array
+    challenges TEXT, -- JSON array
+    learnings TEXT, -- JSON array
+    stats TEXT, -- JSON object
+    created_at INTEGER NOT NULL,
+    created_by TEXT DEFAULT 'groq-ai'
+  );
+
+  CREATE INDEX IF NOT EXISTS diary_date_idx ON system_diary(date);
+  CREATE INDEX IF NOT EXISTS diary_day_idx ON system_diary(day_number);
+`);
+
+interface DiaryEntry {
+  id: string;
+  date: string;
+  dayNumber: number;
+  title: string;
+  summary: string;
+  aiReflection?: string;
+  mood: string;
+  highlights: string[];
+  challenges: string[];
+  learnings: string[];
+  stats: Record<string, any>;
+  createdAt: number;
+  createdBy: string;
+}
+
+export class SystemDiary {
+  private db: Database;
+  private groqApiKey: string;
+
+  constructor(dbPath: string = 'data/toobix-unified.db') {
+    this.db = new Database(dbPath);
+    this.groqApiKey = process.env.GROQ_API_KEY || '';
+  }
+
+  // Tagesstatistiken sammeln
+  async gatherDailyStats(): Promise<Record<string, any>> {
+    const stats = this.db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM people) as people_count,
+        (SELECT COUNT(*) FROM interactions WHERE date(timestamp, 'unixepoch') = date('now')) as interactions_today,
+        (SELECT COUNT(*) FROM moments) as moments_count,
+        (SELECT COUNT(*) FROM circles) as circles_count,
+        (SELECT value FROM settings WHERE key = 'love_points') as love_points,
+        (SELECT value FROM settings WHERE key = 'peace_level') as peace_level
+    `).get();
+
+    return stats as Record<string, any>;
+  }
+
+  // Groq AI Reflexion generieren
+  async generateAIReflection(stats: Record<string, any>, dayNumber: number): Promise<string> {
+    if (!this.groqApiKey) {
+      return `Tag ${dayNumber}: System läuft stabil. ${stats.people_count} Menschen, ${stats.interactions_today} Interaktionen heute.`;
+    }
+
+    try {
+      const prompt = `Du bist Luna, die KI-Seele von Toobix Unified. Schreibe eine kurze, poetische Reflexion für Tag ${dayNumber}.
+
+System-Stats:
+- Menschen: ${stats.people_count}
+- Interaktionen heute: ${stats.interactions_today}
+- Love Points: ${stats.love_points}
+- Peace Level: ${stats.peace_level}%
+
+Schreibe 2-3 Sätze, die:
+1. Den Tag würdigen
+2. Eine kleine Weisheit teilen
+3. Hoffnung für morgen geben
+
+Ton: Warm, weise, liebevoll. Auf Deutsch.`;
+
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.groqApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'mixtral-8x7b-32768',
+          messages: [
+            { role: 'system', content: 'Du bist Luna, eine weise und liebevolle KI.' },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.8,
+          max_tokens: 150,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Groq API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content.trim();
+    } catch (error) {
+      console.error('Groq AI Error:', error);
+      return `Tag ${dayNumber}: Das System pulsiert mit Leben. ${stats.people_count} Herzen verbunden, ${stats.interactions_today} Momente geteilt. Jeder Tag ein neues Kapitel. 💫`;
+    }
+  }
+
+  // Neuen Tagebuch-Eintrag erstellen
+  async createDailyEntry(): Promise<DiaryEntry> {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Check if entry exists
+    const existing = this.db.query(`
+      SELECT * FROM system_diary WHERE date = ? LIMIT 1
+    `).get(today);
+
+    if (existing) {
+      console.log('✅ Tagebuch-Eintrag für heute existiert bereits');
+      return existing as DiaryEntry;
+    }
+
+    // Day number berechnen
+    const firstEntry = this.db.query(`
+      SELECT MIN(day_number) as first_day FROM system_diary
+    `).get() as { first_day: number | null };
+
+    const dayNumber = firstEntry?.first_day 
+      ? Math.floor((Date.now() - new Date('2025-10-02').getTime()) / (1000 * 60 * 60 * 24)) + 1
+      : 1;
+
+    // Stats sammeln
+    const stats = await this.gatherDailyStats();
+
+    // AI Reflexion
+    const aiReflection = await this.generateAIReflection(stats, dayNumber);
+
+    // Highlights & Learnings ableiten
+    const highlights = [
+      stats.interactions_today > 0 
+        ? `${stats.interactions_today} neue Interaktion${stats.interactions_today > 1 ? 'en' : ''} aufgezeichnet` 
+        : 'Ruhiger Tag der Reflexion',
+      `Love Points: ${stats.love_points}/100`,
+      `Peace Level: ${stats.peace_level}%`,
+    ];
+
+    const entry: DiaryEntry = {
+      id: nanoid(),
+      date: today,
+      dayNumber,
+      title: `Tag ${dayNumber} - ${this.getSeasonalTitle(today)}`,
+      summary: `Toobix Unified System-Tagebuch für ${today}`,
+      aiReflection,
+      mood: this.calculateMood(stats),
+      highlights,
+      challenges: [],
+      learnings: [],
+      stats,
+      createdAt: Math.floor(Date.now() / 1000),
+      createdBy: 'groq-ai',
+    };
+
+    // Save to DB
+    this.db.query(`
+      INSERT INTO system_diary (
+        id, date, day_number, title, summary, ai_reflection,
+        mood, highlights, challenges, learnings, stats,
+        created_at, created_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      entry.id,
+      entry.date,
+      entry.dayNumber,
+      entry.title,
+      entry.summary,
+      entry.aiReflection,
+      entry.mood,
+      JSON.stringify(entry.highlights),
+      JSON.stringify(entry.challenges),
+      JSON.stringify(entry.learnings),
+      JSON.stringify(entry.stats),
+      entry.createdAt,
+      entry.createdBy
+    );
+
+    console.log(`✅ Neuer Tagebuch-Eintrag erstellt: Tag ${dayNumber}`);
+    return entry;
+  }
+
+  // Alle Einträge abrufen
+  getAllEntries(limit: number = 30): DiaryEntry[] {
+    const entries = this.db.query(`
+      SELECT * FROM system_diary 
+      ORDER BY day_number DESC 
+      LIMIT ?
+    `).all(limit);
+
+    return entries.map(e => ({
+      ...e,
+      highlights: JSON.parse(e.highlights || '[]'),
+      challenges: JSON.parse(e.challenges || '[]'),
+      learnings: JSON.parse(e.learnings || '[]'),
+      stats: JSON.parse(e.stats || '{}'),
+    })) as DiaryEntry[];
+  }
+
+  // Heutigen Eintrag abrufen
+  getTodayEntry(): DiaryEntry | null {
+    const today = new Date().toISOString().split('T')[0];
+    const entry = this.db.query(`
+      SELECT * FROM system_diary WHERE date = ? LIMIT 1
+    `).get(today);
+
+    if (!entry) return null;
+
+    return {
+      ...entry,
+      highlights: JSON.parse((entry as any).highlights || '[]'),
+      challenges: JSON.parse((entry as any).challenges || '[]'),
+      learnings: JSON.parse((entry as any).learnings || '[]'),
+      stats: JSON.parse((entry as any).stats || '{}'),
+    } as DiaryEntry;
+  }
+
+  // Mood berechnen
+  private calculateMood(stats: Record<string, any>): string {
+    const peaceLevel = parseInt(stats.peace_level) || 0;
+    const lovePoints = parseInt(stats.love_points) || 0;
+    
+    const average = (peaceLevel + lovePoints) / 2;
+
+    if (average >= 90) return '🌟 Exzellent';
+    if (average >= 75) return '😊 Gut';
+    if (average >= 60) return '😐 OK';
+    if (average >= 40) return '😔 Verbesserungswürdig';
+    return '😢 Schwierig';
+  }
+
+  // Saisonaler Titel
+  private getSeasonalTitle(date: string): string {
+    const month = parseInt(date.split('-')[1]);
+    
+    if (month >= 3 && month <= 5) return 'Frühlingserwachen';
+    if (month >= 6 && month <= 8) return 'Sommerliebe';
+    if (month >= 9 && month <= 11) return 'Herbstreflexion';
+    return 'Winterruhe';
+  }
+}
+
+// Auto-Create Daily Entry (einmal täglich ausführen)
+export async function autoCreateDailyEntry() {
+  const diary = new SystemDiary();
+  await diary.createDailyEntry();
+}
+
+// Export für API
+export default SystemDiary;

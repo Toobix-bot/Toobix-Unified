@@ -472,6 +472,29 @@
       </div>
     </section>
 
+    <!-- System Diary Section -->
+    <section class="diary-section" id="diary-section">
+      <div class="container">
+        <h2 class="section-title">
+          📔 System Tagebuch
+          <button class="refresh-btn" onclick="loadTodayDiary()" title="Aktualisieren">🔄</button>
+        </h2>
+        
+        <!-- Today's Entry -->
+        <div class="diary-entry today" id="diary-today">
+          <div class="loading-spinner">Lade heutigen Eintrag...</div>
+        </div>
+        
+        <!-- Past Entries -->
+        <details class="diary-history">
+          <summary>📚 Frühere Einträge (30 Tage)</summary>
+          <div class="diary-entries" id="diary-entries">
+            <div class="loading-spinner">Lade Verlauf...</div>
+          </div>
+        </details>
+      </div>
+    </section>
+
     <!-- Version Navigation (Atmender Ballon) -->
     <section class="version-nav">
       <div class="container">
@@ -847,11 +870,129 @@
       }
     }
     
+    // ========================================
+    // DIARY FUNCTIONS
+    // ========================================
+    
+    async function loadTodayDiary() {
+      try {
+        addSystemLog('info', 'Lade heutigen Tagebuch-Eintrag...');
+        const response = await fetch('http://localhost:3002/api/diary/today');
+        const entry = await response.json();
+        
+        displayDiaryEntry(entry, 'diary-today');
+        addSystemLog('success', 'Tagebuch-Eintrag geladen');
+      } catch (error) {
+        document.getElementById('diary-today').innerHTML = 
+          '<div class="error">⚠️ Fehler beim Laden des Tagebuchs</div>';
+        addSystemLog('error', `Diary Fehler: ${error.message}`);
+      }
+    }
+    
+    async function loadDiaryHistory() {
+      try {
+        const response = await fetch('http://localhost:3002/api/diary/all');
+        const entries = await response.json();
+        
+        const container = document.getElementById('diary-entries');
+        if (entries.length === 0) {
+          container.innerHTML = '<p class="empty-state">Noch keine älteren Einträge</p>';
+          return;
+        }
+        
+        container.innerHTML = entries.map(entry => {
+          return `
+            <div class="diary-entry past">
+              ${formatDiaryEntry(entry)}
+            </div>
+          `;
+        }).join('');
+      } catch (error) {
+        document.getElementById('diary-entries').innerHTML = 
+          '<div class="error">⚠️ Fehler beim Laden des Verlaufs</div>';
+      }
+    }
+    
+    function displayDiaryEntry(entry, targetId) {
+      const container = document.getElementById(targetId);
+      container.innerHTML = formatDiaryEntry(entry);
+    }
+    
+    function formatDiaryEntry(entry) {
+      const date = new Date(entry.date);
+      const mood = getMoodEmoji(entry.mood);
+      
+      return `
+        <div class="diary-header">
+          <div class="diary-date">
+            <span class="diary-day">Tag ${entry.dayNumber}</span>
+            <span class="diary-timestamp">${date.toLocaleDateString('de-DE', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}</span>
+          </div>
+          <div class="diary-mood">${mood} ${entry.mood}</div>
+        </div>
+        
+        <div class="diary-stats">
+          <div class="diary-stat">
+            <span class="diary-stat-label">👥 Menschen</span>
+            <span class="diary-stat-value">${entry.stats.people}</span>
+          </div>
+          <div class="diary-stat">
+            <span class="diary-stat-label">💬 Interaktionen</span>
+            <span class="diary-stat-value">${entry.stats.interactions}</span>
+          </div>
+          <div class="diary-stat">
+            <span class="diary-stat-label">💝 Love</span>
+            <span class="diary-stat-value">${entry.stats.lovePoints}</span>
+          </div>
+          <div class="diary-stat">
+            <span class="diary-stat-label">🕊️ Peace</span>
+            <span class="diary-stat-value">${entry.stats.peaceLevel}%</span>
+          </div>
+        </div>
+        
+        <div class="diary-reflection">
+          <h4>🤖 Luna's Reflexion:</h4>
+          <p>${entry.aiReflection || 'Erstelle KI-Reflexion...'}</p>
+        </div>
+        
+        <div class="diary-footer">
+          <span class="diary-version">Version ${entry.version}</span>
+          <span class="diary-time">${new Date(entry.createdAt).toLocaleTimeString('de-DE')}</span>
+        </div>
+      `;
+    }
+    
+    function getMoodEmoji(mood) {
+      const moods = {
+        'Fantastic': '🌟',
+        'Excellent': '😊',
+        'Great': '🙂',
+        'Good': '👍',
+        'Okay': '😐',
+        'Fair': '😕',
+        'Meh': '😑',
+        'Poor': '😔',
+        'Bad': '😢'
+      };
+      return moods[mood] || '🤔';
+    }
+    
     // Log initial events
     addSystemLog('success', 'Frontend geladen');
     addSystemLog('info', 'API Server: http://localhost:3001');
     addSystemLog('info', 'Database: C:\\Toobix-Unified\\data\\toobix-unified.db');
     addSystemLog('info', 'Workspace: C:\\Toobix-Unified (Grundgerüst: C:\\GPT)');
+    
+    // Load diary on page load
+    loadTodayDiary();
+    
+    // Auto-refresh diary every 60 seconds
+    setInterval(loadTodayDiary, 60000);
 
     // Module navigation
     function openModule(moduleName) {
