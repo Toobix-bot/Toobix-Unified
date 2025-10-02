@@ -360,17 +360,68 @@ export class BridgeService {
     this.mcp.registerRoute('GET', '/stats', async () => {
       const memoryCount = this.db.query('SELECT COUNT(*) as count FROM memory_chunks').get() as any
       const actionsCount = this.db.query('SELECT COUNT(*) as count FROM actions').get() as any
+      const peopleCount = this.db.query('SELECT COUNT(*) as count FROM people WHERE deleted_at IS NULL').get() as any
       const soulState = this.soul.getState()
       
       return {
         memory: memoryCount?.count || 0,
         actions: actionsCount?.count || 0,
+        people: peopleCount?.count || 0,
         tools: this.mcp.getToolCount(),
         soul: {
           experiences: soulState.experiences,
           wisdom: soulState.wisdom,
           mood: Math.round(soulState.emotional.mood),
           energy: Math.round(soulState.emotional.energy)
+        }
+      }
+    })
+
+    // UI API Endpoints
+    this.mcp.registerRoute('GET', '/api/people', async () => {
+      const people = await this.contacts.listContacts({ limit: 100 })
+      return people
+    })
+
+    this.mcp.registerRoute('GET', '/api/interactions', async () => {
+      const interactions = await this.interactions.getRecentInteractions(50)
+      return interactions.map(i => ({
+        id: i.id,
+        person_id: i.person_id,
+        person_name: i.person_name,
+        person_avatar: '👤',
+        type: i.kind,
+        summary: i.summary,
+        sentiment: i.sentiment,
+        love_points: i.love_points || 0,
+        timestamp: i.timestamp
+      }))
+    })
+
+    this.mcp.registerRoute('POST', '/api/luna/chat', async (req) => {
+      try {
+        const body = await req.json()
+        const message = body.message || ''
+        
+        // Generate AI response
+        const response = await this.ai.generate(message, [])
+        
+        // Update soul with interaction
+        this.soul.processEvent({
+          type: 'interaction',
+          description: `Luna chat: ${message}`,
+          emotionalImpact: { joy: 2 }
+        })
+        
+        return {
+          reply: response,
+          soul: this.soul.getSummary()
+        }
+      } catch (error) {
+        console.error('Luna chat error:', error)
+        return {
+          reply: 'Entschuldigung, ich hatte einen Moment der Verwirrung. Kannst du das nochmal sagen?',
+          soul: this.soul.getSummary()
         }
       }
     })

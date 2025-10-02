@@ -55,7 +55,7 @@ export class MCPServer {
         if (routeMap?.has(url.pathname)) {
           try {
             const handler = routeMap.get(url.pathname)!
-            const result = await handler()
+            const result = await handler(req)
             return new Response(JSON.stringify(result), { headers })
           } catch (error) {
             return new Response(JSON.stringify({ error: String(error) }), {

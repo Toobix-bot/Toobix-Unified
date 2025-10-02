@@ -606,7 +606,7 @@
     // Load real stats from API
     async function loadStats() {
       try {
-        const response = await fetch('http://localhost:3001/api/stats');
+        const response = await fetch('http://localhost:3337/stats');
         const stats = await response.json();
         
         // Update stats with real data
@@ -637,13 +637,13 @@
     // Load People Gallery
     async function loadPeople() {
       try {
-        const response = await fetch('http://localhost:3001/api/people');
+        const response = await fetch('http://localhost:3337/api/people');
         const people = await response.json();
         
         const grid = document.getElementById('people-grid');
         grid.innerHTML = people.map(person => {
-          // Parse tags (stored as JSON string)
-          const tags = person.tags ? JSON.parse(person.tags) : [];
+          // Tags are already parsed as array from Bridge API
+          const tags = Array.isArray(person.tags) ? person.tags : [];
           
           return `
             <div class="person-card" onclick="showPersonDetails('${person.id}')">
@@ -667,7 +667,7 @@
     // Load Interactions Feed
     async function loadInteractions() {
       try {
-        const response = await fetch('http://localhost:3001/api/interactions');
+        const response = await fetch('http://localhost:3337/api/interactions');
         const interactions = await response.json();
         
         const list = document.getElementById('interactions-list');
@@ -789,7 +789,7 @@
       addSystemLog('info', `Luna Anfrage: "${question}"`);
       
       try {
-        const response = await fetch('http://localhost:3001/api/luna/chat', {
+        const response = await fetch('http://localhost:3337/api/luna/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question })
@@ -876,6 +876,12 @@
     
     async function loadTodayDiary() {
       try {
+        // Temporarily disabled - diary endpoint not yet implemented
+        document.getElementById('diary-today').innerHTML = 
+          '<div class="info">📝 Tagebuch-Funktion kommt bald...</div>';
+        addSystemLog('info', 'Tagebuch-Funktion in Entwicklung');
+        return;
+        
         addSystemLog('info', 'Lade heutigen Tagebuch-Eintrag...');
         const response = await fetch('http://localhost:3002/api/diary/today');
         const entry = await response.json();
@@ -891,6 +897,11 @@
     
     async function loadDiaryHistory() {
       try {
+        // Temporarily disabled - diary endpoint not yet implemented
+        document.getElementById('diary-entries').innerHTML = 
+          '<p class="info">📝 Tagebuch-Historie kommt bald...</p>';
+        return;
+        
         const response = await fetch('http://localhost:3002/api/diary/all');
         const entries = await response.json();
         
@@ -984,7 +995,7 @@
     
     // Log initial events
     addSystemLog('success', 'Frontend geladen');
-    addSystemLog('info', 'API Server: http://localhost:3001');
+    addSystemLog('info', 'Bridge MCP Server: http://localhost:3337');
     addSystemLog('info', 'Database: C:\\Toobix-Unified\\data\\toobix-unified.db');
     addSystemLog('info', 'Workspace: C:\\Toobix-Unified (Grundgerüst: C:\\GPT)');
     
