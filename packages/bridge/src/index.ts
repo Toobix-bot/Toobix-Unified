@@ -15,6 +15,7 @@ import { MemoryService } from './memory/service.ts'
 import { ActionsService } from './actions/service.ts'
 import { GroqService } from './ai/groq.ts'
 import { SoulService } from '../../soul/src/index.ts'
+import { ContactService, InteractionService } from '../../people/src/index.ts'
 import type { BridgeConfig } from './types.ts'
 
 export class BridgeService {
@@ -24,6 +25,8 @@ export class BridgeService {
   private actions: ActionsService
   private ai: GroqService
   private soul: SoulService
+  private contacts: ContactService
+  private interactions: InteractionService
   private config: BridgeConfig
 
   constructor(config: BridgeConfig) {
@@ -38,6 +41,8 @@ export class BridgeService {
     this.actions = new ActionsService(this.db)
     this.ai = new GroqService(config.groqApiKey || process.env.GROQ_API_KEY || '')
     this.soul = new SoulService(this.db)
+    this.contacts = new ContactService()
+    this.interactions = new InteractionService()
     
     // Initialize MCP server
     this.mcp = new MCPServer({
@@ -64,13 +69,21 @@ export class BridgeService {
     
     console.log(`✅ Bridge Service running on http://localhost:${this.config.port || 3337}`)
     console.log('\n🔧 MCP Tools loaded:')
-    console.log('   - memory_search    : RAG search in knowledge base')
-    console.log('   - memory_add       : Add new memory chunk')
-    console.log('   - generate         : AI text generation (Groq)')
-    console.log('   - embed            : Generate embeddings (Ollama)')
-    console.log('   - trigger_action   : Execute action')
-    console.log('   - read_file        : Read workspace file')
-    console.log('   - write_file       : Write workspace file')
+    console.log('   💾 Memory:')
+    console.log('      - memory_search    : RAG search in knowledge base')
+    console.log('      - memory_add       : Add new memory chunk')
+    console.log('   🧠 AI:')
+    console.log('      - generate         : AI text generation (Groq)')
+    console.log('   ⚡ Actions:')
+    console.log('      - trigger_action   : Execute action')
+    console.log('   💫 Soul:')
+    console.log('      - soul_state       : Get emotional/personality state')
+    console.log('      - soul_event       : Process life event')
+    console.log('   👥 People:')
+    console.log('      - contact_search   : Search contacts')
+    console.log('      - contact_add      : Add new contact')
+    console.log('      - contact_update   : Update contact')
+    console.log('      - interaction_log  : Log interaction')
     console.log('\n💡 Press Ctrl+C to stop\n')
   }
 
@@ -204,10 +217,134 @@ export class BridgeService {
       }
     })
 
+    // People tools
+    this.mcp.registerTool({
+      name: 'contact_search',
+      description: 'Search for contacts by name, tags, or notes',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Search query' }
+        },
+        required: ['query']
+      },
+      handler: async (args: any) => {
+        return await this.contacts.searchContacts(args.query)
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'contact_add',
+      description: 'Add a new contact',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Contact name' },
+          relation: { 
+            type: 'string', 
+            enum: ['family', 'friend', 'colleague', 'mentor', 'partner', 'other'],
+            description: 'Relationship type' 
+          },
+          notes: { type: 'string', description: 'Optional notes' },
+          tags: { type: 'array', items: { type: 'string' }, description: 'Tags' },
+          avatar: { type: 'string', description: 'Avatar URL' }
+        },
+        required: ['name', 'relation']
+      },
+      handler: async (args: any) => {
+        return await this.contacts.createContact(args)
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'contact_update',
+      description: 'Update an existing contact',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', description: 'Contact ID' },
+          name: { type: 'string', description: 'Contact name' },
+          relation: { 
+            type: 'string', 
+            enum: ['family', 'friend', 'colleague', 'mentor', 'partner', 'other']
+          },
+          notes: { type: 'string', description: 'Notes' },
+          tags: { type: 'array', items: { type: 'string' } }
+        },
+        required: ['id']
+      },
+      handler: async (args: any) => {
+        const { id, ...data } = args
+        return await this.contacts.updateContact(id, data)
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'interaction_log',
+      description: 'Log an interaction with a contact',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          person_id: { type: 'string', description: 'Contact ID' },
+          kind: { 
+            type: 'string', 
+            enum: ['call', 'meet', 'message', 'gift', 'conflict', 'memory', 'other'],
+            description: 'Interaction type'
+          },
+          summary: { type: 'string', description: 'Interaction summary' },
+          sentiment: {
+            type: 'string',
+            enum: ['positive', 'neutral', 'difficult', 'healing'],
+            description: 'Interaction sentiment'
+          },
+          details: { type: 'object', description: 'Additional details' },
+          gratitude: { type: 'string', description: 'Gratitude note' }
+        },
+        required: ['person_id', 'kind', 'summary', 'sentiment']
+      },
+      handler: async (args: any) => {
+        return await this.interactions.addInteraction(args)
+      }
+    })
+
     console.log('✅ MCP tools registered')
   }
 
   private setupRoutes() {
+    // MCP endpoint (main entry point for MCP clients)
+    this.mcp.registerRoute('GET', '/mcp', async () => {
+      return {
+        protocol: 'mcp',
+        version: '1.0.0',
+        server: {
+          name: 'toobix-bridge',
+          version: '0.1.0'
+        },
+        capabilities: {
+          tools: true,
+          prompts: false,
+          resources: false
+        },
+        endpoints: {
+          tools: '/tools',
+          execute: '/tools/execute',
+          health: '/health',
+          stats: '/stats'
+        },
+        tools: Array.from(this.mcp['tools'].keys())
+      }
+    })
+
+    this.mcp.registerRoute('POST', '/mcp', async () => {
+      // MCP protocol handler for JSON-RPC style requests
+      return {
+        jsonrpc: '2.0',
+        result: {
+          tools: Array.from(this.mcp['tools'].keys())
+        }
+      }
+    })
+
     // Health check endpoint
     this.mcp.registerRoute('GET', '/health', async () => {
       return {
