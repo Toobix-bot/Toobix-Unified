@@ -1,0 +1,222 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Toobix Bridge MCP",
+    "description": "Model Context Protocol Server with Memory, Soul & AI Tools",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://multiplicative-unapprehendably-marisha.ngrok-free.dev",
+      "description": "Toobix Bridge MCP Server (ngrok tunnel)"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "Service health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string" },
+                    "service": { "type": "string" },
+                    "mcp": { "type": "boolean" },
+                    "tools": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stats": {
+      "get": {
+        "summary": "Get statistics",
+        "operationId": "getStats",
+        "responses": {
+          "200": {
+            "description": "Bridge statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "memory": { "type": "integer", "description": "Number of memory chunks" },
+                    "actions": { "type": "integer", "description": "Number of actions" },
+                    "tools": { "type": "integer", "description": "Number of MCP tools" },
+                    "soul": {
+                      "type": "object",
+                      "properties": {
+                        "experiences": { "type": "integer" },
+                        "wisdom": { "type": "integer" },
+                        "mood": { "type": "integer" },
+                        "energy": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools": {
+      "get": {
+        "summary": "List available tools",
+        "operationId": "listTools",
+        "responses": {
+          "200": {
+            "description": "List of MCP tools",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tools": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": { "type": "string" },
+                          "description": { "type": "string" },
+                          "inputSchema": { "type": "object" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/execute": {
+      "post": {
+        "summary": "Execute an MCP tool",
+        "operationId": "executeTool",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "type": "string",
+                    "enum": [
+                      "memory_search",
+                      "memory_add",
+                      "generate",
+                      "trigger_action",
+                      "soul_state",
+                      "soul_event"
+                    ],
+                    "description": "Tool to execute"
+                  },
+                  "args": {
+                    "type": "object",
+                    "description": "Tool-specific arguments"
+                  }
+                },
+                "required": ["tool"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool execution result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "description": "Tool-specific result"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tool not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" },
+                    "available": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MemorySearchArgs": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "description": "Search query" },
+          "limit": { "type": "integer", "default": 5, "description": "Max results" }
+        },
+        "required": ["query"]
+      },
+      "MemoryAddArgs": {
+        "type": "object",
+        "properties": {
+          "text": { "type": "string", "description": "Content to remember" },
+          "metadata": { "type": "object", "description": "Optional metadata" }
+        },
+        "required": ["text"]
+      },
+      "GenerateArgs": {
+        "type": "object",
+        "properties": {
+          "prompt": { "type": "string", "description": "Generation prompt" },
+          "context": { "type": "array", "items": { "type": "string" }, "description": "Context messages" }
+        },
+        "required": ["prompt"]
+      },
+      "SoulEventArgs": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["experience", "interaction", "reflection", "challenge"],
+            "description": "Event type"
+          },
+          "description": { "type": "string", "description": "Event description" },
+          "emotionalImpact": {
+            "type": "object",
+            "description": "Emotional changes (joy: +10, etc)",
+            "additionalProperties": { "type": "number" }
+          },
+          "valueImpact": {
+            "type": "object",
+            "description": "Value alignment changes",
+            "additionalProperties": { "type": "number" }
+          }
+        },
+        "required": ["type", "description"]
+      }
+    }
+  }
+}
