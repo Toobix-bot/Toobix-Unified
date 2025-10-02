@@ -26,7 +26,10 @@ export class BridgeService {
 
   constructor(config: BridgeConfig) {
     this.config = config
-    this.db = new Database(config.database || '../../data/toobix-unified.db')
+    const dbPath = config.database || './bridge.db'
+    
+    console.log(`📁 Opening database: ${dbPath}`)
+    this.db = new Database(dbPath)
     
     // Initialize services
     this.memory = new MemoryService(this.db)

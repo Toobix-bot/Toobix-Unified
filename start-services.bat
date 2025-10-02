@@ -17,6 +17,11 @@ echo Starting Diary Service on port 3002...
 start /B "" "C:\Users\micha\.bun\bin\bun.exe" run scripts/diary-service.ts
 timeout /t 3 >nul
 
+REM Start Bridge Service (Port 3337)
+echo Starting Bridge Service on port 3337...
+start /B "" "C:\Users\micha\.bun\bin\bun.exe" run packages/bridge/src/index.ts
+timeout /t 3 >nul
+
 REM Start Frontend Dev Server (Port 3000)
 echo Starting Frontend Server on port 3000...
 start /B "" python -m http.server 3000 --directory apps/web
@@ -29,6 +34,7 @@ echo Service URLs:
 echo   Frontend:  http://localhost:3000
 echo   Main API:  http://localhost:3001
 echo   Diary API: http://localhost:3002
+echo   Bridge:    http://localhost:3337
 echo.
 echo Testing services...
 timeout /t 3 >nul
@@ -36,6 +42,7 @@ timeout /t 3 >nul
 curl -s http://localhost:3001/api/stats >nul 2>&1 && echo   Main API: OK || echo   Main API: FAILED
 curl -s http://localhost:3002/health >nul 2>&1 && echo   Diary API: OK || echo   Diary API: FAILED
 curl -s http://localhost:3000 >nul 2>&1 && echo   Frontend: OK || echo   Frontend: FAILED
+curl -s http://localhost:3337/health >nul 2>&1 && echo   Bridge: OK || echo   Bridge: FAILED
 
 echo.
 echo Ready! Open http://localhost:3000 in your browser

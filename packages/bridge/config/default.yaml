@@ -1,0 +1,49 @@
+# Bridge Service Configuration
+
+# Server settings
+server:
+  port: 3337
+  host: "0.0.0.0"
+  name: "toobix-bridge"
+  version: "0.1.0"
+
+# Database
+database:
+  path: "../../data/toobix-unified.db"
+  
+# AI Services
+ai:
+  groq:
+    apiKey: "${GROQ_API_KEY}"
+    model: "llama-3.3-70b-versatile"
+    temperature: 0.7
+    maxTokens: 1000
+  
+  ollama:
+    host: "http://localhost:11434"
+    model: "llama2"
+
+# Memory/RAG settings
+memory:
+  embeddingDimensions: 384
+  maxChunks: 10000
+  similarityThreshold: 0.7
+
+# Actions
+actions:
+  maxConcurrent: 5
+  timeout: 30000
+  retryAttempts: 3
+
+# MCP Tools
+mcp:
+  tools:
+    - memory_search
+    - memory_add
+    - memory_update
+    - memory_delete
+    - generate
+    - embed
+    - trigger_action
+    - read_file
+    - write_file

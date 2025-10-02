@@ -25,6 +25,12 @@ Start-Process -FilePath "C:\Users\micha\.bun\bin\bun.exe" -ArgumentList "run","s
 
 Start-Sleep -Seconds 2
 
+# Start Bridge Service (Port 3337)
+Write-Host "🌉 Starting Bridge Service (Port 3337)..." -ForegroundColor Yellow
+Start-Process -FilePath "C:\Users\micha\.bun\bin\bun.exe" -ArgumentList "run","packages/bridge/src/index.ts" -WorkingDirectory $PWD -WindowStyle Hidden
+
+Start-Sleep -Seconds 2
+
 # Start Frontend Dev Server (Port 3000)
 Write-Host "🌐 Starting Frontend Server (Port 3000)..." -ForegroundColor Yellow
 Start-Process -FilePath "python" -ArgumentList "-m","http.server","3000","--directory","apps/web" -WorkingDirectory $PWD -WindowStyle Hidden
@@ -38,6 +44,7 @@ Write-Host "📍 Service URLs:" -ForegroundColor Cyan
 Write-Host "   Frontend:  http://localhost:3000" -ForegroundColor White
 Write-Host "   Main API:  http://localhost:3001" -ForegroundColor White
 Write-Host "   Diary API: http://localhost:3002" -ForegroundColor White
+Write-Host "   Bridge:    http://localhost:3337" -ForegroundColor White
 Write-Host ""
 Write-Host "🧪 Testing services..." -ForegroundColor Yellow
 
@@ -62,6 +69,13 @@ try {
     Write-Host "   ✅ Frontend: OK" -ForegroundColor Green
 } catch {
     Write-Host "   ❌ Frontend: FAILED" -ForegroundColor Red
+}
+
+try {
+    $bridge = Invoke-RestMethod -Uri "http://localhost:3337/health" -TimeoutSec 5
+    Write-Host "   ✅ Bridge: OK ($($bridge.tools) tools)" -ForegroundColor Green
+} catch {
+    Write-Host "   ❌ Bridge: FAILED" -ForegroundColor Red
 }
 
 Write-Host ""
