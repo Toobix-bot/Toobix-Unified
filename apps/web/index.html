@@ -632,7 +632,7 @@
       }
     }
 
-    loadStats();
+    loadStats().catch(err => console.error('Stats init error:', err));
 
     // Load People Gallery
     async function loadPeople() {
@@ -747,8 +747,8 @@
     }
 
     // Load all data on page load
-    loadPeople();
-    loadInteractions();
+    loadPeople().catch(err => console.error('People init error:', err));
+    loadInteractions().catch(err => console.error('Interactions init error:', err));
 
     // ========================================
     // LUNA CHATBOT FUNCTIONS
@@ -1000,10 +1000,10 @@
     addSystemLog('info', 'Workspace: C:\\Toobix-Unified (Grundgerüst: C:\\GPT)');
     
     // Load diary on page load
-    loadTodayDiary();
+    loadTodayDiary().catch(err => console.error('Diary init error:', err));
     
     // Auto-refresh diary every 60 seconds
-    setInterval(loadTodayDiary, 60000);
+    setInterval(() => loadTodayDiary().catch(err => console.error('Diary refresh error:', err)), 60000);
 
     // Module navigation
     function openModule(moduleName) {
