@@ -1,0 +1,31 @@
+node_modules
+.git
+.env
+*.log
+*.db
+.vscode
+.DS_Store
+data/
+logs/
+temp/
+
+# Archives
+C:\GPT\Archive
+
+# Old versions
+../Version_*
+
+# Python
+*.pyc
+__pycache__
+.venv
+.pytest_cache
+
+# Build outputs
+dist/
+build/
+.next/
+
+# Documentation (zu groß für deploy)
+docs/archive/
+SYSTEM_ANALYSE_KOMPLETT.md
