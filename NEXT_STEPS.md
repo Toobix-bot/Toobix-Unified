@@ -49,10 +49,10 @@ start C:\Toobix-Unified\apps\web\index.html
 
 ## 🚀 Week 1 Tasks (Parallel Work Possible!)
 
-### 4. 🤖 ChatGPT or Claude: Soul System Port
-**Assignee:** 🟢 AVAILABLE - Pick it!  
+### 4. 🤖 Claude: Soul System Port
+**Assignee:** ✅ Claude - COMPLETE!  
 **Priority:** 🟡 MEDIUM  
-**Status:** ⏸️ Not started  
+**Status:** ✅ Complete  
 **Estimated Time:** 2-3 hours  
 **Branch:** `ai/chatgpt/soul-system` or `ai/claude/soul-system`
 
@@ -79,10 +79,10 @@ start C:\Toobix-Unified\apps\web\index.html
 
 ---
 
-### 5. 🤖 ChatGPT or Claude: Memory/KB Port
-**Assignee:** 🟢 AVAILABLE  
+### 5. 🤖 Claude: Memory/KB Port
+**Assignee:** 🔄 Claude (working)  
 **Priority:** 🟡 MEDIUM  
-**Status:** ⏸️ Not started  
+**Status:** 🔄 In Progress - Claude  
 **Estimated Time:** 2-3 hours  
 **Branch:** `ai/chatgpt/memory-kb` or `ai/claude/memory-kb`
 

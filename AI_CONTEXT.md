@@ -29,7 +29,9 @@
 - [x] **Custom migration script (bun:sqlite)**
 
 ### 🔄 In Progress
-- [ ] **NIEMAND** - Alle AIs verfügbar!
+- [x] **Bridge Integration** - Claude (50% complete)
+- [x] **Soul System Port** - Claude (Complete)
+- [ ] **Memory/KB Port** - In Progress
 
 ### 📋 Next Up (Week 1 Tasks)
 1. ~~Dependencies installieren~~ ✅ DONE
@@ -70,10 +72,10 @@
 - [ ] Integration strategy (V8/V7/V2 → Unified)
 
 ### Claude (Web/API)
-**Status:** 🟢 Available  
-**Last Active:** Never in this session  
-**Current Task:** None  
-**Branch:** N/A  
+**Status:** 🔄 Working  
+**Last Active:** 2025-10-02 (Now)  
+**Current Task:** Bridge Integration & Soul System Port  
+**Branch:** ai/claude/unified-integration  
 
 **Empfohlene Next Tasks:**
 - [ ] Love Engine plugin (`plugins/love-engine/`)
