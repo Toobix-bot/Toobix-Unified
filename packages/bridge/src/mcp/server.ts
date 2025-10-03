@@ -99,7 +99,7 @@ export class MCPServer {
             // MCP Protocol Methods
             switch (method) {
               case 'initialize': {
-                return new Response(JSON.stringify({
+                const responseBody = JSON.stringify({
                   jsonrpc: '2.0',
                   id,
                   result: {
@@ -112,23 +112,55 @@ export class MCPServer {
                       tools: {}
                     }
                   }
-                }), { headers })
+                })
+                
+                return new Response(responseBody, {
+                  headers: {
+                    ...headers,
+                    'Content-Length': String(responseBody.length)
+                  }
+                })
               }
 
               case 'tools/list': {
-                const toolsList = Array.from(self.tools.values()).map(t => ({
-                  name: t.name,
-                  description: t.description,
-                  inputSchema: t.inputSchema
-                }))
+                // Simplified mode: omit property descriptions to reduce response size
+                // 4646 bytes → ~2000 bytes (prevents Chatty TaskGroup crash)
+                const toolsList = Array.from(self.tools.values()).map(t => {
+                  const simplifySchema = (schema: any): any => {
+                    if (!schema || typeof schema !== 'object') return schema
+                    const simplified = { ...schema }
+                    if (simplified.properties) {
+                      simplified.properties = Object.fromEntries(
+                        Object.entries(simplified.properties).map(([key, val]: [string, any]) => [
+                          key,
+                          { type: val.type, ...(val.enum && { enum: val.enum }), ...(val.default !== undefined && { default: val.default }), ...(val.items && { items: val.items }) }
+                        ])
+                      )
+                    }
+                    return simplified
+                  }
+                  
+                  return {
+                    name: t.name,
+                    description: t.description,
+                    inputSchema: simplifySchema(t.inputSchema)
+                  }
+                })
                 
-                return new Response(JSON.stringify({
+                const responseBody = JSON.stringify({
                   jsonrpc: '2.0',
                   id,
                   result: {
                     tools: toolsList
                   }
-                }), { headers })
+                })
+                
+                return new Response(responseBody, {
+                  headers: {
+                    ...headers,
+                    'Content-Length': String(responseBody.length)
+                  }
+                })
               }
 
               case 'tools/call': {
