@@ -242,7 +242,7 @@ class Router {
   /**
    * Navigate to current hash
    */
-  navigate() {
+  async navigate() {
     const hash = window.location.hash.slice(1) || '/'
     const page = hash.split('/')[1] || 'dashboard'
     
@@ -256,6 +256,7 @@ class Router {
       dashboard: 'Dashboard',
       runs: 'Runs',
       quests: 'Quests',
+      story: 'Story',
       skills: 'Skills',
       items: 'Items',
       allies: 'Allies',
@@ -267,7 +268,16 @@ class Router {
     // Render page
     const render = this.routes[hash] || this.routes['/']
     if (render) {
-      const content = render()
+      // Show loading state
+      document.getElementById('pageContent').innerHTML = `
+        <div style="text-align: center; padding: 4rem; color: var(--text-secondary)">
+          <div style="font-size: 3rem; margin-bottom: 1rem">⏳</div>
+          <p>Laden...</p>
+        </div>
+      `
+      
+      // Await render if async
+      const content = await render()
       document.getElementById('pageContent').innerHTML = content
       this.currentPage = page
       
@@ -708,14 +718,14 @@ async function renderStory() {
       <!-- Phase Info -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">🌙 Current Phase</h3>
+          <h3 class="card-title">🌙 Stimmung</h3>
         </div>
         <div class="card-body">
           <p style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.5rem">
-            ${storyState.phase?.title || 'Anfang'}
+            ${storyState.mood || 'calm'}
           </p>
           <p style="color: var(--text-secondary); font-size: 0.9rem">
-            ${storyState.phase?.description || 'Deine Reise beginnt...'}
+            ${storyState.arc || 'foundations'}
           </p>
         </div>
       </div>
@@ -735,13 +745,19 @@ async function renderStory() {
                      onmouseout="this.style.transform='translateY(0)'"
                      onclick="chooseStoryOption('${opt.id}')">
                   <div class="card-header">
-                    <h4 style="font-size: 1rem">${opt.title}</h4>
+                    <h4 style="font-size: 1rem">${opt.label || opt.title || 'Option'}</h4>
                   </div>
                   <div class="card-body">
                     <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem">
-                      ${opt.description}
+                      ${opt.rationale || opt.description || 'Wähle diese Option'}
                     </p>
-                    ${opt.effects ? `
+                    ${opt.expected ? `
+                      <div style="font-size: 0.75rem; color: var(--text-tertiary)">
+                        ${Object.entries(opt.expected).map(([k, v]) => 
+                          `<span class="badge">${k}: ${v > 0 ? '+' : ''}${v}</span>`
+                        ).join(' ')}
+                      </div>
+                    ` : opt.effects ? `
                       <div style="font-size: 0.75rem; color: var(--text-tertiary)">
                         ${Object.entries(opt.effects).map(([k, v]) => 
                           `<span class="badge">${k}: ${v > 0 ? '+' : ''}${v}</span>`
