@@ -461,6 +461,30 @@ function renderDashboard() {
         </div>
       `}
       
+      <!-- Story Status Widget -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">📖 Story</h3>
+        </div>
+        <div class="card-body">
+          <div class="flex justify-between mb-1">
+            <span style="color: var(--text-secondary); font-size: 0.9rem">Arc</span>
+            <span class="badge badge-info">foundations</span>
+          </div>
+          <div class="flex justify-between mb-1">
+            <span style="color: var(--text-secondary); font-size: 0.9rem">Level</span>
+            <span class="badge badge-success">1</span>
+          </div>
+          <div class="flex justify-between">
+            <span style="color: var(--text-secondary); font-size: 0.9rem">XP</span>
+            <span class="badge">0</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <a href="#/story" class="btn btn-sm btn-primary">Story Engine</a>
+        </div>
+      </div>
+      
       <!-- System Status -->
       <div class="card">
         <div class="card-header">
@@ -591,6 +615,163 @@ function renderQuests() {
 }
 
 /**
+ * Story page
+ */
+async function renderStory() {
+  // Fetch story state from bridge
+  let storyState = null
+  let storyStats = null
+  
+  try {
+    const statsRes = await fetch('http://localhost:3337/stats')
+    const stats = await statsRes.json()
+    storyStats = stats.story
+    
+    const stateRes = await fetch('http://localhost:3337/mcp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'story_state',
+          arguments: {}
+        },
+        id: 1
+      })
+    })
+    const stateData = await stateRes.json()
+    if (stateData.result?.content?.[0]?.text) {
+      storyState = JSON.parse(stateData.result.content[0].text)
+    }
+  } catch (err) {
+    console.error('Failed to load story:', err)
+  }
+  
+  if (!storyState) {
+    return `
+      <div class="card text-center" style="max-width: 600px; margin: 2rem auto">
+        <div class="card-body">
+          <h2 style="font-size: 3rem; margin-bottom: 1rem">📖</h2>
+          <h3 class="card-title">Story Engine Offline</h3>
+          <p style="color: var(--text-secondary); margin-top: 1rem">
+            Bridge Service nicht erreichbar.
+          </p>
+        </div>
+      </div>
+    `
+  }
+  
+  return `
+    <div class="grid grid-3">
+      
+      <!-- Story Status -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">📖 Story Status</h3>
+        </div>
+        <div class="card-body">
+          <div class="flex justify-between mb-1">
+            <span style="color: var(--text-secondary)">Epoch</span>
+            <span class="badge">${storyStats?.epoch || 0}</span>
+          </div>
+          <div class="flex justify-between mb-1">
+            <span style="color: var(--text-secondary)">Arc</span>
+            <span class="badge badge-info">${storyStats?.arc || 'foundations'}</span>
+          </div>
+          <div class="flex justify-between mb-1">
+            <span style="color: var(--text-secondary)">Level</span>
+            <span class="badge badge-success">${storyStats?.level || 1}</span>
+          </div>
+          <div class="flex justify-between">
+            <span style="color: var(--text-secondary)">XP</span>
+            <span class="badge">${storyStats?.xp || 0}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Resources -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">💎 Resources</h3>
+        </div>
+        <div class="card-body">
+          ${Object.entries(storyState.resources || {}).slice(0, 6).map(([key, val]) => `
+            <div class="flex justify-between mb-1">
+              <span style="color: var(--text-secondary); text-transform: capitalize">${key}</span>
+              <span class="badge">${typeof val === 'number' ? val.toFixed(0) : val}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <!-- Phase Info -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">🌙 Current Phase</h3>
+        </div>
+        <div class="card-body">
+          <p style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.5rem">
+            ${storyState.phase?.title || 'Anfang'}
+          </p>
+          <p style="color: var(--text-secondary); font-size: 0.9rem">
+            ${storyState.phase?.description || 'Deine Reise beginnt...'}
+          </p>
+        </div>
+      </div>
+      
+      <!-- Story Options -->
+      ${(storyState.options || []).length > 0 ? `
+        <div class="card" style="grid-column: span 3">
+          <div class="card-header">
+            <h3 class="card-title">🎯 Nächste Schritte</h3>
+            <span class="badge">${storyState.options.length} Options</span>
+          </div>
+          <div class="card-body">
+            <div class="grid grid-3">
+              ${storyState.options.map(opt => `
+                <div class="card" style="cursor: pointer; transition: transform 0.2s" 
+                     onmouseover="this.style.transform='translateY(-4px)'" 
+                     onmouseout="this.style.transform='translateY(0)'"
+                     onclick="chooseStoryOption('${opt.id}')">
+                  <div class="card-header">
+                    <h4 style="font-size: 1rem">${opt.title}</h4>
+                  </div>
+                  <div class="card-body">
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem">
+                      ${opt.description}
+                    </p>
+                    ${opt.effects ? `
+                      <div style="font-size: 0.75rem; color: var(--text-tertiary)">
+                        ${Object.entries(opt.effects).map(([k, v]) => 
+                          `<span class="badge">${k}: ${v > 0 ? '+' : ''}${v}</span>`
+                        ).join(' ')}
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      ` : `
+        <div class="card" style="grid-column: span 3">
+          <div class="card-body text-center">
+            <p style="color: var(--text-secondary)">
+              Keine aktiven Story-Optionen. 
+              <button class="btn btn-sm btn-primary" onclick="refreshStoryOptions()">
+                Optionen generieren
+              </button>
+            </p>
+          </div>
+        </div>
+      `}
+      
+    </div>
+  `
+}
+
+/**
  * Placeholder pages
  */
 function renderPlaceholder(title, icon) {
@@ -619,6 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
   router.route('#/', renderDashboard)
   router.route('#/runs', renderRuns)
   router.route('#/quests', renderQuests)
+  router.route('#/story', renderStory)
   router.route('#/skills', () => renderPlaceholder('Skills', '🌟'))
   router.route('#/items', () => renderPlaceholder('Items', '🎒'))
   router.route('#/allies', () => renderPlaceholder('Allies', '👥'))
@@ -653,3 +835,58 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial navigation
   router.navigate()
 })
+
+// Story interaction functions (global)
+window.chooseStoryOption = async function(optionId) {
+  try {
+    const res = await fetch('http://localhost:3337/mcp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'story_choose',
+          arguments: { option_id: optionId }
+        },
+        id: 2
+      })
+    })
+    const data = await res.json()
+    if (data.result?.content?.[0]?.text) {
+      const result = JSON.parse(data.result.content[0].text)
+      alert(`✨ ${result.message || 'Auswahl getroffen!'}`)
+      window.location.reload() // Refresh to show new state
+    }
+  } catch (err) {
+    console.error('Story choice failed:', err)
+    alert('❌ Fehler beim Speichern der Auswahl')
+  }
+}
+
+window.refreshStoryOptions = async function() {
+  try {
+    const res = await fetch('http://localhost:3337/mcp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'story_refresh',
+          arguments: { force: true }
+        },
+        id: 3
+      })
+    })
+    const data = await res.json()
+    if (data.result?.content?.[0]?.text) {
+      const result = JSON.parse(data.result.content[0].text)
+      alert(`✨ ${result.generated || 0} neue Optionen generiert!`)
+      window.location.reload()
+    }
+  } catch (err) {
+    console.error('Story refresh failed:', err)
+    alert('❌ Fehler beim Generieren von Optionen')
+  }
+}
