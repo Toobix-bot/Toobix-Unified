@@ -1,12 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { bridgeClient, type BridgeTool, type StoryState, type StoryEvent } from '@toobix/api-client'
+import { cn } from '@/lib/utils'
+import {
+  bridgeClient,
+  type BridgeTool,
+  type BridgeToolSchema,
+  type StoryEvent,
+  type StoryState
+} from '@toobix/api-client'
 
 export default function StoryEnginePage() {
   const [state, setState] = useState<StoryState | null>(null)
@@ -16,75 +23,99 @@ export default function StoryEnginePage() {
   const [tools, setTools] = useState<BridgeTool[]>([])
   const [toolsLoading, setToolsLoading] = useState(true)
   const [toolsError, setToolsError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
 
-  // Load story data
-  const loadStory = async () => {
+  const loadStory = useCallback(async () => {
     try {
-      setLoading(true)
+      if (isMountedRef.current) {
+        setLoading(true)
+      }
+
       const [storyState, eventsData] = await Promise.all([
         bridgeClient.getStoryState(),
         bridgeClient.getStoryEvents(10)
       ])
-      setState(storyState)
-      setEvents(eventsData.events || [])
-      setError(null)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load story')
-    } finally {
-      setLoading(false)
-    }
-  }
 
-  const loadTools = async () => {
+      if (isMountedRef.current) {
+        setState(storyState)
+        setEvents(Array.isArray(eventsData.events) ? eventsData.events : [])
+        setError(null)
+      }
+    } catch (err) {
+      if (isMountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Failed to load story')
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
+    }
+  }, [])
+
+  const loadTools = useCallback(async () => {
     try {
-      setToolsLoading(true)
+      if (isMountedRef.current) {
+        setToolsLoading(true)
+      }
+
       const toolsList = await bridgeClient.listTools()
-      setTools(toolsList)
-      setToolsError(null)
+
+      if (isMountedRef.current) {
+        setTools(toolsList)
+        setToolsError(null)
+      }
     } catch (err) {
-      setToolsError(err instanceof Error ? err.message : 'Failed to load tools')
+      if (isMountedRef.current) {
+        setToolsError(err instanceof Error ? err.message : 'Failed to load tools')
+      }
     } finally {
-      setToolsLoading(false)
+      if (isMountedRef.current) {
+        setToolsLoading(false)
+      }
     }
-  }
+  }, [])
 
-  // Choose option
-  const handleChooseOption = async (optionId: string) => {
-    try {
-      await bridgeClient.chooseStoryOption(optionId)
-      await loadStory() // Reload
-    } catch (err) {
-      console.error('Failed to choose option:', err)
-    }
-  }
+  const handleChooseOption = useCallback(
+    async (optionId: string) => {
+      try {
+        await bridgeClient.chooseStoryOption(optionId)
+        await loadStory()
+      } catch (err) {
+        console.error('Failed to choose option:', err)
+      }
+    },
+    [loadStory]
+  )
 
-  // Refresh options
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     try {
       await bridgeClient.refreshStoryOptions(true)
       await loadStory()
     } catch (err) {
       console.error('Failed to refresh:', err)
     }
-  }
+  }, [loadStory])
 
   useEffect(() => {
+    isMountedRef.current = true
     loadStory()
     loadTools()
-    // Auto-refresh every 30 seconds
+
     const interval = setInterval(loadStory, 30000)
     const toolsInterval = setInterval(loadTools, 60000)
+
     return () => {
+      isMountedRef.current = false
       clearInterval(interval)
       clearInterval(toolsInterval)
     }
-  }, [])
+  }, [loadStory, loadTools])
 
   if (loading && !state) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4">⏳</div>
+          <div className="mb-4 text-4xl">⏳</div>
           <p className="text-muted-foreground">Loading Story Engine...</p>
         </div>
       </div>
@@ -109,29 +140,48 @@ export default function StoryEnginePage() {
 
   if (!state) return null
 
-  // Calculate XP progress
-  const resources = state.resources ?? {
-    energie: 0,
-    wissen: 0,
-    inspiration: 0,
-    ruf: 0,
-    stabilitaet: 0,
-    erfahrung: 0,
-    level: 1
+  const resourcesRaw =
+    state.resources && typeof state.resources === 'object' ? state.resources : {}
+
+  const resources = {
+    energie: Number((resourcesRaw as Record<string, unknown>).energie) || 0,
+    wissen: Number((resourcesRaw as Record<string, unknown>).wissen) || 0,
+    inspiration: Number((resourcesRaw as Record<string, unknown>).inspiration) || 0,
+    ruf: Number((resourcesRaw as Record<string, unknown>).ruf) || 0,
+    stabilitaet: Number((resourcesRaw as Record<string, unknown>).stabilitaet) || 0,
+    erfahrung: Number((resourcesRaw as Record<string, unknown>).erfahrung) || 0,
+    level: Number((resourcesRaw as Record<string, unknown>).level) || 1
   }
 
-  const xpForNextLevel = (resources.level || 1) * 100
+  const level = resources.level || 1
+  const xpForNextLevel = Math.max(1, level * 100)
   const currentXP = resources.erfahrung || 0
-  const xpPercent = (currentXP / xpForNextLevel) * 100
+  const xpPercent = Math.min(100, (currentXP / xpForNextLevel) * 100)
+
+  const options = Array.isArray(state.options) ? state.options : []
+  const companions = Array.isArray(state.companions) ? state.companions : []
+  const buffs = Array.isArray(state.buffs) ? state.buffs : []
+
+  const sortedTools = useMemo(() => {
+    const unique = new Map<string, BridgeTool>()
+
+    for (const tool of tools) {
+      if (tool?.name && !unique.has(tool.name)) {
+        unique.set(tool.name, tool)
+      }
+    }
+
+    return Array.from(unique.values()).sort((a, b) => a.name.localeCompare(b.name))
+  }, [tools])
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">📖 Story Engine</h1>
           <p className="text-muted-foreground">
-            Arc: {state.arc} · Level {resources.level}
+            Arc: {state.arc} · Level {level}
           </p>
         </div>
         <Button onClick={handleRefresh} variant="outline">
@@ -142,14 +192,14 @@ export default function StoryEnginePage() {
       <Tabs defaultValue="overview" className="w-full">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="options">Options ({state.options.length})</TabsTrigger>
+          <TabsTrigger value="options">Options ({options.length})</TabsTrigger>
           <TabsTrigger value="events">Events ({events.length})</TabsTrigger>
-          <TabsTrigger value="tools">Tools ({tools.length})</TabsTrigger>
+          <TabsTrigger value="tools">Tools ({sortedTools.length})</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid gap-6 md:grid-cols-3">
             {/* Progress Card */}
             <Card>
               <CardHeader>
@@ -157,22 +207,22 @@ export default function StoryEnginePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="flex justify-between text-sm mb-2">
+                  <div className="mb-2 flex justify-between text-sm">
                     <span className="text-muted-foreground">Epoch</span>
                     <Badge>{state.epoch}</Badge>
                   </div>
-                  <div className="flex justify-between text-sm mb-2">
+                  <div className="mb-2 flex justify-between text-sm">
                     <span className="text-muted-foreground">Arc</span>
                     <Badge variant="secondary">{state.arc}</Badge>
                   </div>
-                  <div className="flex justify-between text-sm mb-2">
+                  <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Level</span>
-                    <Badge variant="default">{resources.level}</Badge>
+                    <Badge variant="default">{level}</Badge>
                   </div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">XP to Level {resources.level + 1}</span>
+                  <div className="mb-2 flex justify-between text-sm">
+                    <span className="text-muted-foreground">XP to Level {level + 1}</span>
                     <span className="text-sm">{currentXP.toFixed(0)} / {xpForNextLevel}</span>
                   </div>
                   <Progress value={xpPercent} className="h-2" />
@@ -192,10 +242,11 @@ export default function StoryEnginePage() {
                   .map(([key, val]) => {
                     const numVal = typeof val === 'number' ? val : 0
                     const percent = Math.min(100, (numVal / 100) * 100)
+
                     return (
                       <div key={key}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-muted-foreground capitalize">{key}</span>
+                        <div className="mb-1 flex justify-between text-sm">
+                          <span className="capitalize text-muted-foreground">{key}</span>
                           <span className="font-semibold">{numVal.toFixed(0)}</span>
                         </div>
                         <Progress value={percent} className="h-1" />
@@ -215,22 +266,26 @@ export default function StoryEnginePage() {
                   <p className="text-lg font-semibold">{state.mood}</p>
                   <p className="text-sm text-muted-foreground">{state.arc}</p>
                 </div>
-                {state.companions.length > 0 && (
+                {companions.length > 0 && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Companions:</p>
+                    <p className="mb-2 text-sm text-muted-foreground">Companions:</p>
                     <div className="flex flex-wrap gap-1">
-                      {state.companions.map((c, i) => (
-                        <Badge key={i} variant="secondary">{c.name || c}</Badge>
+                      {companions.map((companion, index) => (
+                        <Badge key={index} variant="secondary">
+                          {(companion as { name?: string }).name || (companion as string)}
+                        </Badge>
                       ))}
                     </div>
                   </div>
                 )}
-                {state.buffs.length > 0 && (
+                {buffs.length > 0 && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Buffs:</p>
+                    <p className="mb-2 text-sm text-muted-foreground">Buffs:</p>
                     <div className="space-y-1">
-                      {state.buffs.map((b, i) => (
-                        <div key={i} className="text-sm">✨ {b.name || b}</div>
+                      {buffs.map((buff, index) => (
+                        <div key={index} className="text-sm">
+                          ✨ {(buff as { name?: string }).name || (buff as string)}
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -242,31 +297,32 @@ export default function StoryEnginePage() {
 
         {/* Options Tab */}
         <TabsContent value="options" className="space-y-4">
-          {state.options.length === 0 ? (
+          {options.length === 0 ? (
             <Card>
-              <CardContent className="text-center py-8">
-                <p className="text-muted-foreground mb-4">No active story options.</p>
+              <CardContent className="py-8 text-center">
+                <p className="mb-4 text-muted-foreground">No active story options.</p>
                 <Button onClick={handleRefresh}>Generate Options</Button>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid md:grid-cols-3 gap-4">
-              {state.options.map(opt => (
-                <Card 
-                  key={opt.id} 
-                  className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => handleChooseOption(opt.id)}
+            <div className="grid gap-4 md:grid-cols-3">
+              {options.map(option => (
+                <Card
+                  key={option.id}
+                  className="cursor-pointer transition-shadow hover:shadow-lg"
+                  onClick={() => handleChooseOption(option.id)}
                 >
                   <CardHeader>
-                    <CardTitle className="text-base">{opt.label}</CardTitle>
-                    <CardDescription>{opt.rationale || 'Choose this option'}</CardDescription>
+                    <CardTitle className="text-base">{option.label}</CardTitle>
+                    <CardDescription>{option.rationale || 'Choose this option'}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {opt.expected && (
+                    {option.expected && (
                       <div className="flex flex-wrap gap-1">
-                        {Object.entries(opt.expected).map(([k, v]) => (
-                          <Badge key={k} variant={v > 0 ? 'default' : 'destructive'}>
-                            {k}: {v > 0 ? '+' : ''}{v}
+                        {Object.entries(option.expected).map(([key, value]) => (
+                          <Badge key={key} variant={value > 0 ? 'default' : 'destructive'}>
+                            {key}: {value > 0 ? '+' : ''}
+                            {value}
                           </Badge>
                         ))}
                       </div>
@@ -282,7 +338,7 @@ export default function StoryEnginePage() {
         <TabsContent value="events" className="space-y-4">
           {events.length === 0 ? (
             <Card>
-              <CardContent className="text-center py-8">
+              <CardContent className="py-8 text-center">
                 <p className="text-muted-foreground">No events yet.</p>
               </CardContent>
             </Card>
@@ -293,7 +349,8 @@ export default function StoryEnginePage() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">
-                        {evt.type === 'choice' ? '🎯' : evt.type === 'level_up' ? '⭐' : '📝'} {evt.description || evt.label}
+                        {evt.type === 'choice' ? '🎯' : evt.type === 'level_up' ? '⭐' : '📝'}{' '}
+                        {evt.description || evt.label}
                       </CardTitle>
                       <span className="text-xs text-muted-foreground">
                         {new Date(evt.timestamp).toLocaleString()}
@@ -303,9 +360,10 @@ export default function StoryEnginePage() {
                   {evt.effects && (
                     <CardContent>
                       <div className="flex flex-wrap gap-1">
-                        {Object.entries(evt.effects).map(([k, v]) => (
-                          <Badge key={k} variant={v > 0 ? 'default' : 'secondary'}>
-                            {k}: {v > 0 ? '+' : ''}{v}
+                        {Object.entries(evt.effects).map(([key, value]) => (
+                          <Badge key={key} variant={value > 0 ? 'default' : 'secondary'}>
+                            {key}: {value > 0 ? '+' : ''}
+                            {value}
                           </Badge>
                         ))}
                       </div>
@@ -321,7 +379,7 @@ export default function StoryEnginePage() {
         <TabsContent value="tools" className="space-y-4">
           {toolsLoading ? (
             <Card>
-              <CardContent className="text-center py-8">
+              <CardContent className="py-8 text-center">
                 <p className="text-muted-foreground">Loading tools...</p>
               </CardContent>
             </Card>
@@ -337,17 +395,17 @@ export default function StoryEnginePage() {
                 </Button>
               </CardContent>
             </Card>
-          ) : tools.length === 0 ? (
+          ) : sortedTools.length === 0 ? (
             <Card>
-              <CardContent className="text-center py-8">
+              <CardContent className="py-8 text-center">
                 <p className="text-muted-foreground">No MCP tools registered.</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {tools.map(tool => {
-                const properties = tool.inputSchema?.properties || {}
-                const required = new Set(tool.inputSchema?.required || [])
+            <div className="grid gap-4 md:grid-cols-2">
+              {sortedTools.map(tool => {
+                const schema = tool.inputSchema
+                const hasSchema = hasSchemaContent(schema)
 
                 return (
                   <Card key={tool.name}>
@@ -358,27 +416,8 @@ export default function StoryEnginePage() {
                       )}
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {Object.keys(properties).length > 0 ? (
-                        <div className="space-y-3">
-                          {Object.entries(properties).map(([key, schema]) => (
-                            <div key={key} className="space-y-1">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium">{key}</span>
-                                <div className="flex items-center gap-2">
-                                  {schema?.type && (
-                                    <Badge variant="outline" className="font-normal capitalize">
-                                      {schema.type}
-                                    </Badge>
-                                  )}
-                                  {required.has(key) && <Badge variant="secondary">Required</Badge>}
-                                </div>
-                              </div>
-                              {schema?.description && (
-                                <p className="text-sm text-muted-foreground">{schema.description}</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                      {schema && hasSchema ? (
+                        <SchemaNode schema={schema} />
                       ) : (
                         <p className="text-sm text-muted-foreground">No input parameters.</p>
                       )}
@@ -390,6 +429,223 @@ export default function StoryEnginePage() {
           )}
         </TabsContent>
       </Tabs>
+    </div>
+  )
+}
+
+function hasSchemaContent(schema?: BridgeToolSchema | null): boolean {
+  if (!schema) {
+    return false
+  }
+
+  if (
+    schema.description ||
+    schema.default !== undefined ||
+    schema.format ||
+    schema.type ||
+    (Array.isArray(schema.enum) && schema.enum.length > 0) ||
+    (schema.properties && Object.keys(schema.properties).length > 0) ||
+    schema.items ||
+    (Array.isArray(schema.anyOf) && schema.anyOf.length > 0) ||
+    (Array.isArray(schema.oneOf) && schema.oneOf.length > 0) ||
+    (Array.isArray(schema.allOf) && schema.allOf.length > 0) ||
+    typeof schema.additionalProperties !== 'undefined' ||
+    (Array.isArray(schema.required) && schema.required.length > 0)
+  ) {
+    return true
+  }
+
+  return false
+}
+
+function formatSchemaValue(value: unknown): string {
+  if (typeof value === 'string') {
+    return value
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+
+  if (value === null) {
+    return 'null'
+  }
+
+  try {
+    return JSON.stringify(value)
+  } catch (error) {
+    console.error('Failed to stringify schema value', error)
+    return String(value)
+  }
+}
+
+interface SchemaNodeProps {
+  schema: BridgeToolSchema
+  depth?: number
+  name?: string
+  required?: boolean
+}
+
+function SchemaNode({ schema, depth = 0, name, required = false }: SchemaNodeProps): JSX.Element | null {
+  if (!schema) {
+    return null
+  }
+
+  const typeLabel = Array.isArray(schema.type) ? schema.type.join(' | ') : schema.type
+  const containerClass = cn(
+    'space-y-2',
+    depth > 0 && 'ml-4 rounded-md border border-dashed border-border/40 p-3'
+  )
+  const descriptionClass = cn('text-muted-foreground', depth > 0 ? 'text-xs' : 'text-sm')
+  const metadataTextClass = depth > 0 ? 'text-[11px]' : 'text-xs'
+  const sectionLabelClass = cn(
+    'font-medium uppercase tracking-wide text-muted-foreground',
+    depth > 0 ? 'text-[11px]' : 'text-xs'
+  )
+  const requiredSet = new Set(schema.required ?? [])
+  const propertyEntries = schema.properties ? Object.entries(schema.properties) : []
+
+  return (
+    <div className={containerClass}>
+      {(name || typeLabel || schema.format || schema.description) && (
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-center gap-2">
+            {name && <span className="font-medium">{name}</span>}
+            {typeLabel && (
+              <Badge variant="outline" className="font-normal capitalize">
+                {typeLabel}
+              </Badge>
+            )}
+            {schema.format && (
+              <Badge variant="outline" className="font-normal">
+                {schema.format}
+              </Badge>
+            )}
+            {required && <Badge variant="secondary">Required</Badge>}
+          </div>
+          {schema.description && <p className={descriptionClass}>{schema.description}</p>}
+        </div>
+      )}
+
+      {schema.default !== undefined && (
+        <p className={cn('text-muted-foreground', metadataTextClass)}>
+          Default:{' '}
+          <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
+            {formatSchemaValue(schema.default)}
+          </code>
+        </p>
+      )}
+
+      {Array.isArray(schema.enum) && schema.enum.length > 0 && (
+        <div className={cn('flex flex-wrap gap-1 text-muted-foreground', metadataTextClass)}>
+          {schema.enum.map((value, index) => (
+            <span key={index} className="rounded bg-muted px-2 py-0.5">
+              {formatSchemaValue(value)}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {propertyEntries.length > 0 && (
+        <div className="space-y-2">
+          <p className={sectionLabelClass}>Fields</p>
+          <div className="space-y-2">
+            {propertyEntries.map(([key, propSchema]) => (
+              <SchemaNode
+                key={key}
+                schema={propSchema}
+                depth={depth + 1}
+                name={key}
+                required={requiredSet.has(key)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {schema.items && (
+        <div className="space-y-2">
+          <p className={sectionLabelClass}>Items</p>
+          <div className="space-y-2">
+            {Array.isArray(schema.items)
+              ? schema.items.map((itemSchema, index) => (
+                  <SchemaNode
+                    key={`item-${index}`}
+                    schema={itemSchema}
+                    depth={depth + 1}
+                    name={`Variant ${index + 1}`}
+                  />
+                ))
+              : (
+                  <SchemaNode schema={schema.items} depth={depth + 1} name="Item" />
+                )}
+          </div>
+        </div>
+      )}
+
+      {Array.isArray(schema.anyOf) && schema.anyOf.length > 0 && (
+        <div className="space-y-2">
+          <p className={sectionLabelClass}>Any of</p>
+          <div className="space-y-2">
+            {schema.anyOf.map((entry, index) => (
+              <SchemaNode
+                key={`anyOf-${index}`}
+                schema={entry}
+                depth={depth + 1}
+                name={`Option ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {Array.isArray(schema.oneOf) && schema.oneOf.length > 0 && (
+        <div className="space-y-2">
+          <p className={sectionLabelClass}>One of</p>
+          <div className="space-y-2">
+            {schema.oneOf.map((entry, index) => (
+              <SchemaNode
+                key={`oneOf-${index}`}
+                schema={entry}
+                depth={depth + 1}
+                name={`Option ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {Array.isArray(schema.allOf) && schema.allOf.length > 0 && (
+        <div className="space-y-2">
+          <p className={sectionLabelClass}>All of</p>
+          <div className="space-y-2">
+            {schema.allOf.map((entry, index) => (
+              <SchemaNode
+                key={`allOf-${index}`}
+                schema={entry}
+                depth={depth + 1}
+                name={`Requirement ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {typeof schema.additionalProperties !== 'undefined' && (
+        typeof schema.additionalProperties === 'boolean' ? (
+          <p className={cn('text-muted-foreground', metadataTextClass)}>
+            Additional properties {schema.additionalProperties ? 'allowed' : 'not allowed'}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <p className={sectionLabelClass}>Additional Properties</p>
+            <SchemaNode
+              schema={schema.additionalProperties as BridgeToolSchema}
+              depth={depth + 1}
+            />
+          </div>
+        )
+      )}
     </div>
   )
 }
