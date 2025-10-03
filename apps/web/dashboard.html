@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toobix Universe - Dashboard</title>
+  <meta name="description" content="ECHO-REALM · Runs · Quests · Skills · Allies">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <!-- App Shell: Sidebar + Main Content -->
+  <div class="app-shell">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1 class="logo">⚡ TOOBIX</h1>
+        <span class="version">v0.1</span>
+      </div>
+      
+      <nav class="nav">
+        <a href="#/" class="nav-item active" data-page="dashboard">
+          <span class="icon">🏠</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="#/runs" class="nav-item" data-page="runs">
+          <span class="icon">🎮</span>
+          <span>Runs</span>
+        </a>
+        <a href="#/quests" class="nav-item" data-page="quests">
+          <span class="icon">⚔️</span>
+          <span>Quests</span>
+        </a>
+        <a href="#/skills" class="nav-item" data-page="skills">
+          <span class="icon">🌟</span>
+          <span>Skills</span>
+        </a>
+        <a href="#/items" class="nav-item" data-page="items">
+          <span class="icon">🎒</span>
+          <span>Items</span>
+        </a>
+        <a href="#/allies" class="nav-item" data-page="allies">
+          <span class="icon">👥</span>
+          <span>Allies</span>
+        </a>
+        <a href="#/archive" class="nav-item" data-page="archive">
+          <span class="icon">📦</span>
+          <span>Archive</span>
+        </a>
+        <a href="#/settings" class="nav-item" data-page="settings">
+          <span class="icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="status-badge" id="systemStatus">
+          <span class="status-dot"></span>
+          <span>System OK</span>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Topbar -->
+      <header class="topbar">
+        <h2 class="page-title" id="pageTitle">Dashboard</h2>
+        <div class="topbar-actions">
+          <button class="btn btn-sm" id="themeToggle">🌙</button>
+          <button class="btn btn-sm btn-primary" id="quickAction">Start Run</button>
+        </div>
+      </header>
+      
+      <!-- Page Content (SPA Router) -->
+      <div class="page-content" id="pageContent">
+        <!-- Dynamic content loaded here -->
+      </div>
+      
+    </main>
+  </div>
+  
+  <script type="module" src="app.js"></script>
+</body>
+</html>
