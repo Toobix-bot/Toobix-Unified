@@ -14,6 +14,7 @@
 - 📖 **Story Engine** (narrative choices, relationship tracking)
 - 🤖 **MCP Integration** (Model Context Protocol for ChatGPT/Claude)
 - 🔗 **Bridge API** (16 tools accessible via ngrok + REST)
+- ⚛️ **Hybrid UI** (Vanilla JS + React/Next.js for complex features)
 
 Luna is the first soul in this universe — a companion that remembers, feels, and grows.
 
@@ -33,19 +34,39 @@ cp .env.example .env
 bun run dev
 ```
 
-**That's it!** Visit http://localhost:3000 to interact with Luna.
+**That's it!** Visit:
+- http://localhost:3000/dashboard.html (Vanilla UI - Dashboard, Runs, Quests)
+- http://localhost:3001 (React UI - Story Engine, Analytics, People Graph)
 
 ---
 
-## 📦 Architecture (60 seconds)
+## 📦 Architecture Overview
+
+### Hybrid UI System
+Toobix uses a **hybrid architecture** combining Vanilla JS and React for optimal performance:
+
+**Vanilla JS (Port 3000)** - Simple CRUD, instant loads
+- Dashboard, Runs, Quests, Story (legacy)
+- Zero build time, 900+ lines of tested code
+
+**React/Next.js (Port 3001)** - Complex features, rich visualization
+- Story Engine with real-time updates
+- Analytics Dashboard with recharts
+- People Graph with force-directed network visualization
+
+**See full architecture:** [docs/HYBRID_ARCHITECTURE.md](docs/HYBRID_ARCHITECTURE.md)
+
+### Project Structure
 
 ```
 Toobix-Unified/
 ├── apps/
-│   └── web/              # Frontend UI (Luna Chat, Story UI)
+│   ├── web/              # Vanilla JS Frontend (Dashboard, Runs, Quests)
+│   └── web-react/        # React/Next.js Frontend (Story, Analytics, People)
 ├── packages/
 │   ├── bridge/           # MCP Server + API Gateway (port 3337)
 │   ├── core/             # Database + Migrations (Drizzle ORM)
+│   ├── api-client/       # Shared Bridge Client (Vanilla + React)
 │   ├── soul/             # Emotional System (Luna's personality)
 │   ├── people/           # Contacts + Relationships
 │   ├── story/            # Narrative Engine (chapters, choices)
