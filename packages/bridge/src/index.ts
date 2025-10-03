@@ -181,7 +181,22 @@ export class BridgeService {
         required: ['prompt']
       },
       handler: async (args: any) => {
-        return await this.ai.generate(args.prompt, args.context)
+        try {
+          const text = await this.ai.generate(args.prompt, args.context || {})
+          return {
+            ok: true,
+            text: text,
+            model: 'llama-3.3-70b-versatile',
+            timestamp: Date.now()
+          }
+        } catch (error) {
+          console.error('Generate tool error:', error)
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : 'Generation failed',
+            timestamp: Date.now()
+          }
+        }
       }
     })
 

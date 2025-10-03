@@ -14,6 +14,12 @@ export class GroqService {
 
   async generate(prompt: string, options: any = {}): Promise<string> {
     try {
+      // Validate API key
+      if (!this.client.apiKey || this.client.apiKey === '') {
+        console.warn('Groq API key not configured, returning fallback response')
+        return 'AI generation unavailable (API key not configured)'
+      }
+
       const completion = await this.client.chat.completions.create({
         model: options.model || 'llama-3.3-70b-versatile',
         messages: [{ role: 'user', content: prompt }],
@@ -21,10 +27,26 @@ export class GroqService {
         max_tokens: options.max_tokens || 1000
       })
 
-      return completion.choices[0]?.message?.content || ''
-    } catch (error) {
+      const text = completion.choices[0]?.message?.content
+      if (!text) {
+        console.warn('Groq returned empty response')
+        return '(empty response from AI)'
+      }
+
+      return text
+    } catch (error: any) {
       console.error('Groq generation error:', error)
-      throw error
+      
+      // Return user-friendly error message instead of throwing
+      if (error.status === 401) {
+        return 'AI unavailable: Invalid API key'
+      } else if (error.status === 429) {
+        return 'AI unavailable: Rate limit exceeded'
+      } else if (error.status === 503) {
+        return 'AI unavailable: Service temporarily unavailable'
+      } else {
+        return `AI error: ${error.message || 'Unknown error'}`
+      }
     }
   }
 
