@@ -324,7 +324,12 @@ export class BridgeService {
         properties: {}
       },
       handler: async () => {
-        return this.story.getState()
+        try {
+          return this.story.getState()
+        } catch (error) {
+          console.error('❌ story_state error:', error)
+          return { error: 'Failed to get story state', message: String(error) }
+        }
       }
     })
 
@@ -386,12 +391,38 @@ export class BridgeService {
         properties: {}
       },
       handler: async () => {
-        const state = this.story.getState()
-        const options = this.story.refreshOptions(state)
+        try {
+          const state = this.story.getState()
+          const options = this.story.refreshOptions(state)
+          return {
+            success: true,
+            options,
+            message: `${options.length} neue Optionen generiert`
+          }
+        } catch (error) {
+          console.error('❌ story_refresh error:', error)
+          return { success: false, error: 'Failed to refresh options', message: String(error) }
+        }
+      }
+    })
+
+    // Test tool for ChatGPT debugging
+    this.mcp.registerTool({
+      name: 'ping',
+      description: 'Simple ping test - always returns success',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          message: { type: 'string', description: 'Optional test message', default: 'Hello from ChatGPT!' }
+        }
+      },
+      handler: async (args: any) => {
         return {
           success: true,
-          options,
-          message: `${options.length} neue Optionen generiert`
+          message: args.message || 'pong!',
+          timestamp: Date.now(),
+          bridge: 'online',
+          tools: this.mcp.getToolCount()
         }
       }
     })
