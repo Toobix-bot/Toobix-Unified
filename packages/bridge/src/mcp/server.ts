@@ -40,7 +40,8 @@ export class MCPServer {
         const url = new URL(req.url)
         
         const headers = {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+          'Connection': 'keep-alive',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type'
@@ -161,18 +162,34 @@ export class MCPServer {
 
                 try {
                   const result = await tool.handler(args || {})
-                  return new Response(JSON.stringify({
+                  
+                  // Minimize response size for ngrok Free compatibility
+                  const responseText = typeof result === 'string' 
+                    ? result 
+                    : JSON.stringify(result)  // No pretty-print (removes null, 2)
+                  
+                  const response = {
                     jsonrpc: '2.0',
                     id,
                     result: {
                       content: [
                         {
                           type: 'text',
-                          text: typeof result === 'string' ? result : JSON.stringify(result, null, 2)
+                          text: responseText
                         }
                       ]
                     }
-                  }), { headers })
+                  }
+                  
+                  // Compact JSON response (no whitespace)
+                  const body = JSON.stringify(response)
+                  
+                  return new Response(body, { 
+                    headers: {
+                      ...headers,
+                      'Content-Length': String(body.length)
+                    }
+                  })
                 } catch (toolError) {
                   return new Response(JSON.stringify({
                     jsonrpc: '2.0',

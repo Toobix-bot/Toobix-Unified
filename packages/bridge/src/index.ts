@@ -426,12 +426,11 @@ export class BridgeService {
         }
       },
       handler: async (args: any) => {
+        // Minimal response for ngrok Free compatibility
         return {
-          success: true,
-          message: args.message || 'pong!',
-          timestamp: Date.now(),
-          bridge: 'online',
-          tools: this.mcp.getToolCount()
+          ok: true,
+          msg: args.message || 'pong',
+          ts: Date.now()
         }
       }
     })
