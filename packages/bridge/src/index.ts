@@ -33,7 +33,16 @@ export class BridgeService {
 
   constructor(config: BridgeConfig) {
     this.config = config
-    const dbPath = config.database || './data/toobix-unified.db'
+    
+    // Resolve database path relative to workspace root
+    let dbPath = config.database || './data/toobix-unified.db'
+    if (!dbPath.match(/^[A-Z]:\\/i) && !dbPath.startsWith('/')) {
+      // Relative path - resolve from workspace root
+      const workspaceRoot = process.cwd().includes('packages') 
+        ? process.cwd().split('packages')[0] 
+        : process.cwd()
+      dbPath = `${workspaceRoot}/data/toobix-unified.db`.replace(/\\/g, '/')
+    }
     
     console.log(`📁 Opening database: ${dbPath}`)
     this.db = new Database(dbPath)

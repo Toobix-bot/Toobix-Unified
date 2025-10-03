@@ -50,6 +50,32 @@ export class MCPServer {
           return new Response(null, { headers })
         }
 
+        // Root route - MCP Discovery (for MCP clients)
+        if (url.pathname === '/' && req.method === 'GET') {
+          const discovery = {
+            protocol: 'mcp',
+            version: '1.0.0',
+            server: {
+              name: 'toobix-bridge',
+              version: '0.1.0'
+            },
+            capabilities: {
+              tools: true,
+              prompts: false,
+              resources: false
+            },
+            endpoints: {
+              mcp: '/mcp',
+              tools: '/tools',
+              execute: '/tools/execute',
+              health: '/health',
+              stats: '/stats'
+            },
+            tools: Array.from(self.tools.keys())
+          }
+          return new Response(JSON.stringify(discovery), { headers })
+        }
+
         // Route handling
         const routeMap = self.routes.get(req.method)
         if (routeMap?.has(url.pathname)) {
