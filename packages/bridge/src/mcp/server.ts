@@ -76,6 +76,147 @@ export class MCPServer {
           return new Response(JSON.stringify(discovery), { headers })
         }
 
+        // JSON-RPC 2.0 MCP endpoint (für Chatty & andere MCP clients)
+        if (url.pathname === '/mcp' && req.method === 'POST') {
+          try {
+            const jsonrpcRequest: any = await req.json()
+            
+            // JSON-RPC 2.0 Format validieren
+            if (!jsonrpcRequest.jsonrpc || jsonrpcRequest.jsonrpc !== '2.0') {
+              return new Response(JSON.stringify({
+                jsonrpc: '2.0',
+                id: jsonrpcRequest.id || null,
+                error: {
+                  code: -32600,
+                  message: 'Invalid Request: jsonrpc must be "2.0"'
+                }
+              }), { status: 400, headers })
+            }
+
+            const { method, params, id } = jsonrpcRequest
+
+            // MCP Protocol Methods
+            switch (method) {
+              case 'initialize': {
+                return new Response(JSON.stringify({
+                  jsonrpc: '2.0',
+                  id,
+                  result: {
+                    protocolVersion: '1.0.0',
+                    serverInfo: {
+                      name: 'toobix-bridge',
+                      version: '0.1.0'
+                    },
+                    capabilities: {
+                      tools: {}
+                    }
+                  }
+                }), { headers })
+              }
+
+              case 'tools/list': {
+                const toolsList = Array.from(self.tools.values()).map(t => ({
+                  name: t.name,
+                  description: t.description,
+                  inputSchema: t.inputSchema
+                }))
+                
+                return new Response(JSON.stringify({
+                  jsonrpc: '2.0',
+                  id,
+                  result: {
+                    tools: toolsList
+                  }
+                }), { headers })
+              }
+
+              case 'tools/call': {
+                const { name, arguments: args } = params || {}
+                
+                if (!name) {
+                  return new Response(JSON.stringify({
+                    jsonrpc: '2.0',
+                    id,
+                    error: {
+                      code: -32602,
+                      message: 'Invalid params: name is required'
+                    }
+                  }), { status: 400, headers })
+                }
+
+                const tool = self.tools.get(name)
+                if (!tool) {
+                  return new Response(JSON.stringify({
+                    jsonrpc: '2.0',
+                    id,
+                    error: {
+                      code: -32601,
+                      message: `Tool not found: ${name}`,
+                      data: {
+                        available: Array.from(self.tools.keys())
+                      }
+                    }
+                  }), { status: 404, headers })
+                }
+
+                try {
+                  const result = await tool.handler(args || {})
+                  return new Response(JSON.stringify({
+                    jsonrpc: '2.0',
+                    id,
+                    result: {
+                      content: [
+                        {
+                          type: 'text',
+                          text: typeof result === 'string' ? result : JSON.stringify(result, null, 2)
+                        }
+                      ]
+                    }
+                  }), { headers })
+                } catch (toolError) {
+                  return new Response(JSON.stringify({
+                    jsonrpc: '2.0',
+                    id,
+                    error: {
+                      code: -32603,
+                      message: 'Tool execution failed',
+                      data: {
+                        error: String(toolError)
+                      }
+                    }
+                  }), { status: 500, headers })
+                }
+              }
+
+              default: {
+                return new Response(JSON.stringify({
+                  jsonrpc: '2.0',
+                  id,
+                  error: {
+                    code: -32601,
+                    message: `Method not found: ${method}`,
+                    data: {
+                      available: ['initialize', 'tools/list', 'tools/call']
+                    }
+                  }
+                }), { status: 404, headers })
+              }
+            }
+          } catch (error) {
+            return new Response(JSON.stringify({
+              jsonrpc: '2.0',
+              id: null,
+              error: {
+                code: -32700,
+                message: 'Parse error',
+                data: {
+                  error: String(error)
+                }
+              }
+            }), { status: 400, headers })
+          }
+        }
+
         // Route handling
         const routeMap = self.routes.get(req.method)
         if (routeMap?.has(url.pathname)) {
