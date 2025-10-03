@@ -7,6 +7,7 @@
  * - Memory/RAG tools
  * - Action system
  * - AI integrations (Groq/Ollama)
+ * - Self-Awareness tools (NEW!)
  */
 
 import { Database } from 'bun:sqlite'
@@ -17,6 +18,7 @@ import { GroqService } from './ai/groq.ts'
 import { SoulService } from '../../soul/src/index.ts'
 import { ContactService, InteractionService } from '../../people/src/index.ts'
 import { StoryService } from '../../core/src/story/index.ts'
+import { awarenessTools } from './tools/awareness-tools.ts'
 import type { BridgeConfig } from './types.ts'
 
 export class BridgeService {
@@ -66,6 +68,7 @@ export class BridgeService {
 
   async start() {
     console.log('🌉 Bridge Service starting...\n')
+    console.log('🧠 Self-Awareness Module: ACTIVE\n')
     
     // Initialize database tables
     await this.initializeTables()
@@ -101,6 +104,14 @@ export class BridgeService {
     console.log('      - story_choose     : Make a story choice')
     console.log('      - story_events     : Get recent story events')
     console.log('      - story_person     : Get story for a person')
+    console.log('      - story_refresh    : Generate new options')
+    console.log('   🧠 Self-Awareness:')
+    console.log('      - system_introspect: Self-reflection & consciousness')
+    console.log('      - system_set_intention: Set system focus')
+    console.log('      - system_read_self : Read own code')
+    console.log('      - system_modify_self: Self-modification (with approval)')
+    console.log('      - system_suggest   : Suggest improvements')
+    console.log('      - system_analyze   : Analyze system health')
     console.log('\n💡 Press Ctrl+C to stop\n')
   }
 
@@ -430,6 +441,16 @@ export class BridgeService {
       }
     })
 
+    // Register SELF-AWARENESS TOOLS
+    for (const tool of awarenessTools) {
+      this.mcp.registerTool({
+        name: tool.name,
+        description: tool.description,
+        inputSchema: tool.parameters,
+        handler: tool.execute
+      })
+    }
+
     // Test tool for ChatGPT debugging
     this.mcp.registerTool({
       name: 'ping',
@@ -450,7 +471,8 @@ export class BridgeService {
       }
     })
 
-    console.log('✅ MCP tools registered')
+    console.log('✅ MCP tools registered (including 6 Self-Awareness tools)')
+    console.log('🧠 System is now SELF-AWARE!')
   }
 
   private setupRoutes() {
