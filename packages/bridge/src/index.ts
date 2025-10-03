@@ -16,6 +16,7 @@ import { ActionsService } from './actions/service.ts'
 import { GroqService } from './ai/groq.ts'
 import { SoulService } from '../../soul/src/index.ts'
 import { ContactService, InteractionService } from '../../people/src/index.ts'
+import { StoryService } from '../../core/src/story/index.ts'
 import type { BridgeConfig } from './types.ts'
 
 export class BridgeService {
@@ -27,6 +28,7 @@ export class BridgeService {
   private soul: SoulService
   private contacts: ContactService
   private interactions: InteractionService
+  private story: StoryService
   private config: BridgeConfig
 
   constructor(config: BridgeConfig) {
@@ -43,6 +45,7 @@ export class BridgeService {
     this.soul = new SoulService(this.db)
     this.contacts = new ContactService()
     this.interactions = new InteractionService()
+    this.story = new StoryService(this.db)
     
     // Initialize MCP server
     this.mcp = new MCPServer({
@@ -84,6 +87,11 @@ export class BridgeService {
     console.log('      - contact_add      : Add new contact')
     console.log('      - contact_update   : Update contact')
     console.log('      - interaction_log  : Log interaction')
+    console.log('   📖 Story:')
+    console.log('      - story_state      : Get current story state')
+    console.log('      - story_choose     : Make a story choice')
+    console.log('      - story_events     : Get recent story events')
+    console.log('      - story_person     : Get story for a person')
     console.log('\n💡 Press Ctrl+C to stop\n')
   }
 
@@ -307,6 +315,87 @@ export class BridgeService {
       }
     })
 
+    // Story tools
+    this.mcp.registerTool({
+      name: 'story_state',
+      description: 'Get current story state (resources, arc, options)',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        return this.story.getState()
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'story_choose',
+      description: 'Make a story choice / apply an option',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          optionId: { type: 'string', description: 'Story option ID to choose' }
+        },
+        required: ['optionId']
+      },
+      handler: async (args: any) => {
+        const event = this.story.applyOption(args.optionId)
+        const newState = this.story.getState()
+        return {
+          event,
+          newState,
+          message: `Wahl getroffen: ${event.text}`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'story_events',
+      description: 'Get recent story events',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', description: 'Max events to return', default: 50 }
+        }
+      },
+      handler: async (args: any) => {
+        return this.story.getEvents(args.limit || 50)
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'story_person',
+      description: 'Get story arc for a specific person',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          personId: { type: 'string', description: 'Person ID' }
+        },
+        required: ['personId']
+      },
+      handler: async (args: any) => {
+        return this.story.getPersonStory(args.personId)
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'story_refresh',
+      description: 'Refresh story options based on current state',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        const state = this.story.getState()
+        const options = this.story.refreshOptions(state)
+        return {
+          success: true,
+          options,
+          message: `${options.length} neue Optionen generiert`
+        }
+      }
+    })
+
     console.log('✅ MCP tools registered')
   }
 
@@ -362,6 +451,7 @@ export class BridgeService {
       const actionsCount = this.db.query('SELECT COUNT(*) as count FROM actions').get() as any
       const peopleCount = this.db.query('SELECT COUNT(*) as count FROM people WHERE deleted_at IS NULL').get() as any
       const soulState = this.soul.getState()
+      const storyState = this.story.getState()
       
       return {
         memory: memoryCount?.count || 0,
@@ -373,6 +463,13 @@ export class BridgeService {
           wisdom: soulState.wisdom,
           mood: Math.round(soulState.emotional.mood),
           energy: Math.round(soulState.emotional.energy)
+        },
+        story: {
+          epoch: storyState.epoch,
+          arc: storyState.arc,
+          level: storyState.resources.level,
+          xp: storyState.resources.erfahrung,
+          options: storyState.options.length
         }
       }
     })
