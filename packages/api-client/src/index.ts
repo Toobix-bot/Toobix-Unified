@@ -54,6 +54,22 @@ export interface StoryStats {
   options: number
 }
 
+export interface BridgeTool {
+  name: string
+  description?: string
+  inputSchema?: {
+    type?: string
+    properties?: Record<
+      string,
+      {
+        type?: string
+        description?: string
+      }
+    >
+    required?: string[]
+  }
+}
+
 // ============================================
 // Bridge API Client
 // ============================================
@@ -139,6 +155,17 @@ export class BridgeClient {
 
   async getPersonStory(personId: string): Promise<any> {
     return this.callTool('story_person', { personId })
+  }
+
+  async listTools(): Promise<BridgeTool[]> {
+    const res = await fetch(`${this.baseUrl}/tools`)
+
+    if (!res.ok) {
+      throw new Error('Failed to load tools')
+    }
+
+    const data = await res.json()
+    return Array.isArray(data.tools) ? data.tools : []
   }
 
   // ============================================

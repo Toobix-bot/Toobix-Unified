@@ -6,13 +6,16 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { bridgeClient, type StoryState, type StoryOption, type StoryEvent } from '@toobix/api-client'
+import { bridgeClient, type BridgeTool, type StoryState, type StoryEvent } from '@toobix/api-client'
 
 export default function StoryEnginePage() {
   const [state, setState] = useState<StoryState | null>(null)
   const [events, setEvents] = useState<StoryEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [tools, setTools] = useState<BridgeTool[]>([])
+  const [toolsLoading, setToolsLoading] = useState(true)
+  const [toolsError, setToolsError] = useState<string | null>(null)
 
   // Load story data
   const loadStory = async () => {
@@ -29,6 +32,19 @@ export default function StoryEnginePage() {
       setError(err instanceof Error ? err.message : 'Failed to load story')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadTools = async () => {
+    try {
+      setToolsLoading(true)
+      const toolsList = await bridgeClient.listTools()
+      setTools(toolsList)
+      setToolsError(null)
+    } catch (err) {
+      setToolsError(err instanceof Error ? err.message : 'Failed to load tools')
+    } finally {
+      setToolsLoading(false)
     }
   }
 
@@ -54,9 +70,14 @@ export default function StoryEnginePage() {
 
   useEffect(() => {
     loadStory()
+    loadTools()
     // Auto-refresh every 30 seconds
     const interval = setInterval(loadStory, 30000)
-    return () => clearInterval(interval)
+    const toolsInterval = setInterval(loadTools, 60000)
+    return () => {
+      clearInterval(interval)
+      clearInterval(toolsInterval)
+    }
   }, [])
 
   if (loading && !state) {
@@ -89,8 +110,18 @@ export default function StoryEnginePage() {
   if (!state) return null
 
   // Calculate XP progress
-  const xpForNextLevel = (state.resources.level || 1) * 100
-  const currentXP = state.resources.erfahrung || 0
+  const resources = state.resources ?? {
+    energie: 0,
+    wissen: 0,
+    inspiration: 0,
+    ruf: 0,
+    stabilitaet: 0,
+    erfahrung: 0,
+    level: 1
+  }
+
+  const xpForNextLevel = (resources.level || 1) * 100
+  const currentXP = resources.erfahrung || 0
   const xpPercent = (currentXP / xpForNextLevel) * 100
 
   return (
@@ -100,7 +131,7 @@ export default function StoryEnginePage() {
         <div>
           <h1 className="text-3xl font-bold">📖 Story Engine</h1>
           <p className="text-muted-foreground">
-            Arc: {state.arc} · Level {state.resources.level}
+            Arc: {state.arc} · Level {resources.level}
           </p>
         </div>
         <Button onClick={handleRefresh} variant="outline">
@@ -113,6 +144,7 @@ export default function StoryEnginePage() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="options">Options ({state.options.length})</TabsTrigger>
           <TabsTrigger value="events">Events ({events.length})</TabsTrigger>
+          <TabsTrigger value="tools">Tools ({tools.length})</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -135,12 +167,12 @@ export default function StoryEnginePage() {
                   </div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-muted-foreground">Level</span>
-                    <Badge variant="default">{state.resources.level}</Badge>
+                    <Badge variant="default">{resources.level}</Badge>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">XP to Level {state.resources.level + 1}</span>
+                    <span className="text-muted-foreground">XP to Level {resources.level + 1}</span>
                     <span className="text-sm">{currentXP.toFixed(0)} / {xpForNextLevel}</span>
                   </div>
                   <Progress value={xpPercent} className="h-2" />
@@ -154,7 +186,7 @@ export default function StoryEnginePage() {
                 <CardTitle>💎 Resources</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {Object.entries(state.resources)
+                {Object.entries(resources)
                   .filter(([key]) => !['level', 'erfahrung'].includes(key))
                   .slice(0, 5)
                   .map(([key, val]) => {
@@ -281,6 +313,79 @@ export default function StoryEnginePage() {
                   )}
                 </Card>
               ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Tools Tab */}
+        <TabsContent value="tools" className="space-y-4">
+          {toolsLoading ? (
+            <Card>
+              <CardContent className="text-center py-8">
+                <p className="text-muted-foreground">Loading tools...</p>
+              </CardContent>
+            </Card>
+          ) : toolsError ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Unable to load tools</CardTitle>
+                <CardDescription>{toolsError}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" onClick={loadTools}>
+                  Retry
+                </Button>
+              </CardContent>
+            </Card>
+          ) : tools.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-8">
+                <p className="text-muted-foreground">No MCP tools registered.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {tools.map(tool => {
+                const properties = tool.inputSchema?.properties || {}
+                const required = new Set(tool.inputSchema?.required || [])
+
+                return (
+                  <Card key={tool.name}>
+                    <CardHeader>
+                      <CardTitle className="text-base">{tool.name}</CardTitle>
+                      {tool.description && (
+                        <CardDescription>{tool.description}</CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {Object.keys(properties).length > 0 ? (
+                        <div className="space-y-3">
+                          {Object.entries(properties).map(([key, schema]) => (
+                            <div key={key} className="space-y-1">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium">{key}</span>
+                                <div className="flex items-center gap-2">
+                                  {schema?.type && (
+                                    <Badge variant="outline" className="font-normal capitalize">
+                                      {schema.type}
+                                    </Badge>
+                                  )}
+                                  {required.has(key) && <Badge variant="secondary">Required</Badge>}
+                                </div>
+                              </div>
+                              {schema?.description && (
+                                <p className="text-sm text-muted-foreground">{schema.description}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No input parameters.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           )}
         </TabsContent>
