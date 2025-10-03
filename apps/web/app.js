@@ -631,12 +631,15 @@ async function renderStory() {
   // Fetch story state from bridge
   let storyState = null
   let storyStats = null
+  let storyEvents = []
   
   try {
+    // Fetch stats
     const statsRes = await fetch('http://localhost:3337/stats')
     const stats = await statsRes.json()
     storyStats = stats.story
     
+    // Fetch story state
     const stateRes = await fetch('http://localhost:3337/mcp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -653,6 +656,26 @@ async function renderStory() {
     const stateData = await stateRes.json()
     if (stateData.result?.content?.[0]?.text) {
       storyState = JSON.parse(stateData.result.content[0].text)
+    }
+    
+    // Fetch story events
+    const eventsRes = await fetch('http://localhost:3337/mcp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'tools/call',
+        params: {
+          name: 'story_events',
+          arguments: { limit: 10 }
+        },
+        id: 2
+      })
+    })
+    const eventsData = await eventsRes.json()
+    if (eventsData.result?.content?.[0]?.text) {
+      const parsed = JSON.parse(eventsData.result.content[0].text)
+      storyEvents = parsed.events || []
     }
   } catch (err) {
     console.error('Failed to load story:', err)
@@ -672,13 +695,19 @@ async function renderStory() {
     `
   }
   
+  // Calculate XP progress
+  const xpForNextLevel = (storyState.resources?.level || 1) * 100
+  const currentXP = storyState.resources?.erfahrung || 0
+  const xpPercent = (currentXP / xpForNextLevel) * 100
+  
   return `
     <div class="grid grid-3">
       
-      <!-- Story Status -->
+      <!-- Story Status with XP Progress -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">📖 Story Status</h3>
+          <h3 class="card-title">📖 Story Progress</h3>
+          <button class="btn btn-sm" onclick="window.location.reload()" title="Refresh">🔄</button>
         </div>
         <div class="card-body">
           <div class="flex justify-between mb-1">
@@ -689,44 +718,88 @@ async function renderStory() {
             <span style="color: var(--text-secondary)">Arc</span>
             <span class="badge badge-info">${storyStats?.arc || 'foundations'}</span>
           </div>
-          <div class="flex justify-between mb-1">
+          <div class="flex justify-between mb-2">
             <span style="color: var(--text-secondary)">Level</span>
-            <span class="badge badge-success">${storyStats?.level || 1}</span>
+            <span class="badge badge-success">${storyState.resources?.level || 1}</span>
           </div>
-          <div class="flex justify-between">
-            <span style="color: var(--text-secondary)">XP</span>
-            <span class="badge">${storyStats?.xp || 0}</span>
+          
+          <!-- XP Progress Bar -->
+          <div style="margin-top: 1rem">
+            <div class="flex justify-between mb-0-5">
+              <span style="color: var(--text-secondary); font-size: 0.85rem">XP bis Level ${(storyState.resources?.level || 1) + 1}</span>
+              <span style="color: var(--text-secondary); font-size: 0.85rem">${currentXP.toFixed(0)} / ${xpForNextLevel}</span>
+            </div>
+            <div style="background: var(--bg-secondary); border-radius: 8px; height: 8px; overflow: hidden">
+              <div style="background: linear-gradient(90deg, var(--primary), var(--success)); height: 100%; width: ${xpPercent}%; transition: width 0.5s ease"></div>
+            </div>
           </div>
         </div>
       </div>
       
-      <!-- Resources -->
+      <!-- Resources with Progress Bars -->
       <div class="card">
         <div class="card-header">
           <h3 class="card-title">💎 Resources</h3>
         </div>
         <div class="card-body">
-          ${Object.entries(storyState.resources || {}).slice(0, 6).map(([key, val]) => `
-            <div class="flex justify-between mb-1">
-              <span style="color: var(--text-secondary); text-transform: capitalize">${key}</span>
-              <span class="badge">${typeof val === 'number' ? val.toFixed(0) : val}</span>
-            </div>
-          `).join('')}
+          ${Object.entries(storyState.resources || {})
+            .filter(([key]) => !['level', 'erfahrung'].includes(key))
+            .slice(0, 5)
+            .map(([key, val]) => {
+              const numVal = typeof val === 'number' ? val : 0
+              const maxVal = 100
+              const percent = Math.min(100, (numVal / maxVal) * 100)
+              const color = percent > 66 ? 'var(--success)' : percent > 33 ? 'var(--warning)' : 'var(--danger)'
+              
+              return `
+                <div style="margin-bottom: 1rem">
+                  <div class="flex justify-between mb-0-5">
+                    <span style="color: var(--text-secondary); font-size: 0.85rem; text-transform: capitalize">${key}</span>
+                    <span style="color: ${color}; font-weight: 600; font-size: 0.85rem">${numVal.toFixed(0)}</span>
+                  </div>
+                  <div style="background: var(--bg-secondary); border-radius: 4px; height: 4px; overflow: hidden">
+                    <div style="background: ${color}; height: 100%; width: ${percent}%; transition: width 0.3s ease"></div>
+                  </div>
+                </div>
+              `
+            }).join('')}
         </div>
       </div>
       
-      <!-- Phase Info -->
+      <!-- Companions & Buffs -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">🌙 Stimmung</h3>
+          <h3 class="card-title">👥 Begleiter & Buffs</h3>
         </div>
         <div class="card-body">
-          <p style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.5rem">
-            ${storyState.mood || 'calm'}
-          </p>
-          <p style="color: var(--text-secondary); font-size: 0.9rem">
-            ${storyState.arc || 'foundations'}
-          </p>
+          ${(storyState.companions || []).length > 0 ? `
+            <div style="margin-bottom: 1rem">
+              <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem">Companions:</p>
+              ${storyState.companions.map(comp => `
+                <span class="badge badge-info" style="margin-right: 0.25rem">${comp.name || comp}</span>
+              `).join('')}
+            </div>
+          ` : '<p style="color: var(--text-tertiary); font-size: 0.85rem">Keine Begleiter</p>'}
+          
+          ${(storyState.buffs || []).length > 0 ? `
+            <div style="margin-top: 1rem">
+              <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem">Aktive Buffs:</p>
+              ${storyState.buffs.map(buff => `
+                <div style="background: var(--bg-secondary); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.25rem; font-size: 0.85rem">
+                  <span style="color: var(--success)">✨ ${buff.name || buff}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+          
+          ${(storyState.skills || []).length > 0 ? `
+            <div style="margin-top: 1rem">
+              <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem">Skills:</p>
+              ${storyState.skills.slice(0, 3).map(skill => `
+                <span class="badge badge-warning" style="margin-right: 0.25rem">${skill.name || skill}</span>
+              `).join('')}
+            </div>
+          ` : ''}
         </div>
       </div>
       
@@ -782,6 +855,55 @@ async function renderStory() {
           </div>
         </div>
       `}
+      
+      <!-- Events Timeline -->
+      ${storyEvents.length > 0 ? `
+        <div class="card" style="grid-column: span 3">
+          <div class="card-header">
+            <h3 class="card-title">📜 Event Timeline</h3>
+            <span class="badge">${storyEvents.length} Events</span>
+          </div>
+          <div class="card-body">
+            <div style="position: relative; padding-left: 2rem">
+              <!-- Timeline Line -->
+              <div style="position: absolute; left: 0.5rem; top: 0; bottom: 0; width: 2px; background: var(--border)"></div>
+              
+              ${storyEvents.map((evt, idx) => {
+                const timeAgo = evt.timestamp ? new Date(evt.timestamp).toLocaleString('de-DE') : 'Vor kurzem'
+                const icon = evt.type === 'choice' ? '🎯' : evt.type === 'level_up' ? '⭐' : evt.type === 'resource' ? '💎' : '📝'
+                const color = evt.type === 'choice' ? 'var(--primary)' : evt.type === 'level_up' ? 'var(--success)' : 'var(--info)'
+                
+                return `
+                  <div style="position: relative; padding-bottom: ${idx < storyEvents.length - 1 ? '1.5rem' : '0'}">
+                    <!-- Timeline Dot -->
+                    <div style="position: absolute; left: -1.5rem; top: 0.25rem; width: 1rem; height: 1rem; border-radius: 50%; background: ${color}; border: 2px solid var(--bg-primary); z-index: 1"></div>
+                    
+                    <!-- Event Card -->
+                    <div style="background: var(--bg-secondary); border-radius: 8px; padding: 0.75rem 1rem; border-left: 3px solid ${color}">
+                      <div class="flex justify-between items-center mb-0-5">
+                        <div class="flex items-center gap-0-5">
+                          <span style="font-size: 1.2rem">${icon}</span>
+                          <span style="font-weight: 600; color: var(--text-primary)">${evt.description || evt.label || 'Event'}</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-tertiary)">${timeAgo}</span>
+                      </div>
+                      ${evt.effects ? `
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem">
+                          ${Object.entries(evt.effects).map(([k, v]) => {
+                            const sign = v > 0 ? '+' : ''
+                            const effColor = v > 0 ? 'var(--success)' : v < 0 ? 'var(--danger)' : 'var(--text-secondary)'
+                            return `<span style="color: ${effColor}; margin-right: 0.5rem">${k}: ${sign}${v}</span>`
+                          }).join('')}
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+                `
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      ` : ''}
       
     </div>
   `
