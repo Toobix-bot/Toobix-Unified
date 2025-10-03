@@ -249,7 +249,7 @@ export class MCPServer {
           }
         }
 
-        // MCP tool execution
+        // MCP tool execution (REST fallback for legacy/simple clients)
         if (url.pathname === '/tools/execute' && req.method === 'POST') {
           try {
             const body: any = await req.json()
@@ -266,9 +266,53 @@ export class MCPServer {
             }
 
             const result = await tool.handler(body.args || {})
-            return new Response(JSON.stringify({ result }), { headers })
+            const responseBody = JSON.stringify({ result })
+            return new Response(responseBody, { 
+              headers: {
+                ...headers,
+                'Content-Length': String(responseBody.length)
+              }
+            })
           } catch (error) {
             return new Response(JSON.stringify({ error: String(error) }), {
+              status: 500,
+              headers
+            })
+          }
+        }
+
+        // Direct tool routes (REST endpoints for quick testing)
+        // e.g., POST /rpc/ping, POST /rpc/soul_state
+        if (url.pathname.startsWith('/rpc/') && req.method === 'POST') {
+          const toolName = url.pathname.slice(5) // Remove '/rpc/'
+          const tool = self.tools.get(toolName)
+          
+          if (!tool) {
+            return new Response(JSON.stringify({
+              error: `Tool '${toolName}' not found`,
+              available: Array.from(self.tools.keys()),
+              hint: 'Use POST /rpc/{toolName} with JSON body containing arguments'
+            }), {
+              status: 404,
+              headers
+            })
+          }
+
+          try {
+            const body: any = await req.json().catch(() => ({}))
+            const result = await tool.handler(body || {})
+            const responseBody = JSON.stringify(result)
+            return new Response(responseBody, {
+              headers: {
+                ...headers,
+                'Content-Length': String(responseBody.length)
+              }
+            })
+          } catch (error) {
+            return new Response(JSON.stringify({ 
+              error: String(error),
+              tool: toolName 
+            }), {
               status: 500,
               headers
             })
