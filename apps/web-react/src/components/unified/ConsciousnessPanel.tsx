@@ -1,18 +1,7 @@
 'use client'
 
-import { useState, useEffect } f  async function loadThoughts() {
-    try {
-      const result = await callMCP('consciousness_state', {})
-      setThoughts(result.recent_thoughts || [])
-    } catch (error) {
-      console.error('Failed to load thoughts:', error)
-    }
-  }
-
-  async function reflect() {
-    setLoading(true)
-    try {
-      const result = await callMCP('consciousness_introspect', { depth: 'deep' })import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
