@@ -193,7 +193,25 @@ export class MCPServer {
                 }
 
                 try {
-                  const result = await tool.handler(args || {})
+                  console.log(`[MCP] Tool call START: ${name}`, { 
+                    args: args || {}, 
+                    timestamp: new Date().toISOString() 
+                  })
+                  
+                  const startTime = Date.now()
+                  
+                  // Add 30-second timeout
+                  const result = await Promise.race([
+                    tool.handler(args || {}),
+                    new Promise((_, reject) => 
+                      setTimeout(() => reject(new Error('Tool timeout (30s)')), 30000)
+                    )
+                  ])
+                  
+                  const duration = Date.now() - startTime
+                  console.log(`[MCP] Tool call SUCCESS: ${name}`, {
+                    duration: `${duration}ms`
+                  })
                   
                   // Minimize response size for ngrok Free compatibility
                   const responseText = typeof result === 'string' 
@@ -222,7 +240,14 @@ export class MCPServer {
                       'Content-Length': String(body.length)
                     }
                   })
-                } catch (toolError) {
+                } catch (toolError: any) {
+                  const duration = Date.now() - startTime
+                  console.error(`[MCP] Tool call FAILED: ${name}`, {
+                    duration: `${duration}ms`,
+                    error: toolError.message,
+                    stack: toolError.stack
+                  })
+                  
                   return new Response(JSON.stringify({
                     jsonrpc: '2.0',
                     id,
@@ -230,7 +255,9 @@ export class MCPServer {
                       code: -32603,
                       message: 'Tool execution failed',
                       data: {
-                        error: String(toolError)
+                        tool: name,
+                        error: toolError.message,
+                        duration: `${duration}ms`
                       }
                     }
                   }), { status: 500, headers })
@@ -319,27 +346,70 @@ export class MCPServer {
               }), { status: 404, headers })
             }
 
-            // Execute tool
-            console.log(`[Chatty] Calling tool: ${toolName}`, args)
-            const result = await tool.handler(args)
+            // Execute tool with timeout and detailed logging
+            console.log(`[Chatty] Tool call START: ${toolName}`, { 
+              args, 
+              timestamp: new Date().toISOString() 
+            })
+            
+            const startTime = Date.now()
+            
+            try {
+              // Add 30-second timeout to prevent hanging
+              const result = await Promise.race([
+                tool.handler(args),
+                new Promise((_, reject) => 
+                  setTimeout(() => reject(new Error('Tool execution timeout (30s)')), 30000)
+                )
+              ])
+              
+              const duration = Date.now() - startTime
+              console.log(`[Chatty] Tool call SUCCESS: ${toolName}`, {
+                duration: `${duration}ms`,
+                resultSize: JSON.stringify(result).length
+              })
 
-            return new Response(JSON.stringify({
-              jsonrpc: '2.0',
-              result,
-              id: body.id
-            }), { headers })
+              return new Response(JSON.stringify({
+                jsonrpc: '2.0',
+                result,
+                id: body.id
+              }), { headers })
+              
+            } catch (toolError: any) {
+              const duration = Date.now() - startTime
+              console.error(`[Chatty] Tool call FAILED: ${toolName}`, {
+                duration: `${duration}ms`,
+                error: toolError.message,
+                stack: toolError.stack,
+                args
+              })
+              
+              return new Response(JSON.stringify({
+                jsonrpc: '2.0',
+                error: { 
+                  code: -32603, 
+                  message: 'Tool execution failed',
+                  data: { 
+                    tool: toolName,
+                    error: toolError.message,
+                    duration: `${duration}ms`
+                  }
+                },
+                id: body.id
+              }), { status: 500, headers })
+            }
 
           } catch (error: any) {
-            console.error('[Chatty] Tool execution error:', error)
+            console.error('[Chatty] JSON-RPC error:', error)
             return new Response(JSON.stringify({
               jsonrpc: '2.0',
               error: { 
-                code: -32603, 
-                message: 'Internal error',
+                code: -32700,
+                message: 'Parse error',
                 data: { error: error.message }
               },
               id: null
-            }), { status: 500, headers })
+            }), { status: 400, headers })
           }
         }
 
