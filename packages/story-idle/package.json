@@ -1,0 +1,19 @@
+{
+  "name": "@toobix/story-idle",
+  "version": "0.1.0",
+  "description": "Interactive story-driven idle game for code development",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "play": "bun run src/game.ts"
+  },
+  "dependencies": {
+    "@toobix/core": "workspace:*",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.23"
+  }
+}

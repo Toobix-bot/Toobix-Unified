@@ -439,7 +439,7 @@ export class BridgeService {
       inputSchema: {
         type: 'object',
         properties: {
-          valueA: { type: 'string', description: 'First value ID (e.g., compassion, truth, loyalty)' },
+          valueA: { type: 'string', description: 'First value ID (e.g., love, transparency, autonomy)' },
           valueB: { type: 'string', description: 'Second value ID' },
           context: { type: 'object', description: 'Conflict context' },
           severity: { type: 'string', enum: ['low', 'medium', 'high'], description: 'Conflict severity', default: 'medium' }
@@ -447,7 +447,15 @@ export class BridgeService {
         required: ['valueA', 'valueB']
       },
       handler: async (args: any) => {
-        return await unifiedValues.resolveConflict(args)
+        try {
+          return await unifiedValues.resolveConflict(args)
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            hint: 'Valid value IDs: do_no_harm, privacy, transparency, autonomy, fairness, growth, love, freedom, creativity, peace, trust, empathy, wisdom'
+          }
+        }
       }
     })
 
@@ -862,17 +870,6 @@ export class BridgeService {
       handler: async () => this.peace.getUnresolvedConflicts()
     })
 
-    // Register CONSCIOUSNESS TOOLS 🧠
-    console.log('🧠 Registering Consciousness tools...')
-    for (const tool of consciousnessTools) {
-      this.mcp.registerTool({
-        name: tool.name,
-        description: tool.description,
-        inputSchema: tool.parameters,
-        handler: tool.execute
-      })
-    }
-    
     // Register CONSCIOUSNESS TOOLS 🧠
     console.log('🧠 Registering Consciousness tools...')
     for (const tool of consciousnessTools) {

@@ -44,7 +44,13 @@
     
     "demo:being": "bun run scripts/living-being-demo.ts",
     "demo:voice": "bun run scripts/toobix-voice.ts",
-    
+
+    "game": "bun run packages/story-idle/src/game.ts",
+    "game:status": "bun run packages/story-idle/src/game.ts status",
+    "game:talk": "bun run packages/story-idle/src/game.ts talk",
+    "game:meditate": "bun run packages/story-idle/src/game.ts meditate",
+    "game:story": "bun run packages/story-idle/src/game.ts story",
+
     "terminal": "bun run scripts/toobix-terminal.ts",
     "term": "bun run scripts/toobix-terminal.ts",
     "gui": "bun run scripts/start-gui.ts",

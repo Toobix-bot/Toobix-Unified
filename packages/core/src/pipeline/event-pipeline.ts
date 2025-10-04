@@ -365,27 +365,39 @@ export class EventPipeline {
    */
   private async logToStory(event: SystemEvent): Promise<StepResult> {
     try {
+      // Map to Story service schema
       const storyEvent = {
-        type: event.type,
-        description: event.description,
-        source: event.source,
-        metadata: {
+        id: event.id!,
+        ts: event.timestamp!,
+        epoch: 0, // Current epoch
+        kind: event.type || 'system_event',
+        text: event.description,
+        mood: 'calm', // Default mood
+        deltas: JSON.stringify({
           action: event.action,
+          source: event.source,
           ...event.metadata
-        },
-        created_at: event.timestamp
+        }),
+        tags: JSON.stringify([event.type, event.source]),
+        option_ref: null,
+        person_id: null
       }
       
-      // Store in database
+      // Store in database using Story schema
       this.db.prepare(`
-        INSERT INTO story_events (id, type, description, metadata, created_at)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO story_events (id, ts, epoch, kind, text, mood, deltas, tags, option_ref, person_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        event.id!,
-        storyEvent.type,
-        storyEvent.description,
-        JSON.stringify(storyEvent.metadata),
-        event.timestamp!
+        storyEvent.id,
+        storyEvent.ts,
+        storyEvent.epoch,
+        storyEvent.kind,
+        storyEvent.text,
+        storyEvent.mood,
+        storyEvent.deltas,
+        storyEvent.tags,
+        storyEvent.option_ref,
+        storyEvent.person_id
       )
       
       return {

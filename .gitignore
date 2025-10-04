@@ -19,8 +19,11 @@ data/
 .env
 .env.local
 .env.*.local
+!.env.example
 .groq-keys-backup
+*-keys-backup
 *.groq-keys*
+*.api-keys*
 
 # IDE
 .vscode/
@@ -41,6 +44,8 @@ npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+next-dev.log
+bun-debug.log*
 
 # Testing
 coverage/
