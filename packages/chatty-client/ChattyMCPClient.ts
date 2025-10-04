@@ -26,7 +26,10 @@ export class ChattyMCPClient {
     const url = `${this.baseUrl}/discovery`;
     const resp = await fetch(url, {
       method: "GET",
-      headers: { ...this.headers }
+      headers: { 
+        ...this.headers,
+        "ngrok-skip-browser-warning": "true"  // Skip ngrok free tier warning page
+      }
     });
     if (!resp.ok) {
       throw new Error(`Discovery failed: ${resp.status} ${resp.statusText}`);
@@ -51,7 +54,8 @@ export class ChattyMCPClient {
       method: "POST",
       headers: {
         ...this.headers,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"  // Skip ngrok free tier warning page
       },
       body: JSON.stringify(payload)
     });
@@ -76,7 +80,10 @@ export class ChattyMCPClient {
     try {
       const resp = await fetch(`${this.baseUrl}/health`, {
         method: "GET",
-        headers: this.headers
+        headers: {
+          ...this.headers,
+          "ngrok-skip-browser-warning": "true"  // Skip ngrok free tier warning page
+        }
       });
       return resp.ok;
     } catch (error) {
