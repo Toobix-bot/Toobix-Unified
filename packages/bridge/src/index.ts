@@ -26,6 +26,14 @@ import LoveEngineService from '../../love/src/service'
 import PeaceCatalystService from '../../peace/src/service'
 import type { BridgeConfig } from './types.ts'
 
+// NEW: Architecture Systems (Phase 3)
+import { conflictResolver } from '../../core/src/contracts/module-contracts.ts'
+import { unifiedValues } from '../../core/src/values/unified-values.ts'
+import { EventPipeline } from '../../core/src/pipeline/event-pipeline.ts'
+
+// NEW: Performance Layer
+import { apiCache, memoryCache, valuesCache, hashObject } from '../../core/src/performance/cache.ts'
+
 export class BridgeService {
   private mcp: MCPServer
   private db: Database
@@ -41,6 +49,7 @@ export class BridgeService {
   private autonomousExecutor: AutonomousActionExecutor
   private livingBeing: LivingBeing | null = null
   private config: BridgeConfig
+  private pipeline: EventPipeline  // NEW: Event Pipeline
 
   constructor(config: BridgeConfig) {
     this.config = config
@@ -68,6 +77,49 @@ export class BridgeService {
     this.story = new StoryService(this.db)
     this.love = new LoveEngineService(this.db)
     this.peace = new PeaceCatalystService(this.db)
+    
+    // NEW: Initialize Event Pipeline (Single Source of Truth)
+    console.log('🔄 Initializing Event Pipeline...')
+    this.pipeline = new EventPipeline(this.db, {
+      ethics: {
+        analyze: async (params: any) => {
+          // TODO: Connect to real Ethics module
+          const harmful = params.action?.toLowerCase().includes('harm') || 
+                         params.action?.toLowerCase().includes('manipulate')
+          return {
+            isEthical: !harmful,
+            score: harmful ? 20 : 85,
+            reason: harmful ? 'Harmful action detected' : 'Action is ethical'
+          }
+        }
+      },
+      soul: {
+        processEvent: async (event: any) => {
+          await this.soul.processEvent(event)
+        }
+      },
+      consciousness: {
+        reflect: async (context: any) => {
+          // TODO: Connect to real Consciousness module
+          return {
+            thought: `Reflecting on ${context.trigger}`,
+            awarenessLevel: 75
+          }
+        }
+      },
+      story: {
+        addEvent: async (event: any) => {
+          // Story service stores event
+          // TODO: Use real story.addEvent when available
+          return { id: `evt_${Date.now()}`, ...event }
+        }
+      },
+      memory: {
+        add: async (text: string, metadata: any) => {
+          return await this.memory.add(text, metadata)
+        }
+      }
+    })
     
     // Initialize Autonomous Executor 🤖
     this.autonomousExecutor = new AutonomousActionExecutor(this.db)
@@ -201,7 +253,7 @@ export class BridgeService {
     // Memory tools
     this.mcp.registerTool({
       name: 'memory_search',
-      description: 'Search in knowledge base using RAG',
+      description: 'Search in knowledge base using RAG (cached for 10min)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -211,7 +263,21 @@ export class BridgeService {
         required: ['query']
       },
       handler: async (args: any) => {
-        return await this.memory.search(args.query, args.limit || 5)
+        // Check cache first (10min TTL)
+        const cacheKey = `search:${hashObject(args)}`
+        const cached = memoryCache.get(cacheKey)
+        if (cached) {
+          console.log('📦 Cache hit: memory_search')
+          return cached
+        }
+
+        // Execute search
+        const results = await this.memory.search(args.query, args.limit || 5)
+        
+        // Cache results
+        memoryCache.set(cacheKey, results, 600000) // 10min TTL
+        
+        return results
       }
     })
 
@@ -309,6 +375,102 @@ export class BridgeService {
       handler: async (args: any) => {
         this.soul.processEvent(args)
         return { success: true, summary: this.soul.getSummary() }
+      }
+    })
+
+    // NEW: Architecture System Tools (Phase 3)
+    this.mcp.registerTool({
+      name: 'module_resolve_conflict',
+      description: 'Resolve conflict between two modules using hierarchy (Ethics > Soul > Consciousness > Story > Memory)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          moduleA: { type: 'string', enum: ['ethics', 'soul', 'consciousness', 'story', 'memory'], description: 'First module' },
+          moduleB: { type: 'string', enum: ['ethics', 'soul', 'consciousness', 'story', 'memory'], description: 'Second module' },
+          type: { type: 'string', enum: ['ethical_dilemma', 'value_conflict', 'data_inconsistency', 'priority_conflict'], description: 'Conflict type' },
+          context: { type: 'object', description: 'Conflict context' },
+          description: { type: 'string', description: 'What is the conflict about?' }
+        },
+        required: ['moduleA', 'moduleB', 'type']
+      },
+      handler: async (args: any) => {
+        return await conflictResolver.resolve(args)
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'values_get_state',
+      description: 'Get current state of all 13 core values (5 ethical immutable + 8 personal/social mutable) - cached for 1min',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', description: 'Limit number of values returned (default: all 13)' }
+        }
+      },
+      handler: async (args: any) => {
+        // Check cache first (1min TTL)
+        const cacheKey = `values:${args.limit || 'all'}`
+        const cached = valuesCache.get(cacheKey)
+        if (cached) {
+          console.log('📦 Cache hit: values_get_state')
+          return cached
+        }
+
+        const values = args.limit 
+          ? unifiedValues.getTopValues(args.limit)
+          : unifiedValues.getAllValues()
+        
+        const result = {
+          values,
+          summary: unifiedValues.getSummary(),
+          overallAlignment: unifiedValues.getOverallAlignment()
+        }
+
+        // Cache results
+        valuesCache.set(cacheKey, result, 60000) // 1min TTL
+        
+        return result
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'values_resolve_conflict',
+      description: 'Resolve conflict between two values using priority and mutability rules',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          valueA: { type: 'string', description: 'First value ID (e.g., compassion, truth, loyalty)' },
+          valueB: { type: 'string', description: 'Second value ID' },
+          context: { type: 'object', description: 'Conflict context' },
+          severity: { type: 'string', enum: ['low', 'medium', 'high'], description: 'Conflict severity', default: 'medium' }
+        },
+        required: ['valueA', 'valueB']
+      },
+      handler: async (args: any) => {
+        return await unifiedValues.resolveConflict(args)
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'pipeline_process_event',
+      description: 'Process event through unified 6-step pipeline (Validate → Ethics → Values → Reflect → Story → Memory). Preferred over soul_event for new integrations.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', description: 'Event type (experience, interaction, reflection, etc)' },
+          action: { type: 'string', description: 'Action being performed' },
+          description: { type: 'string', description: 'Event description' },
+          source: { type: 'string', description: 'Event source module' },
+          affectsValues: { type: 'array', items: { type: 'string' }, description: 'Values affected by this event' },
+          valueUpdates: { type: 'array', items: { type: 'object' }, description: 'Value updates (id, change)' },
+          requiresReflection: { type: 'boolean', description: 'Needs consciousness reflection?', default: true },
+          requiresEthicsCheck: { type: 'boolean', description: 'Needs ethics analysis?', default: true },
+          context: { type: 'object', description: 'Additional context' }
+        },
+        required: ['type', 'action', 'description', 'source']
+      },
+      handler: async (args: any) => {
+        return await this.pipeline.processEvent(args)
       }
     })
 
