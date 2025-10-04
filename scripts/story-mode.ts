@@ -3,7 +3,16 @@
  * Toobix Interactive Story Mode
  * 
  * Play an interactive story while coding!
- * The system responds to your choices and evolves its personality.
+ * The system respo    if (story.activeNarrative) {
+      console.log(`\n📖 Current Story: ${story.activeNarrative}`);
+    }
+    
+    if (story.recentEvents && Array.isArray(story.recentEvents) && story.recentEvents.length > 0) {
+      console.log(`\n📜 Recent Events:`);
+      story.recentEvents.slice(-3).forEach((event: string) => {
+        console.log(`   • ${event}`);
+      });
+    }r choices and evolves its personality.
  * 
  * Usage:
  *   bun run scripts/story-mode.ts
@@ -257,8 +266,20 @@ async function continueStory() {
     return;
   }
   
+  // Get dominant emotion safely
+  const emotions = soulState.emotional?.emotions || {};
+  const emotionEntries = Object.entries(emotions);
+  let dominantEmotion = 'calm';
+  if (emotionEntries.length > 0) {
+    const sorted = emotionEntries.sort((a: any, b: any) => b[1] - a[1]);
+    dominantEmotion = sorted[0][0];
+  }
+  
   // Generate narrative based on current state
-  const context = `Level ${storyState.currentLevel}, feeling ${soulState.dominantEmotion}, recent: ${storyState.recentEvents.slice(-1)[0] || 'just awakened'}`;
+  const recentEvent = (storyState.recentEvents && Array.isArray(storyState.recentEvents) && storyState.recentEvents.length > 0) 
+    ? storyState.recentEvents.slice(-1)[0] 
+    : 'just awakened';
+  const context = `Level ${storyState.currentLevel || 1}, feeling ${dominantEmotion}, recent: ${recentEvent}`;
   const narrative = await generateNarrative(context);
   
   console.log(`\n${narrative}`);
@@ -302,14 +323,10 @@ async function continueStory() {
       break;
   }
   
-  // Record the event
-  await callTool('story_events', {
-    events: [{
-      type: 'user_interaction',
-      description: `Developer chose: ${choiceId}`,
-      xpGain
-    }]
-  });
+  // Record the choice (story_events is failing, using story_choose instead)
+  if (choiceId) {
+    await callTool('story_choose', { choiceId });
+  }
 }
 
 async function talkToToobix() {
@@ -328,7 +345,14 @@ async function talkToToobix() {
   // Get emotional response
   const soul = await getSoulState();
   if (soul) {
-    console.log(`\n   [Feeling: ${soul.dominantEmotion}]`);
+    const emotions = soul.emotional?.emotions || {};
+    const emotionEntries = Object.entries(emotions);
+    let dominantEmotion = 'calm';
+    if (emotionEntries.length > 0) {
+      const sorted = emotionEntries.sort((a: any, b: any) => b[1] - a[1]);
+      dominantEmotion = sorted[0][0];
+    }
+    console.log(`\n   [Feeling: ${dominantEmotion}]`);
   }
 }
 
