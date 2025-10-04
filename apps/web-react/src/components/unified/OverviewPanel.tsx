@@ -117,11 +117,11 @@ export function OverviewPanel() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <Code className="w-6 h-6 text-purple-500" />
-              <Badge variant="secondary">{stats.tools}</Badge>
+              <Badge variant="secondary">{stats?.tools || 0}</Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600 mb-1">{stats.tools}</div>
+            <div className="text-2xl font-bold text-purple-600 mb-1">{stats?.tools || 0}</div>
             <p className="text-xs text-muted-foreground">MCP Tools</p>
           </CardContent>
         </Card>
@@ -131,11 +131,11 @@ export function OverviewPanel() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <Users className="w-6 h-6 text-blue-500" />
-              <Badge variant="secondary">{stats.people}</Badge>
+              <Badge variant="secondary">{stats?.people || 0}</Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600 mb-1">{stats.people}</div>
+            <div className="text-2xl font-bold text-blue-600 mb-1">{stats?.people || 0}</div>
             <p className="text-xs text-muted-foreground">Contacts</p>
           </CardContent>
         </Card>
@@ -145,11 +145,11 @@ export function OverviewPanel() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <Database className="w-6 h-6 text-indigo-500" />
-              <Badge variant="secondary">{stats.memory}</Badge>
+              <Badge variant="secondary">{stats?.memory || 0}</Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-indigo-600 mb-1">{stats.memory}</div>
+            <div className="text-2xl font-bold text-indigo-600 mb-1">{stats?.memory}</div>
             <p className="text-xs text-muted-foreground">Memory Chunks</p>
           </CardContent>
         </Card>
@@ -159,11 +159,11 @@ export function OverviewPanel() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <BookOpen className="w-6 h-6 text-purple-500" />
-              <Badge variant="secondary">Lvl {stats.story.level}</Badge>
+              <Badge variant="secondary">Lvl {stats?.story?.level || 1}</Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600 mb-1">{stats.story.xp} XP</div>
+            <div className="text-2xl font-bold text-purple-600 mb-1">{stats?.story?.xp || 0} XP</div>
             <p className="text-xs text-muted-foreground">Story Progress</p>
           </CardContent>
         </Card>
@@ -173,11 +173,11 @@ export function OverviewPanel() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <Heart className="w-6 h-6 text-pink-500" />
-              <Badge variant="secondary">{stats.love.total}</Badge>
+              <Badge variant="secondary">{stats?.love?.total || 0}</Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-pink-600 mb-1">{stats.love.today}</div>
+            <div className="text-2xl font-bold text-pink-600 mb-1">{stats?.love?.today || 0}</div>
             <p className="text-xs text-muted-foreground">Today's Love</p>
           </CardContent>
         </Card>
@@ -197,20 +197,20 @@ export function OverviewPanel() {
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-muted-foreground">Energy</span>
-                <span className="font-medium">{stats.soul.energy}%</span>
+                <span className="font-medium">{stats?.soul?.energy}%</span>
               </div>
-              <Progress value={stats.soul.energy} className="h-2" />
+              <Progress value={stats?.soul?.energy} className="h-2" />
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-muted-foreground">Wisdom</span>
-                <span className="font-medium">{stats.soul.wisdom}</span>
+                <span className="font-medium">{stats?.soul?.wisdom}</span>
               </div>
-              <Progress value={stats.soul.wisdom} className="h-2" />
+              <Progress value={stats?.soul?.wisdom} className="h-2" />
             </div>
             <div className="flex items-center justify-between pt-2 border-t">
               <span className="text-sm text-muted-foreground">Experiences</span>
-              <Badge variant="secondary">{stats.soul.experiences}</Badge>
+              <Badge variant="secondary">{stats?.soul?.experiences}</Badge>
             </div>
           </CardContent>
         </Card>
@@ -227,23 +227,23 @@ export function OverviewPanel() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <div className="text-xs text-muted-foreground mb-1">Epoch</div>
-                <div className="text-2xl font-bold text-indigo-500">{stats.story.epoch}</div>
+                <div className="text-2xl font-bold text-indigo-500">{stats?.story?.epoch}</div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">Level</div>
-                <div className="text-2xl font-bold text-purple-500">{stats.story.level}</div>
+                <div className="text-2xl font-bold text-purple-500">{stats?.story?.level}</div>
               </div>
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-muted-foreground">XP Progress</span>
-                <span className="font-medium">{stats.story.xp} XP</span>
+                <span className="font-medium">{stats?.story?.xp} XP</span>
               </div>
-              <Progress value={(stats.story.xp / 100) * 100} className="h-2" />
+              <Progress value={(stats?.story?.xp / 100) * 100} className="h-2" />
             </div>
             <div className="flex items-center justify-between pt-2 border-t">
-              <span className="text-sm text-muted-foreground">Arc: {stats.story.arc}</span>
-              <Badge variant="secondary">{stats.story.options} choices</Badge>
+              <span className="text-sm text-muted-foreground">Arc: {stats?.story?.arc}</span>
+              <Badge variant="secondary">{stats?.story?.options} choices</Badge>
             </div>
           </CardContent>
         </Card>
@@ -260,11 +260,11 @@ export function OverviewPanel() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <div className="text-xs text-muted-foreground mb-1">Total</div>
-                <div className="text-2xl font-bold text-pink-500">{stats.love.total}</div>
+                <div className="text-2xl font-bold text-pink-500">{stats?.love?.total}</div>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">Today</div>
-                <div className="text-2xl font-bold text-rose-500">{stats.love.today}</div>
+                <div className="text-2xl font-bold text-rose-500">{stats?.love?.today}</div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 pt-2 border-t">
@@ -272,14 +272,14 @@ export function OverviewPanel() {
                 <Sparkles className="w-4 h-4 text-purple-400" />
                 <div>
                   <div className="text-xs text-muted-foreground">Gratitude</div>
-                  <div className="font-medium">{stats.love.gratitudeCount}</div>
+                  <div className="font-medium">{stats?.love?.gratitudeCount}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Heart className="w-4 h-4 text-blue-400" />
                 <div>
                   <div className="text-xs text-muted-foreground">Kindness</div>
-                  <div className="font-medium">{stats.love.kindnessCount}</div>
+                  <div className="font-medium">{stats?.love?.kindnessCount}</div>
                 </div>
               </div>
             </div>
@@ -296,34 +296,34 @@ export function OverviewPanel() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-center mb-3">
-              <div className="text-4xl font-bold text-green-500">{stats.peace.overall}</div>
+              <div className="text-4xl font-bold text-green-500">{stats?.peace?.overall}</div>
               <div className="text-xs text-muted-foreground">Overall Peace Score</div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs w-16 text-muted-foreground">Calm</span>
-                <Progress value={stats.peace.calm} className="h-1 flex-1" />
-                <span className="text-xs w-8 text-right font-medium">{stats.peace.calm}</span>
+                <Progress value={stats?.peace?.calm} className="h-1 flex-1" />
+                <span className="text-xs w-8 text-right font-medium">{stats?.peace?.calm}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs w-16 text-muted-foreground">Harmony</span>
-                <Progress value={stats.peace.harmony} className="h-1 flex-1" />
-                <span className="text-xs w-8 text-right font-medium">{stats.peace.harmony}</span>
+                <Progress value={stats?.peace?.harmony} className="h-1 flex-1" />
+                <span className="text-xs w-8 text-right font-medium">{stats?.peace?.harmony}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs w-16 text-muted-foreground">Clarity</span>
-                <Progress value={stats.peace.clarity} className="h-1 flex-1" />
-                <span className="text-xs w-8 text-right font-medium">{stats.peace.clarity}</span>
+                <Progress value={stats?.peace?.clarity} className="h-1 flex-1" />
+                <span className="text-xs w-8 text-right font-medium">{stats?.peace?.clarity}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs w-16 text-muted-foreground">Growth</span>
-                <Progress value={stats.peace.growth} className="h-1 flex-1" />
-                <span className="text-xs w-8 text-right font-medium">{stats.peace.growth}</span>
+                <Progress value={stats?.peace?.growth} className="h-1 flex-1" />
+                <span className="text-xs w-8 text-right font-medium">{stats?.peace?.growth}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs w-16 text-muted-foreground">Purpose</span>
-                <Progress value={stats.peace.purpose} className="h-1 flex-1" />
-                <span className="text-xs w-8 text-right font-medium">{stats.peace.purpose}</span>
+                <Progress value={stats?.peace?.purpose} className="h-1 flex-1" />
+                <span className="text-xs w-8 text-right font-medium">{stats?.peace?.purpose}</span>
               </div>
             </div>
           </CardContent>
@@ -339,17 +339,17 @@ export function OverviewPanel() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-center mb-3">
-              <div className="text-4xl font-bold text-blue-500">{stats.people}</div>
+              <div className="text-4xl font-bold text-blue-500">{stats?.people}</div>
               <div className="text-xs text-muted-foreground">Total Contacts</div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="text-center p-2 bg-blue-50 rounded">
                 <div className="text-xs text-muted-foreground">Love Points</div>
-                <div className="text-lg font-bold text-pink-500">{stats.love.total}</div>
+                <div className="text-lg font-bold text-pink-500">{stats?.love?.total}</div>
               </div>
               <div className="text-center p-2 bg-green-50 rounded">
                 <div className="text-xs text-muted-foreground">Actions</div>
-                <div className="text-lg font-bold text-green-500">{stats.actions}</div>
+                <div className="text-lg font-bold text-green-500">{stats?.actions}</div>
               </div>
             </div>
           </CardContent>
@@ -365,7 +365,7 @@ export function OverviewPanel() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-center mb-3">
-              <div className="text-4xl font-bold text-indigo-500">{stats.memory}</div>
+              <div className="text-4xl font-bold text-indigo-500">{stats?.memory}</div>
               <div className="text-xs text-muted-foreground">Memory Chunks</div>
             </div>
             <div className="space-y-2">
@@ -453,19 +453,19 @@ export function OverviewPanel() {
               <ul className="space-y-2 text-sm">
                 <li className="flex justify-between">
                   <span className="text-muted-foreground">Memory Chunks:</span>
-                  <span className="font-medium">{stats.memory}</span>
+                  <span className="font-medium">{stats?.memory}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-muted-foreground">Contacts:</span>
-                  <span className="font-medium">{stats.people}</span>
+                  <span className="font-medium">{stats?.people}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-muted-foreground">Actions:</span>
-                  <span className="font-medium">{stats.actions}</span>
+                  <span className="font-medium">{stats?.actions}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-muted-foreground">MCP Tools:</span>
-                  <span className="font-medium">{stats.tools}</span>
+                  <span className="font-medium">{stats?.tools}</span>
                 </li>
               </ul>
             </div>
@@ -474,19 +474,19 @@ export function OverviewPanel() {
               <ul className="space-y-2 text-sm">
                 <li className="flex justify-between">
                   <span className="text-muted-foreground">Story Level:</span>
-                  <span className="font-medium">Level {stats.story.level} ({stats.story.xp} XP)</span>
+                  <span className="font-medium">Level {stats?.story?.level} ({stats?.story?.xp} XP)</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-muted-foreground">Love Points (Total):</span>
-                  <span className="font-medium">{stats.love.total}</span>
+                  <span className="font-medium">{stats?.love?.total}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-muted-foreground">Peace Score:</span>
-                  <span className="font-medium">{stats.peace.overall}/100</span>
+                  <span className="font-medium">{stats?.peace?.overall}/100</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-muted-foreground">Soul Experiences:</span>
-                  <span className="font-medium">{stats.soul.experiences}</span>
+                  <span className="font-medium">{stats?.soul?.experiences}</span>
                 </li>
               </ul>
             </div>
@@ -496,3 +496,5 @@ export function OverviewPanel() {
     </div>
   )
 }
+
+

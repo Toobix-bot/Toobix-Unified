@@ -213,8 +213,8 @@ export function MemoryPanel() {
             <Input
               placeholder="What do you want to know?"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && searchMemories()}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+              onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && searchMemories()}
               className="flex-1"
             />
             <div className="flex items-center gap-2">
@@ -297,7 +297,7 @@ export function MemoryPanel() {
           <Textarea
             placeholder="What information do you want to remember?"
             value={newMemoryText}
-            onChange={(e) => setNewMemoryText(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewMemoryText(e.target.value)}
             rows={5}
             className="resize-none"
           />
@@ -307,7 +307,7 @@ export function MemoryPanel() {
               <Input
                 placeholder="e.g., Meeting notes, Research, Article..."
                 value={newMemorySource}
-                onChange={(e) => setNewMemorySource(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewMemorySource(e.target.value)}
               />
             </div>
             <div>
@@ -315,7 +315,7 @@ export function MemoryPanel() {
               <Input
                 placeholder="e.g., tech, important, reference..."
                 value={newMemoryTags}
-                onChange={(e) => setNewMemoryTags(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewMemoryTags(e.target.value)}
               />
             </div>
           </div>

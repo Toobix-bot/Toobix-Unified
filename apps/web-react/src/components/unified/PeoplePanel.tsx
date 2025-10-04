@@ -281,7 +281,7 @@ export function PeoplePanel() {
             <Input
               placeholder="Search by name, tags, notes..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             />
           </CardContent>
         </Card>
@@ -298,7 +298,7 @@ export function PeoplePanel() {
             <Input
               placeholder="Name"
               value={newName}
-              onChange={(e) => setNewName(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewName(e.target.value)}
             />
             <Select value={newRelation} onValueChange={setNewRelation}>
               <SelectTrigger>
@@ -316,7 +316,7 @@ export function PeoplePanel() {
             <Input
               placeholder="Tags (comma-separated)"
               value={newTags}
-              onChange={(e) => setNewTags(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTags(e.target.value)}
             />
             <Button onClick={addContact} className="w-full" disabled={!newName.trim()}>
               <UserPlus className="w-4 h-4 mr-2" />
@@ -412,13 +412,13 @@ export function PeoplePanel() {
             <Textarea
               placeholder="What happened?"
               value={interactionSummary}
-              onChange={(e) => setInteractionSummary(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInteractionSummary(e.target.value)}
               rows={3}
             />
             <Textarea
               placeholder="Gratitude (optional)"
               value={interactionGratitude}
-              onChange={(e) => setInteractionGratitude(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInteractionGratitude(e.target.value)}
               rows={2}
             />
             <div>
