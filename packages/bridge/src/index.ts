@@ -18,7 +18,10 @@ import { GroqService } from './ai/groq.ts'
 import { SoulService } from '../../soul/src/index.ts'
 import { ContactService, InteractionService } from '../../people/src/index.ts'
 import { StoryService } from '../../core/src/story/index.ts'
-import { awarenessTools } from './tools/awareness-tools.ts'
+import { initializeConsciousness, consciousnessTools } from './tools/consciousness-tools.ts'
+// import { awarenessTools } from './tools/awareness-tools.ts' // TODO: Fix fastmcp dependency
+import LoveEngineService from '../../love/src/service'
+import PeaceCatalystService from '../../peace/src/service'
 import type { BridgeConfig } from './types.ts'
 
 export class BridgeService {
@@ -31,6 +34,8 @@ export class BridgeService {
   private contacts: ContactService
   private interactions: InteractionService
   private story: StoryService
+  private love: LoveEngineService
+  private peace: PeaceCatalystService
   private config: BridgeConfig
 
   constructor(config: BridgeConfig) {
@@ -57,6 +62,12 @@ export class BridgeService {
     this.contacts = new ContactService()
     this.interactions = new InteractionService()
     this.story = new StoryService(this.db)
+    this.love = new LoveEngineService(this.db)
+    this.peace = new PeaceCatalystService(this.db)
+    
+    // Initialize Consciousness System 🧠
+    console.log('🧠 Initializing Consciousness...')
+    initializeConsciousness(this.db)
     
     // Initialize MCP server
     this.mcp = new MCPServer({
@@ -112,6 +123,25 @@ export class BridgeService {
     console.log('      - system_modify_self: Self-modification (with approval)')
     console.log('      - system_suggest   : Suggest improvements')
     console.log('      - system_analyze   : Analyze system health')
+    console.log('   💝 Love Engine:')
+    console.log('      - love_add_gratitude    : Add gratitude entry')
+    console.log('      - love_add_kindness     : Log kindness act')
+    console.log('      - love_get_score        : Get love score')
+    console.log('      - love_get_relationships: Relationship strengths')
+    console.log('      - love_recent_gratitude : Recent gratitude')
+    console.log('   🕊️ Peace Catalyst:')
+    console.log('      - peace_get_state       : Peace state (5 agents)')
+    console.log('      - peace_calm_meditate   : Meditation')
+    console.log('      - peace_calm_breathing  : Breathing exercise')
+    console.log('      - peace_harmony_log_conflict : Log conflict')
+    console.log('      - peace_harmony_resolve : Resolve conflict')
+    console.log('      - peace_clarity_journal : Journal entry')
+    console.log('      - peace_growth_learn    : Learn skill')
+    console.log('      - peace_growth_milestone: Growth milestone')
+    console.log('      - peace_purpose_value   : Define value')
+    console.log('      - peace_purpose_intention: Set intention')
+    console.log('      - peace_get_actions     : Recent actions')
+    console.log('      - peace_get_conflicts   : Unresolved conflicts')
     console.log('\n💡 Press Ctrl+C to stop\n')
   }
 
@@ -441,8 +471,216 @@ export class BridgeService {
       }
     })
 
-    // Register SELF-AWARENESS TOOLS
-    for (const tool of awarenessTools) {
+    // Love Engine tools
+    this.mcp.registerTool({
+      name: 'love_add_gratitude',
+      description: 'Add gratitude journal entry',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          content: { type: 'string' },
+          category: { type: 'string', enum: ['person', 'moment', 'achievement', 'nature', 'other'] },
+          intensity: { type: 'number', minimum: 1, maximum: 10 },
+          personId: { type: 'string' },
+          tags: { type: 'array', items: { type: 'string' } }
+        },
+        required: ['content', 'category', 'intensity']
+      },
+      handler: async (args: any) => this.love.addGratitude(args)
+    })
+
+    this.mcp.registerTool({
+      name: 'love_add_kindness',
+      description: 'Log act of kindness',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          description: { type: 'string' },
+          type: { type: 'string', enum: ['given', 'received'] },
+          category: { type: 'string', enum: ['help', 'gift', 'time', 'words', 'presence'] },
+          personId: { type: 'string' }
+        },
+        required: ['description', 'type', 'category']
+      },
+      handler: async (args: any) => this.love.addKindness(args)
+    })
+
+    this.mcp.registerTool({
+      name: 'love_get_score',
+      description: 'Get love score and statistics',
+      inputSchema: { type: 'object', properties: {} },
+      handler: async () => this.love.getLoveScore()
+    })
+
+    this.mcp.registerTool({
+      name: 'love_get_relationships',
+      description: 'Get relationship strength metrics',
+      inputSchema: { type: 'object', properties: {} },
+      handler: async () => this.love.getRelationshipStrengths()
+    })
+
+    this.mcp.registerTool({
+      name: 'love_recent_gratitude',
+      description: 'Get recent gratitude entries',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', default: 20, minimum: 1, maximum: 100 }
+        }
+      },
+      handler: async (args: any) => this.love.getRecentGratitude(args.limit || 20)
+    })
+
+    // Peace Catalyst tools
+    this.mcp.registerTool({
+      name: 'peace_get_state',
+      description: 'Get peace state across all 5 agents',
+      inputSchema: { type: 'object', properties: {} },
+      handler: async () => this.peace.getPeaceState()
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_calm_meditate',
+      description: 'Log meditation',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          duration: { type: 'number', minimum: 1 }
+        },
+        required: ['duration']
+      },
+      handler: async (args: any) => this.peace.calmAgent.meditate(args.duration)
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_calm_breathing',
+      description: 'Log breathing exercise',
+      inputSchema: { type: 'object', properties: {} },
+      handler: async () => this.peace.calmAgent.breathingExercise()
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_harmony_log_conflict',
+      description: 'Log conflict',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          description: { type: 'string' },
+          personId: { type: 'string' },
+          severity: { type: 'number', minimum: 1, maximum: 10 }
+        },
+        required: ['description']
+      },
+      handler: async (args: any) => this.peace.harmonyAgent.logConflict(args.description, args.personId, args.severity || 5)
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_harmony_resolve',
+      description: 'Resolve conflict',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          conflictId: { type: 'string' },
+          resolutionNotes: { type: 'string' }
+        },
+        required: ['conflictId', 'resolutionNotes']
+      },
+      handler: async (args: any) => this.peace.harmonyAgent.resolveConflict(args.conflictId, args.resolutionNotes)
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_clarity_journal',
+      description: 'Log journal entry',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          entry: { type: 'string' },
+          wordCount: { type: 'number' }
+        },
+        required: ['entry', 'wordCount']
+      },
+      handler: async (args: any) => this.peace.clarityAgent.journal(args.entry, args.wordCount)
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_growth_learn',
+      description: 'Log skill learning',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          skill: { type: 'string' },
+          hoursSpent: { type: 'number' }
+        },
+        required: ['skill', 'hoursSpent']
+      },
+      handler: async (args: any) => this.peace.growthAgent.learnSkill(args.skill, args.hoursSpent)
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_growth_milestone',
+      description: 'Record growth milestone',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          category: { type: 'string', enum: ['skill', 'habit', 'mindset', 'achievement'] },
+          description: { type: 'string' },
+          impact: { type: 'number', minimum: 1, maximum: 10 }
+        },
+        required: ['title', 'category', 'description']
+      },
+      handler: async (args: any) => this.peace.growthAgent.milestone(args.title, args.category, args.description, args.impact || 10)
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_purpose_value',
+      description: 'Define core value',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          value: { type: 'string' },
+          description: { type: 'string' }
+        },
+        required: ['value', 'description']
+      },
+      handler: async (args: any) => this.peace.purposeAgent.defineValue(args.value, args.description)
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_purpose_intention',
+      description: 'Set intention',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          intention: { type: 'string' }
+        },
+        required: ['intention']
+      },
+      handler: async (args: any) => this.peace.purposeAgent.setIntention(args.intention)
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_get_actions',
+      description: 'Get recent peace actions',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', default: 50, minimum: 1, maximum: 200 }
+        }
+      },
+      handler: async (args: any) => this.peace.getRecentActions(args.limit || 50)
+    })
+
+    this.mcp.registerTool({
+      name: 'peace_get_conflicts',
+      description: 'Get unresolved conflicts',
+      inputSchema: { type: 'object', properties: {} },
+      handler: async () => this.peace.getUnresolvedConflicts()
+    })
+
+    // Register CONSCIOUSNESS TOOLS 🧠
+    console.log('🧠 Registering Consciousness tools...')
+    for (const tool of consciousnessTools) {
       this.mcp.registerTool({
         name: tool.name,
         description: tool.description,
@@ -450,7 +688,29 @@ export class BridgeService {
         handler: tool.execute
       })
     }
-
+    
+    // Register CONSCIOUSNESS TOOLS 🧠
+    console.log('🧠 Registering Consciousness tools...')
+    for (const tool of consciousnessTools) {
+      this.mcp.registerTool({
+        name: tool.name,
+        description: tool.description,
+        inputSchema: tool.parameters,
+        handler: tool.execute
+      })
+    }
+    
+    // Register SELF-AWARENESS TOOLS (temporarily disabled)
+    // TODO: Fix fastmcp dependency
+    // for (const tool of awarenessTools) {
+    //   this.mcp.registerTool({
+    //     name: tool.name,
+    //     description: tool.description,
+    //     inputSchema: tool.parameters,
+    //     handler: tool.execute
+    //   })
+    // }
+    
     // Test tool for ChatGPT debugging
     this.mcp.registerTool({
       name: 'ping',
@@ -471,8 +731,7 @@ export class BridgeService {
       }
     })
 
-    console.log('✅ MCP tools registered (including 6 Self-Awareness tools)')
-    console.log('🧠 System is now SELF-AWARE!')
+    console.log('✅ MCP tools registered')
   }
 
   private setupRoutes() {
@@ -528,6 +787,8 @@ export class BridgeService {
       const peopleCount = this.db.query('SELECT COUNT(*) as count FROM people WHERE deleted_at IS NULL').get() as any
       const soulState = this.soul.getState()
       const storyState = this.story.getState()
+      const loveScore = this.love.getLoveScore()
+      const peaceState = this.peace.getPeaceState()
       
       return {
         memory: memoryCount?.count || 0,
@@ -546,6 +807,20 @@ export class BridgeService {
           level: storyState.resources.level,
           xp: storyState.resources.erfahrung,
           options: storyState.options.length
+        },
+        love: {
+          total: loveScore.total,
+          today: loveScore.today,
+          gratitudeCount: loveScore.gratitudeCount,
+          kindnessCount: loveScore.kindnessCount
+        },
+        peace: {
+          overall: peaceState.overall,
+          calm: peaceState.calm,
+          harmony: peaceState.harmony,
+          clarity: peaceState.clarity,
+          growth: peaceState.growth,
+          purpose: peaceState.purpose
         }
       }
     })
@@ -571,7 +846,7 @@ export class BridgeService {
       }))
     })
 
-    this.mcp.registerRoute('POST', '/api/luna/chat', async (req) => {
+    this.mcp.registerRoute('POST', '/api/luna/chat', async (req: any) => {
       try {
         const body = await req.json()
         const message = body.message || ''
@@ -583,7 +858,8 @@ export class BridgeService {
         this.soul.processEvent({
           type: 'interaction',
           description: `Luna chat: ${message}`,
-          emotionalImpact: { joy: 2 }
+          emotionalImpact: { joy: 2 },
+          timestamp: Date.now()
         })
         
         return {

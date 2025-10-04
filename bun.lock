@@ -66,6 +66,17 @@
         "typescript": "^5.0.0",
       },
     },
+    "packages/consciousness": {
+      "name": "@toobix/consciousness",
+      "version": "1.0.0",
+      "dependencies": {
+        "@toobix/core": "workspace:*",
+        "@toobix/soul": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+    },
     "packages/core": {
       "name": "@toobix/core",
       "version": "0.1.0",
@@ -367,6 +378,8 @@
     "@toobix/api-client": ["@toobix/api-client@workspace:packages/api-client"],
 
     "@toobix/bridge": ["@toobix/bridge@workspace:packages/bridge"],
+
+    "@toobix/consciousness": ["@toobix/consciousness@workspace:packages/consciousness"],
 
     "@toobix/core": ["@toobix/core@workspace:packages/core"],
 

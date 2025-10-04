@@ -12,6 +12,23 @@ export default function Home() {
         </p>
       </div>
 
+      {/* Featured: Unified Dashboard */}
+      <Card className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0">
+        <CardHeader>
+          <CardTitle className="text-3xl">🌌 Unified Dashboard</CardTitle>
+          <CardDescription className="text-white/90 text-lg">
+            Alle 29 MCP Tools vereint: Consciousness, Self-Coding, Memory, Soul & mehr
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/unified">
+            <Button size="lg" className="w-full bg-white text-purple-600 hover:bg-white/90">
+              Open Unified Dashboard →
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+
       <div className="grid md:grid-cols-3 gap-6">
         <Card>
           <CardHeader>

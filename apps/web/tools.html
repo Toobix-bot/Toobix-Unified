@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toobix Unified - Tool Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root[data-theme="dark"] {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #13131a;
+      --bg-card: rgba(255, 255, 255, 0.05);
+      --bg-card-hover: rgba(255, 255, 255, 0.08);
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0b8;
+      --accent: #667eea;
+      --accent-hover: #764ba2;
+      --border: rgba(255, 255, 255, 0.1);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+    }
+
+    :root[data-theme="light"] {
+      --bg-primary: #f5f7fa;
+      --bg-secondary: #ffffff;
+      --bg-card: rgba(102, 126, 234, 0.05);
+      --bg-card-hover: rgba(102, 126, 234, 0.1);
+      --text-primary: #1a1a2e;
+      --text-secondary: #6b7280;
+      --accent: #667eea;
+      --accent-hover: #764ba2;
+      --border: rgba(0, 0, 0, 0.1);
+      --success: #059669;
+      --warning: #d97706;
+      --error: #dc2626;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      transition: background 0.3s;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      font-size: 2em;
+      filter: drop-shadow(0 0 10px var(--accent));
+    }
+
+    .logo h1 {
+      font-size: 1.8em;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.95em;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Tool Categories */
+    .tool-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .category-btn {
+      padding: 15px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .category-btn.active {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+    }
+
+    .category-btn:hover {
+      transform: translateY(-3px);
+    }
+
+    .category-icon {
+      font-size: 2em;
+      margin-bottom: 8px;
+    }
+
+    .category-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .category-count {
+      color: var(--text-secondary);
+      font-size: 0.85em;
+    }
+
+    /* Tools Grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+    }
+
+    .tool-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+
+    .tool-card:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+    }
+
+    .tool-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 15px;
+    }
+
+    .tool-icon {
+      font-size: 2em;
+    }
+
+    .tool-status {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.75em;
+      font-weight: 600;
+    }
+
+    .status-ready {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+
+    .status-busy {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+    }
+
+    .tool-name {
+      font-size: 1.2em;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .tool-desc {
+      color: var(--text-secondary);
+      font-size: 0.9em;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .tool-inputs {
+      margin-bottom: 15px;
+    }
+
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    .input-label {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 0.85em;
+      margin-bottom: 6px;
+    }
+
+    .input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.95em;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .textarea {
+      min-height: 80px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .select {
+      cursor: pointer;
+    }
+
+    .tool-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .tool-result {
+      margin-top: 15px;
+      padding: 12px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      font-size: 0.9em;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .result-success {
+      border-left: 3px solid var(--success);
+    }
+
+    .result-error {
+      border-left: 3px solid var(--error);
+    }
+
+    /* Results Panel */
+    .results-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 400px;
+      max-height: 500px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      overflow: hidden;
+      z-index: 1000;
+      transition: all 0.3s;
+    }
+
+    .results-panel.minimized {
+      max-height: 60px;
+    }
+
+    .results-header {
+      padding: 15px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .results-title {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .results-content {
+      padding: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .result-item {
+      padding: 12px;
+      background: var(--bg-card);
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .result-time {
+      color: var(--text-secondary);
+      font-size: 0.75em;
+      margin-bottom: 6px;
+    }
+
+    .result-tool {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .result-data {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Loading */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .results-panel {
+        width: calc(100% - 40px);
+        right: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🌉</span>
+        <div>
+          <h1>Tool Dashboard</h1>
+          <p style="color: var(--text-secondary); font-size: 0.9em;">34 MCP Tools • Bridge Port 3337</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" onclick="toggleTheme()">
+          <span id="theme-icon">🌙</span>
+        </button>
+        <button class="btn btn-primary" onclick="testConnection()">
+          Test Bridge
+        </button>
+      </div>
+    </header>
+
+    <!-- Tool Categories -->
+    <div class="tool-categories" id="categories">
+      <!-- Dynamically loaded -->
+    </div>
+
+    <!-- Tools Grid -->
+    <div class="tools-grid" id="tools-grid">
+      <!-- Tools will be dynamically loaded here -->
+    </div>
+  </div>
+
+  <!-- Results Panel -->
+  <div class="results-panel" id="results-panel">
+    <div class="results-header" onclick="toggleResults()">
+      <div class="results-title">
+        <span>📊</span>
+        <span>Tool Results</span>
+      </div>
+      <span id="results-toggle">▼</span>
+    </div>
+    <div class="results-content" id="results-content">
+      <div class="result-item">
+        <div class="result-time">System ready</div>
+        <div class="result-tool">Toobix Bridge</div>
+        <div class="result-data">Waiting for first tool execution...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./tools.js"></script>
+</body>
+</html>

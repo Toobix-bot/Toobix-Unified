@@ -1,0 +1,20 @@
+{
+  "name": "@toobix/consciousness",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./self-coding": "./src/self-coding/index.ts"
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "@toobix/core": "workspace:*",
+    "@toobix/soul": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
