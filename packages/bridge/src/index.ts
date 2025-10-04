@@ -711,6 +711,40 @@ export class BridgeService {
     //   })
     // }
     
+    // Register SYSTEM ANALYSIS TOOL 🔍
+    this.mcp.registerTool({
+      name: 'system_analyze',
+      description: 'Analyze system health and performance metrics',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          detailed: { 
+            type: 'boolean', 
+            description: 'Include detailed metrics', 
+            default: false 
+          }
+        }
+      },
+      handler: async (args: any) => {
+        try {
+          const { analyzeSystem } = await import('../../consciousness/src/analysis/system-analyzer.ts')
+          const report = await analyzeSystem(this.db)
+          return {
+            ok: true,
+            ...report
+          }
+        } catch (error) {
+          console.error('System analysis error:', error)
+          return {
+            ok: false,
+            status: 'error',
+            error: error instanceof Error ? error.message : 'Analysis failed',
+            timestamp: Date.now()
+          }
+        }
+      }
+    })
+    
     // Test tool for ChatGPT debugging
     this.mcp.registerTool({
       name: 'ping',
