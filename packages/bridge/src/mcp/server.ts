@@ -192,13 +192,14 @@ export class MCPServer {
                   }), { status: 404, headers })
                 }
 
+                // Move startTime outside try block for catch access
+                const startTime = Date.now()
+                
                 try {
                   console.log(`[MCP] Tool call START: ${name}`, { 
                     args: args || {}, 
                     timestamp: new Date().toISOString() 
                   })
-                  
-                  const startTime = Date.now()
                   
                   // Add 30-second timeout
                   const result = await Promise.race([
