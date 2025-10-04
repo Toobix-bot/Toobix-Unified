@@ -16,6 +16,12 @@
     "dev:api": "bun run scripts/api-server.ts",
     "dev:diary": "bun run scripts/luna-chatbot.ts",
     
+    "start": "bun run scripts/start-all.ts",
+    "start:full": "bun run scripts/start-all.ts --mode full",
+    "start:bridge": "bun run scripts/start-all.ts --mode bridge",
+    "start:demo": "bun run scripts/start-all.ts --mode demo --awaken",
+    "start:autonomous": "bun run scripts/start-all.ts --mode full --awaken --autonomy",
+    
     "build": "bun run build:packages && bun run build:apps",
     "build:packages": "bun run --filter='./packages/*' build",
     "build:apps": "echo 'Apps built (static HTML)'",
@@ -34,6 +40,9 @@
     "migrate": "bun run scripts/migrate.ts",
     "migrate:v8": "bun run scripts/migrate-v8.ts",
     "migrate:v7": "bun run scripts/migrate-v7.ts",
+    
+    "demo:being": "bun run scripts/living-being-demo.ts",
+    "demo:voice": "bun run scripts/toobix-voice.ts",
     
     "start:all": "node scripts/start-all.mjs",
     "health": "curl http://localhost:3337/health",
