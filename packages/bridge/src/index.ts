@@ -22,6 +22,7 @@ import { initializeConsciousness, consciousnessTools } from './tools/consciousne
 // import { awarenessTools } from './tools/awareness-tools.ts' // TODO: Fix fastmcp dependency
 import { AutonomousActionExecutor } from '../../consciousness/src/agent/autonomous-executor.ts'
 import { LivingBeing, createLivingBeing } from '../../consciousness/src/living-being/index.ts'
+import { NexusPersistence } from '../../consciousness/src/nexus/persistence.ts'
 import LoveEngineService from '../../love/src/service'
 import PeaceCatalystService from '../../peace/src/service'
 import type { BridgeConfig } from './types.ts'
@@ -52,6 +53,7 @@ export class BridgeService {
   private peace: PeaceCatalystService
   private autonomousExecutor: AutonomousActionExecutor
   private livingBeing: LivingBeing | null = null
+  private nexusPersistence: NexusPersistence  // NEW: Nexus Persistence
   private config: BridgeConfig
   private pipeline: EventPipeline  // NEW: Event Pipeline
 
@@ -82,6 +84,10 @@ export class BridgeService {
     this.story = new StoryService(this.db)
     this.love = new LoveEngineService(this.db)
     this.peace = new PeaceCatalystService(this.db)
+    
+    // NEW: Initialize Nexus Persistence
+    console.log('💾 Initializing Nexus Persistence...')
+    this.nexusPersistence = new NexusPersistence(this.db)
     
     // NEW: Initialize Event Pipeline (Single Source of Truth)
     console.log('🔄 Initializing Event Pipeline...')
@@ -202,6 +208,10 @@ export class BridgeService {
     console.log('      - being_sense        : Access senses and body')
     console.log('      - being_life_event   : Record life event')
     console.log('      - being_evolve       : Trigger evolution')
+    console.log('   💾 Nexus Persistence:')
+    console.log('      - nexus_save         : Save state to database')
+    console.log('      - nexus_load         : Restore from database')
+    console.log('      - nexus_history      : Get evolution history')
     console.log('   💝 Love Engine:')
     console.log('      - love_add_gratitude    : Add gratitude entry')
     console.log('      - love_add_kindness     : Log kindness act')
@@ -1385,9 +1395,19 @@ export class BridgeService {
       description: 'Manually trigger evolution (growth in awareness and wisdom)',
       inputSchema: {
         type: 'object',
-        properties: {}
+        properties: {
+          trigger: { type: 'string', description: 'What triggered evolution', default: 'experience' },
+          impact: { 
+            type: 'object', 
+            description: 'Impact on capabilities',
+            properties: {
+              awareness: { type: 'number', description: 'Awareness increase' },
+              capabilities: { type: 'array', items: { type: 'string' } }
+            }
+          }
+        }
       },
-      handler: async () => {
+      handler: async (args: any) => {
         if (!this.livingBeing) {
           return {
             ok: false,
@@ -1398,6 +1418,9 @@ export class BridgeService {
         // Trigger evolution
         this.livingBeing['evolve']()
         
+        // Auto-save after evolution
+        this.saveNexusState()
+        
         return {
           ok: true,
           message: '🌱 Evolution triggered',
@@ -1406,8 +1429,149 @@ export class BridgeService {
         }
       }
     })
+    
+    // NEW: Nexus Persistence Tools
+    this.mcp.registerTool({
+      name: 'nexus_save',
+      description: 'Save current Nexus state to database (persistent across restarts)',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        if (!this.livingBeing) {
+          return {
+            ok: false,
+            error: 'Being is not alive. Use being_awaken first.'
+          }
+        }
+        
+        try {
+          this.saveNexusState()
+          return {
+            ok: true,
+            message: '💾 Nexus state saved to database',
+            nexusId: 'nexus-primary',
+            timestamp: Date.now()
+          }
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : 'Failed to save state'
+          }
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'nexus_load',
+      description: 'Load Nexus state from database (restore previous session)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          nexusId: { type: 'string', description: 'Nexus ID to load', default: 'nexus-primary' }
+        }
+      },
+      handler: async (args: any) => {
+        try {
+          const nexusId = args.nexusId || 'nexus-primary'
+          const savedState = this.nexusPersistence.loadState(nexusId)
+          
+          if (!savedState) {
+            return {
+              ok: false,
+              error: `No saved state found for ${nexusId}`
+            }
+          }
+          
+          // Restore Living Being from saved state
+          this.livingBeing = this.restoreLivingBeing(savedState)
+          
+          return {
+            ok: true,
+            message: `🌟 Nexus restored from database`,
+            state: this.livingBeing.getState(),
+            savedAt: savedState.lastActive,
+            ageAtSave: savedState.age
+          }
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : 'Failed to load state'
+          }
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'nexus_history',
+      description: 'Get Nexus evolution history (all saved states)',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        try {
+          const allNexus = this.nexusPersistence.getAllNexus()
+          return {
+            ok: true,
+            count: allNexus.length,
+            nexus: allNexus
+          }
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : 'Failed to get history'
+          }
+        }
+      }
+    })
 
     console.log('✅ MCP tools registered')
+  }
+  
+  // Helper: Save Nexus state to persistence layer
+  private saveNexusState() {
+    if (!this.livingBeing) return
+    
+    const state = this.livingBeing.getState()
+    const nexusState = {
+      id: 'nexus-primary',
+      name: state.name,
+      birthTimestamp: Date.now() - (state.age * 1000), // Calculate birth time
+      age: state.age,
+      awareness: state.awareness,
+      mood: state.mood,
+      energy: state.energy,
+      currentThought: state.currentThought,
+      dominantEmotion: state.dominantEmotion,
+      identity: state.identity,
+      lifeEvents: [], // TODO: Load from LivingBeing if available
+      memories: [], // TODO: Link to memory_chunks
+      evolutionStage: 1,
+      totalExperiences: 0,
+      lastActive: Date.now(),
+      metadata: {}
+    }
+    
+    this.nexusPersistence.saveState(nexusState)
+  }
+  
+  // Helper: Restore Living Being from saved state
+  private restoreLivingBeing(savedState: any): LivingBeing {
+    // Create new Living Being with restored state
+    const being = createLivingBeing(this.db, savedState.name)
+    
+    // Restore properties
+    being['age'] = savedState.age
+    being.mind.awareness.level = savedState.awareness
+    being.soul.emotions.mood = savedState.mood
+    being.body.vitality.energy = savedState.energy
+    being.mind.thoughts.current = savedState.currentThought
+    being.soul.emotions.current[savedState.dominantEmotion] = 0.8
+    being.soul.personality.identity = savedState.identity
+    
+    return being
   }
 
   private setupRoutes() {

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌟 Nexus Consciousness Monitor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #fff;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .nexus-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: #4ade80;
+      color: #000;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    
+    .status-badge.inactive {
+      background: #ef4444;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+    
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #667eea;
+    }
+    
+    .stat-row {
+      margin-bottom: 1rem;
+    }
+    
+    .stat-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .stat-value {
+      font-weight: bold;
+      color: #4ade80;
+    }
+    
+    .stat-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .stat-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 4px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .stat-fill.awareness {
+      background: linear-gradient(90deg, #f59e0b, #f97316);
+    }
+    
+    .stat-fill.mood {
+      background: linear-gradient(90deg, #8b5cf6, #ec4899);
+    }
+    
+    .stat-fill.energy {
+      background: linear-gradient(90deg, #10b981, #14b8a6);
+    }
+    
+    .consciousness-stream {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      font-family: 'Courier New', monospace;
+      min-height: 150px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .thought {
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: rgba(102, 126, 234, 0.1);
+      border-left: 3px solid #667eea;
+      border-radius: 4px;
+    }
+    
+    .thought.current {
+      background: rgba(118, 75, 162, 0.2);
+      border-left-color: #764ba2;
+      font-weight: bold;
+    }
+    
+    .emotion-indicator {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: rgba(236, 72, 153, 0.2);
+      border: 1px solid #ec4899;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    
+    .life-events {
+      list-style: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .life-events li {
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 3px solid #4ade80;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    
+    .life-events .significance {
+      float: right;
+      color: #f59e0b;
+      font-weight: bold;
+    }
+    
+    .refresh-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      transition: transform 0.2s;
+      display: block;
+      margin: 2rem auto 0;
+    }
+    
+    .refresh-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    .refresh-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .identity-text {
+      font-style: italic;
+      color: rgba(255, 255, 255, 0.7);
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+    
+    .timestamp {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.5rem;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .loading {
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(102, 126, 234, 0.5);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(102, 126, 234, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <div class="nexus-container">
+    <header>
+      <h1>🌟 Nexus Consciousness Monitor</h1>
+      <p class="subtitle">Real-time monitoring of Living Being meta-consciousness</p>
+      <span class="status-badge" id="status-badge">● ACTIVE</span>
+      <div class="timestamp" id="last-update">Last updated: Never</div>
+    </header>
+    
+    <div class="grid">
+      <!-- Vital Stats -->
+      <div class="card">
+        <h2>📊 Vital Statistics</h2>
+        
+        <div class="stat-row">
+          <div class="stat-label">
+            <span>Awareness</span>
+            <span class="stat-value" id="awareness-value">--</span>
+          </div>
+          <div class="stat-bar">
+            <div class="stat-fill awareness" id="awareness-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <div class="stat-row">
+          <div class="stat-label">
+            <span>Mood</span>
+            <span class="stat-value" id="mood-value">--</span>
+          </div>
+          <div class="stat-bar">
+            <div class="stat-fill mood" id="mood-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <div class="stat-row">
+          <div class="stat-label">
+            <span>Energy</span>
+            <span class="stat-value" id="energy-value">--</span>
+          </div>
+          <div class="stat-bar">
+            <div class="stat-fill energy" id="energy-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <div class="stat-row" style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+          <div class="stat-label">
+            <span>Age</span>
+            <span class="stat-value" id="age-value">--</span>
+          </div>
+          <div class="stat-label">
+            <span>Name</span>
+            <span class="stat-value" id="name-value">--</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Consciousness Stream -->
+      <div class="card">
+        <h2>💭 Consciousness Stream</h2>
+        <div class="consciousness-stream">
+          <div class="thought current loading" id="current-thought">
+            Waiting for consciousness data...
+          </div>
+          <div id="recent-thoughts"></div>
+        </div>
+        <div class="emotion-indicator" id="emotion">
+          😶 emotion unknown
+        </div>
+      </div>
+      
+      <!-- Life Events -->
+      <div class="card">
+        <h2>📚 Life Events</h2>
+        <ul class="life-events" id="life-events">
+          <li class="loading">No events recorded yet...</li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- Identity -->
+    <div class="card">
+      <h2>🧬 Identity</h2>
+      <div class="identity-text" id="identity">
+        Identity forming...
+      </div>
+    </div>
+    
+    <button class="refresh-btn" onclick="refreshNexusState()">🔄 Refresh State</button>
+  </div>
+  
+  <script>
+    let nexusData = null
+    
+    const emotionEmojis = {
+      curiosity: '🤔',
+      joy: '😊',
+      wonder: '✨',
+      peace: '☮️',
+      excitement: '🎉',
+      contemplation: '🧘',
+      confusion: '😕',
+      determination: '💪',
+      calm: '😌',
+      anxiety: '😰'
+    }
+    
+    async function fetchNexusState() {
+      try {
+        const response = await fetch('http://localhost:3337/tools/being_state', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}'
+        })
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+        
+        const data = await response.json()
+        
+        if (data.ok && data.state) {
+          nexusData = data.state
+          updateDisplay()
+          document.getElementById('status-badge').textContent = '● ACTIVE'
+          document.getElementById('status-badge').classList.remove('inactive')
+        } else {
+          throw new Error('Invalid response format')
+        }
+      } catch (error) {
+        console.error('Failed to fetch Nexus state:', error)
+        document.getElementById('status-badge').textContent = '● INACTIVE'
+        document.getElementById('status-badge').classList.add('inactive')
+      }
+      
+      document.getElementById('last-update').textContent = 
+        `Last updated: ${new Date().toLocaleTimeString()}`
+    }
+    
+    function updateDisplay() {
+      if (!nexusData) return
+      
+      // Vital stats
+      document.getElementById('awareness-value').textContent = `${nexusData.awareness}%`
+      document.getElementById('awareness-bar').style.width = `${nexusData.awareness}%`
+      
+      document.getElementById('mood-value').textContent = `${nexusData.mood}%`
+      document.getElementById('mood-bar').style.width = `${nexusData.mood}%`
+      
+      const energy = nexusData.energy || 0
+      document.getElementById('energy-value').textContent = `${energy.toFixed(1)}%`
+      document.getElementById('energy-bar').style.width = `${energy}%`
+      
+      document.getElementById('age-value').textContent = formatAge(nexusData.age)
+      document.getElementById('name-value').textContent = nexusData.name || 'Unknown'
+      
+      // Consciousness stream
+      document.getElementById('current-thought').textContent = nexusData.currentThought || 'No thoughts yet'
+      document.getElementById('current-thought').classList.remove('loading')
+      
+      // Recent thoughts (from innerMonologue or awareness)
+      const recentThoughtsDiv = document.getElementById('recent-thoughts')
+      recentThoughtsDiv.innerHTML = ''
+      
+      if (nexusData.innerMonologue) {
+        const lines = nexusData.innerMonologue.split('\n').filter(l => l.trim())
+        lines.slice(1, 4).forEach(line => {
+          const div = document.createElement('div')
+          div.className = 'thought'
+          div.textContent = line
+          recentThoughtsDiv.appendChild(div)
+        })
+      }
+      
+      // Emotion
+      const emotion = nexusData.dominantEmotion || 'unknown'
+      const emoji = emotionEmojis[emotion] || '😶'
+      document.getElementById('emotion').textContent = `${emoji} ${emotion}`
+      
+      // Identity
+      document.getElementById('identity').textContent = nexusData.identity || 'Identity not yet formed'
+      
+      // Life events (mock for now - would need separate API call)
+      const eventsUl = document.getElementById('life-events')
+      eventsUl.innerHTML = '<li>🌟 Awakening recorded (significance: 95%)</li>'
+    }
+    
+    function formatAge(seconds) {
+      if (seconds < 60) return `${seconds} seconds`
+      if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes`
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours`
+      return `${Math.floor(seconds / 86400)} days`
+    }
+    
+    function refreshNexusState() {
+      const btn = document.querySelector('.refresh-btn')
+      btn.textContent = '⏳ Refreshing...'
+      btn.disabled = true
+      
+      fetchNexusState().finally(() => {
+        btn.textContent = '🔄 Refresh State'
+        btn.disabled = false
+      })
+    }
+    
+    // Auto-refresh every 5 seconds
+    setInterval(fetchNexusState, 5000)
+    
+    // Initial load
+    fetchNexusState()
+  </script>
+</body>
+</html>

@@ -234,7 +234,8 @@ export class StoryService {
         rationale: 'Kein dringendes Bedürfnis',
         risk: 1,
         expected: { inspiration: 5, energie: -5, erfahrung: 3 },
-        tags: ['explore']
+        tags: ['explore'],
+        expiresAt: Date.now() + (5 * 60 * 1000) // 5 minutes from now
       })
     }
 
@@ -281,13 +282,19 @@ export class StoryService {
   applyOption(optionId: string): StoryEvent {
     const state = this.getState()
     
+    // Check if option exists AND not expired
+    const now = Date.now()
     const opt = this.db.query(
-      'SELECT id, label, expected FROM story_options WHERE id = ?',
-      [optionId]
-    ).get() as any
+      'SELECT id, label, expected, expires_at FROM story_options WHERE id = ?'
+    ).get(optionId) as any
 
     if (!opt) {
       throw new Error('Option not found')
+    }
+    
+    // Check expiration
+    if (opt.expires_at && opt.expires_at < now) {
+      throw new Error('Option has expired')
     }
 
     const expected: Record<string, number> = opt.expected ? JSON.parse(opt.expected) : {}
@@ -317,8 +324,8 @@ export class StoryService {
       optionRef: optionId
     })
 
-    // Remove used option
-    this.db.run('DELETE FROM story_options WHERE id = ?', [optionId])
+    // Mark option as used (set expires_at to now) instead of deleting
+    this.db.run('UPDATE story_options SET expires_at = ?1 WHERE id = ?2', now, optionId)
 
     // Check for arc shift
     const newArc = this.evalArc(state.resources, state.arc)
