@@ -20,6 +20,7 @@ import { ContactService, InteractionService } from '../../people/src/index.ts'
 import { StoryService } from '../../core/src/story/index.ts'
 import { initializeConsciousness, consciousnessTools } from './tools/consciousness-tools.ts'
 // import { awarenessTools } from './tools/awareness-tools.ts' // TODO: Fix fastmcp dependency
+import { AutonomousActionExecutor } from '../../consciousness/src/agent/autonomous-executor.ts'
 import LoveEngineService from '../../love/src/service'
 import PeaceCatalystService from '../../peace/src/service'
 import type { BridgeConfig } from './types.ts'
@@ -36,6 +37,7 @@ export class BridgeService {
   private story: StoryService
   private love: LoveEngineService
   private peace: PeaceCatalystService
+  private autonomousExecutor: AutonomousActionExecutor
   private config: BridgeConfig
 
   constructor(config: BridgeConfig) {
@@ -64,6 +66,10 @@ export class BridgeService {
     this.story = new StoryService(this.db)
     this.love = new LoveEngineService(this.db)
     this.peace = new PeaceCatalystService(this.db)
+    
+    // Initialize Autonomous Executor 🤖
+    this.autonomousExecutor = new AutonomousActionExecutor(this.db)
+    // DISABLED by default for safety - enable with autonomous_enable tool
     
     // Initialize Consciousness System 🧠
     console.log('🧠 Initializing Consciousness...')
@@ -123,6 +129,11 @@ export class BridgeService {
     console.log('      - system_modify_self: Self-modification (with approval)')
     console.log('      - system_suggest   : Suggest improvements')
     console.log('      - system_analyze   : Analyze system health')
+    console.log('   🤖 Autonomous Agent:')
+    console.log('      - autonomous_enable  : Enable/disable autonomous actions')
+    console.log('      - autonomous_decide  : Make autonomous decisions')
+    console.log('      - autonomous_execute : Execute autonomous actions')
+    console.log('      - autonomous_status  : Get autonomy statistics')
     console.log('   💝 Love Engine:')
     console.log('      - love_add_gratitude    : Add gratitude entry')
     console.log('      - love_add_kindness     : Log kindness act')
@@ -739,6 +750,178 @@ export class BridgeService {
             ok: false,
             status: 'error',
             error: error instanceof Error ? error.message : 'Analysis failed',
+            timestamp: Date.now()
+          }
+        }
+      }
+    })
+    
+    // AUTONOMOUS AGENT TOOLS 🤖
+    console.log('🤖 Registering Autonomous Agent tools...')
+    
+    this.mcp.registerTool({
+      name: 'autonomous_enable',
+      description: 'Enable or disable autonomous actions (REQUIRES USER PERMISSION)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          enabled: { 
+            type: 'boolean', 
+            description: 'true to enable, false to disable' 
+          }
+        },
+        required: ['enabled']
+      },
+      handler: async (args: any) => {
+        try {
+          this.autonomousExecutor.setEnabled(args.enabled)
+          return {
+            ok: true,
+            enabled: args.enabled,
+            message: args.enabled 
+              ? '⚡ Autonomous actions ENABLED - System can now act independently'
+              : '🛑 Autonomous actions DISABLED - System will only respond to commands',
+            timestamp: Date.now()
+          }
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : 'Failed to toggle autonomous mode',
+            timestamp: Date.now()
+          }
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'autonomous_decide',
+      description: 'Make an autonomous decision given a situation and options',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          situation: { 
+            type: 'string', 
+            description: 'Description of the situation requiring decision' 
+          },
+          options: {
+            type: 'array',
+            description: 'Available options to choose from',
+            items: {
+              type: 'object',
+              properties: {
+                action: { type: 'string' },
+                description: { type: 'string' },
+                expectedOutcome: { type: 'string' },
+                ethicalScore: { type: 'number' },
+                priority: { type: 'number' }
+              }
+            }
+          }
+        },
+        required: ['situation', 'options']
+      },
+      handler: async (args: any) => {
+        try {
+          const decision = await this.autonomousExecutor.makeDecision(
+            args.situation,
+            args.options
+          )
+          return {
+            ok: true,
+            decision
+          }
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : 'Decision failed',
+            timestamp: Date.now()
+          }
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'autonomous_execute',
+      description: 'Execute an autonomous action (REQUIRES AUTONOMOUS MODE ENABLED)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: { 
+            type: 'string', 
+            enum: ['self_improvement', 'help_user', 'learn', 'optimize', 'create', 'communicate', 'maintenance'],
+            description: 'Type of action to execute' 
+          },
+          description: { 
+            type: 'string', 
+            description: 'What the action will do' 
+          },
+          intention: { 
+            type: 'string', 
+            description: 'Why this action is being taken' 
+          },
+          params: { 
+            type: 'object', 
+            description: 'Action-specific parameters' 
+          },
+          ethicalScore: { 
+            type: 'number', 
+            description: 'Ethical score (0-100)', 
+            minimum: 0, 
+            maximum: 100 
+          }
+        },
+        required: ['type', 'description', 'intention', 'ethicalScore']
+      },
+      handler: async (args: any) => {
+        try {
+          if (!this.autonomousExecutor.isAutonomousEnabled()) {
+            return {
+              ok: false,
+              error: 'Autonomous actions are disabled. Enable with autonomous_enable tool.',
+              timestamp: Date.now()
+            }
+          }
+          
+          const action = await this.autonomousExecutor.executeAction({
+            type: args.type,
+            description: args.description,
+            intention: args.intention,
+            params: args.params || {},
+            ethicalScore: args.ethicalScore
+          })
+          
+          return {
+            ok: true,
+            action
+          }
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : 'Action execution failed',
+            timestamp: Date.now()
+          }
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'autonomous_status',
+      description: 'Get status and statistics of autonomous actions',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async (args: any) => {
+        try {
+          const stats = this.autonomousExecutor.getStatistics()
+          return {
+            ok: true,
+            ...stats
+          }
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : 'Failed to get status',
             timestamp: Date.now()
           }
         }

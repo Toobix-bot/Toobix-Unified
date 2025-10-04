@@ -104,6 +104,17 @@ Antworte NUR mit JSON in diesem Format:
     };
   }
   
+  if (input.includes('autonom') || input.includes('selbstständig') || input.includes('aktiviere')) {
+    return {
+      action: 'autonomous_control',
+      parameters: { enable: input.includes('aktiviere') || input.includes('enable') },
+      needsConfirmation: true,
+      description: input.includes('aktiviere') 
+        ? 'Aktiviere autonome Aktionen' 
+        : 'Zeige Autonomie-Status'
+    };
+  }
+  
   if (input.includes('füge') || input.includes('ändere') || input.includes('lösche')) {
     return {
       action: 'code_modify',
@@ -209,6 +220,24 @@ async function executeCommand(command: CommandResult): Promise<string> {
           memories += `${i + 1}. ${m.content || m.text}\n`;
         });
         return memories;
+      }
+      break;
+      
+    case 'autonomous_control':
+      if (command.parameters.enable) {
+        result = await callTool('autonomous_enable', { enabled: true });
+        return result?.message || '⚡ Autonome Aktionen aktiviert!';
+      } else {
+        result = await callTool('autonomous_status');
+        if (result) {
+          let status = `🤖 Autonomie-Status:\n\n`;
+          status += `Status: ${result.enabled ? '✅ AKTIV' : '❌ INAKTIV'}\n`;
+          status += `Gesamt-Aktionen: ${result.totalActions}\n`;
+          status += `Erfolgreich: ${result.successfulActions}\n`;
+          status += `Erfolgsrate: ${result.successRate}\n`;
+          status += `Durchschn. Ethik-Score: ${result.avgEthicalScore}/100\n`;
+          return status;
+        }
       }
       break;
       
