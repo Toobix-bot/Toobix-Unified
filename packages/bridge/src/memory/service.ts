@@ -222,9 +222,9 @@ export class MemoryService {
     // Delete main chunk
     this.db.run('DELETE FROM memory_chunks WHERE id = ?', [id])
     
-    // Delete vector chunks
+    // Delete vector chunks (CASCADE should handle this, but be explicit)
     if (this.useVectorSearch) {
-      this.db.run('DELETE FROM memory_chunks WHERE memory_id = ?', [id])
+      this.db.run('DELETE FROM vector_chunks WHERE memory_id = ?', [id])
     }
   }
 
@@ -246,7 +246,7 @@ export class MemoryService {
     
     let totalChunks = 0
     if (this.useVectorSearch) {
-      const result = this.db.prepare('SELECT COUNT(*) as count FROM memory_chunks').get() as any
+      const result = this.db.prepare('SELECT COUNT(*) as count FROM vector_chunks').get() as any
       totalChunks = result.count
     }
     

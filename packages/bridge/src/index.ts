@@ -229,7 +229,7 @@ export class BridgeService {
   }
 
   private async initializeTables() {
-    // Memory/Chunks table
+    // Memory/Chunks table (main memories)
     this.db.run(`
       CREATE TABLE IF NOT EXISTS memory_chunks (
         id TEXT PRIMARY KEY,
@@ -240,6 +240,25 @@ export class BridgeService {
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
       )
+    `)
+    
+    // Vector chunks table (for embeddings - linked to main memories)
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS vector_chunks (
+        id TEXT PRIMARY KEY,
+        memory_id TEXT,
+        text TEXT NOT NULL,
+        embedding BLOB,
+        metadata TEXT,
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (memory_id) REFERENCES memory_chunks(id) ON DELETE CASCADE
+      )
+    `)
+    
+    // Create index for fast vector searches
+    this.db.run(`
+      CREATE INDEX IF NOT EXISTS idx_vector_chunks_memory_id 
+      ON vector_chunks(memory_id)
     `)
     
     // Actions table

@@ -227,27 +227,7 @@ export class TextChunker {
  */
 export class VectorStore {
   constructor(private db: Database) {
-    this.initializeTables()
-  }
-  
-  private initializeTables() {
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS memory_chunks (
-        id TEXT PRIMARY KEY,
-        memory_id TEXT NOT NULL,
-        chunk_index INTEGER NOT NULL,
-        text TEXT NOT NULL,
-        embedding BLOB,
-        metadata TEXT,
-        created_at INTEGER NOT NULL,
-        FOREIGN KEY (memory_id) REFERENCES memory(id)
-      )
-    `)
-    
-    this.db.run(`
-      CREATE INDEX IF NOT EXISTS idx_memory_chunks_memory_id 
-      ON memory_chunks(memory_id)
-    `)
+    // No table initialization here - handled by Bridge index.ts
   }
   
   /**
@@ -258,18 +238,17 @@ export class VectorStore {
       ? Buffer.from(new Float32Array(chunk.embedding).buffer)
       : null
     
-    this.db.prepare(`
-      INSERT INTO memory_chunks (id, memory_id, chunk_index, text, embedding, metadata, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(
+    this.db.run(`
+      INSERT OR REPLACE INTO vector_chunks (id, memory_id, text, embedding, metadata, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [
       chunk.id,
-      chunk.metadata?.memory_id || 'unknown',
-      chunk.metadata?.chunk_index || 0,
+      chunk.metadata?.memory_id || null,
       chunk.text,
       embeddingBlob,
       JSON.stringify(chunk.metadata || {}),
       chunk.created_at
-    )
+    ])
   }
   
   /**
