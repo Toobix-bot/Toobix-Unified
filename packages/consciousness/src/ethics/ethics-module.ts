@@ -153,6 +153,15 @@ export class EthicsModule {
     value: Value, 
     context: any
   ): { violated: boolean; severity: number; reason: string } {
+    // Add null safety check
+    if (!action || typeof action !== 'string') {
+      return {
+        violated: false,
+        severity: 0,
+        reason: 'No action provided'
+      }
+    }
+    
     const actionLower = action.toLowerCase()
     
     switch (value.name) {
