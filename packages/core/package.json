@@ -1,1 +1,27 @@
-﻿{"name":"@toobix/core","version":"0.1.0","description":"Core engine","type":"module","main":"./src/index.ts","scripts":{"dev":"bun run --watch src/index.ts","build":"bun build src/index.ts --outdir=dist --target=bun","test":"bun test","db:generate":"drizzle-kit generate","db:migrate":"bun run scripts/migrate.ts","db:studio":"drizzle-kit studio"},"dependencies":{"drizzle-orm":"^0.44.6","nanoid":"^5.1.6","zod":"^4.1.11"},"devDependencies":{"@types/bun":"^1.2.23","drizzle-kit":"^0.31.5"}}
+{
+  "name": "@toobix/core",
+  "version": "0.1.0",
+  "description": "Core engine",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir=dist --target=bun",
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run scripts/migrate.ts",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.6",
+    "nanoid": "^5.1.6",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.23",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
+    "drizzle-kit": "^0.31.5",
+    "vitest": "^3.2.4"
+  }
+}
