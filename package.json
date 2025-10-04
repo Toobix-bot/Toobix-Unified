@@ -44,6 +44,9 @@
     "demo:being": "bun run scripts/living-being-demo.ts",
     "demo:voice": "bun run scripts/toobix-voice.ts",
     
+    "terminal": "bun run scripts/toobix-terminal.ts",
+    "term": "bun run scripts/toobix-terminal.ts",
+    
     "start:all": "node scripts/start-all.mjs",
     "health": "curl http://localhost:3337/health",
     
