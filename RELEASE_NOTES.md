@@ -118,12 +118,13 @@ WEB_PORT=3000
 
 ## 🗺️ What's Next?
 
-### v0.2.0 (Target: November 2025)
-- ✅ JWT Authentication
-- ✅ 80%+ Test Coverage
-- ✅ PostgreSQL Support
-- ✅ Rate Limiting
-- ✅ Multi-User Support
+### v0.2.0 (Target: Week of Oct 7-11, 2025) 🚀
+- ⏳ **Chatty Integration** - External AI agent connection (ChatGPT, Claude)
+- ⏳ JWT Authentication (code ready, integration this week)
+- ⏳ 80%+ Test Coverage (Vitest setup ready, tests this week)
+- ⏳ Multi-User Support (users table ready, migration this week)
+- 📅 PostgreSQL Support (planned for November)
+- 📅 Rate Limiting (code ready, integration this week)
 
 ### v0.3.0 (Target: December 2025)
 - ✅ Plugin Architecture
@@ -137,7 +138,7 @@ WEB_PORT=3000
 - ✅ Security Audit
 - ✅ Mobile Apps
 
-See [ROADMAP.md](./ROADMAP.md) for full details.
+See [ROADMAP.md](./ROADMAP.md) and [CHATTY_INTEGRATION_PLAN.md](./CHATTY_INTEGRATION_PLAN.md) for full details.
 
 ---
 
