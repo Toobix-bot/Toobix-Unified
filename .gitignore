@@ -57,3 +57,4 @@ src-tauri/WixTools/
 
 # Migration backups
 migrations/*.backup
+nul
