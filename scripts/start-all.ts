@@ -101,7 +101,23 @@ async function checkPrerequisites(skipChecks: boolean): Promise<boolean> {
     const response = await fetch(`${BRIDGE_URL}/health`, { signal: AbortSignal.timeout(1000) })
     if (response.ok) {
       warn(`Bridge already running on port ${BRIDGE_PORT}!`)
-      return false
+      const readline = require('readline').createInterface({
+        input: process.stdin,
+        output: process.stdout
+      })
+      
+      return new Promise((resolve) => {
+        readline.question('Stop and restart? (y/n): ', (answer: string) => {
+          readline.close()
+          if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
+            info('Restarting bridge...')
+            resolve(true)
+          } else {
+            info('Using existing bridge server')
+            resolve(true) // Continue anyway
+          }
+        })
+      })
     }
   } catch {
     // Not running, which is what we want
