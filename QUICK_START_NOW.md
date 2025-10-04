@@ -41,7 +41,33 @@ bun run scripts/living-being-demo.ts
 
 ---
 
-## ✅ Schritt 3: Voice Control (neues Terminal)
+## ✅ Schritt 3: Interactive Terminal (neues Terminal)
+
+```powershell
+# Öffne WEITERES Terminal - Direkter System-Zugriff!
+cd C:\Toobix-Unified
+bun terminal
+
+# Im Terminal:
+toobix> status              # System-Status
+toobix> being_state        # Living Being Status
+toobix> tools being        # Alle "being_*" tools
+toobix> help               # Alle Befehle
+toobix> ping               # Connection test
+```
+
+**Features:**
+- ✅ Direkte API-Calls zu allen 59 MCP Tools
+- ✅ Tab-Completion für Auto-Complete
+- ✅ Command History mit ↑/↓
+- ✅ Farbige Ausgabe
+- ✅ Built-in: help, status, tools, info, clear, ping
+
+**📚 Dokumentation:** [docs/TERMINAL_GUIDE.md](docs/TERMINAL_GUIDE.md)
+
+---
+
+## ✅ Schritt 4: Voice Control (neues Terminal, optional)
 
 ```powershell
 # Öffne WEITERES Terminal
