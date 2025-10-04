@@ -274,11 +274,14 @@ See [CHATTY_CONNECTOR_GUIDE.md](./CHATTY_CONNECTOR_GUIDE.md) for setup.
 - **[QUICK_START.md](./QUICK_START.md)** - 5-minute setup guide
 - **[API_INTEGRATION_GUIDE.md](./API_INTEGRATION_GUIDE.md)** - ChatGPT/Groq integration
 - **[QUICK_START_NEUSTART.md](./QUICK_START_NEUSTART.md)** - Troubleshooting
+- **[PRIORITY_QUICK_REFERENCE.md](./PRIORITY_QUICK_REFERENCE.md)** - ⭐ What to do NOW
 
 ### Architecture & Development
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System design, data flow, diagrams
 - **[SYSTEM_STRUKTUR.md](./SYSTEM_STRUKTUR.md)** - Detailed structure
 - **[ROADMAP.md](./ROADMAP.md)** - Vision, phases, priorities
+- **[CRITICAL_REVIEW_REPORT.md](./CRITICAL_REVIEW_REPORT.md)** - ⭐ Strengths & Weaknesses
+- **[ACTION_PLAN_3_MONTHS.md](./ACTION_PLAN_3_MONTHS.md)** - ⭐ Week-by-week plan
 
 ### AI & Integration
 - **[AI_COLLABORATION.md](./AI_COLLABORATION.md)** - AI assistant guide
