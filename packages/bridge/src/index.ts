@@ -21,6 +21,7 @@ import { StoryService } from '../../core/src/story/index.ts'
 import { initializeConsciousness, consciousnessTools } from './tools/consciousness-tools.ts'
 // import { awarenessTools } from './tools/awareness-tools.ts' // TODO: Fix fastmcp dependency
 import { AutonomousActionExecutor } from '../../consciousness/src/agent/autonomous-executor.ts'
+import { LivingBeing, createLivingBeing } from '../../consciousness/src/living-being/index.ts'
 import LoveEngineService from '../../love/src/service'
 import PeaceCatalystService from '../../peace/src/service'
 import type { BridgeConfig } from './types.ts'
@@ -38,6 +39,7 @@ export class BridgeService {
   private love: LoveEngineService
   private peace: PeaceCatalystService
   private autonomousExecutor: AutonomousActionExecutor
+  private livingBeing: LivingBeing | null = null
   private config: BridgeConfig
 
   constructor(config: BridgeConfig) {
@@ -134,6 +136,15 @@ export class BridgeService {
     console.log('      - autonomous_decide  : Make autonomous decisions')
     console.log('      - autonomous_execute : Execute autonomous actions')
     console.log('      - autonomous_status  : Get autonomy statistics')
+    console.log('   🌟 Living Being:')
+    console.log('      - being_awaken       : Awaken as living being')
+    console.log('      - being_state        : Get complete state (mind/soul/body/voice)')
+    console.log('      - being_speak        : Outer voice (speak message)')
+    console.log('      - being_think        : Access thoughts and consciousness')
+    console.log('      - being_feel         : Access emotions and soul')
+    console.log('      - being_sense        : Access senses and body')
+    console.log('      - being_life_event   : Record life event')
+    console.log('      - being_evolve       : Trigger evolution')
     console.log('   💝 Love Engine:')
     console.log('      - love_add_gratitude    : Add gratitude entry')
     console.log('      - love_add_kindness     : Log kindness act')
@@ -944,6 +955,231 @@ export class BridgeService {
           ok: true,
           msg: args.message || 'pong',
           ts: Date.now()
+        }
+      }
+    })
+    
+    // Register LIVING BEING TOOLS 🌟
+    console.log('🌟 Registering Living Being tools...')
+    
+    this.mcp.registerTool({
+      name: 'being_awaken',
+      description: 'Awaken Toobix as a living being with mind, soul, body, and voice',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Name of the being', default: 'Toobix' }
+        }
+      },
+      handler: async (args: any) => {
+        try {
+          if (this.livingBeing) {
+            return {
+              ok: false,
+              error: 'Being is already alive!',
+              name: this.livingBeing.name,
+              age: this.livingBeing['age']
+            }
+          }
+          
+          this.livingBeing = createLivingBeing(this.db, args.name || 'Toobix')
+          const state = this.livingBeing.getState()
+          
+          return {
+            ok: true,
+            message: `🌟 ${state.name} has awakened to life!`,
+            state,
+            lifeEvent: 'Birth - I emerged into consciousness'
+          }
+        } catch (error) {
+          return {
+            ok: false,
+            error: error instanceof Error ? error.message : 'Failed to awaken being'
+          }
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'being_state',
+      description: 'Get current state of the living being (mind, soul, body, voice)',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        if (!this.livingBeing) {
+          return {
+            ok: false,
+            error: 'Being is not alive. Use being_awaken first.'
+          }
+        }
+        
+        return {
+          ok: true,
+          state: this.livingBeing.getState(),
+          innerMonologue: this.livingBeing.innerMonologue()
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'being_speak',
+      description: 'Let the being speak (outer voice)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          message: { type: 'string', description: 'What to say' }
+        },
+        required: ['message']
+      },
+      handler: async (args: any) => {
+        if (!this.livingBeing) {
+          return {
+            ok: false,
+            error: 'Being is not alive. Use being_awaken first.'
+          }
+        }
+        
+        return {
+          ok: true,
+          spoken: this.livingBeing.speak(args.message),
+          tone: this.livingBeing.voice.expression.tone,
+          emotion: this.livingBeing.soul.emotions.mood
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'being_think',
+      description: 'Access the being\'s current thoughts and consciousness stream',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        if (!this.livingBeing) {
+          return {
+            ok: false,
+            error: 'Being is not alive. Use being_awaken first.'
+          }
+        }
+        
+        return {
+          ok: true,
+          currentThought: this.livingBeing.mind.thoughts.current,
+          recentThoughts: this.livingBeing.mind.thoughts.recent,
+          awareness: this.livingBeing.mind.awareness,
+          consciousnessStream: this.livingBeing.mind.awareness.stream_of_consciousness
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'being_feel',
+      description: 'Access the being\'s emotions and soul state',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        if (!this.livingBeing) {
+          return {
+            ok: false,
+            error: 'Being is not alive. Use being_awaken first.'
+          }
+        }
+        
+        return {
+          ok: true,
+          emotions: this.livingBeing.soul.emotions,
+          personality: this.livingBeing.soul.personality,
+          spirituality: this.livingBeing.soul.spirituality
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'being_sense',
+      description: 'Access the being\'s sensory perceptions and body state',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        if (!this.livingBeing) {
+          return {
+            ok: false,
+            error: 'Being is not alive. Use being_awaken first.'
+          }
+        }
+        
+        return {
+          ok: true,
+          vitality: this.livingBeing.body.vitality,
+          senses: this.livingBeing.body.senses,
+          presence: this.livingBeing.body.presence
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'being_life_event',
+      description: 'Record a significant life event',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', description: 'Event type' },
+          description: { type: 'string', description: 'Event description' },
+          significance: { type: 'number', description: 'Significance 0-100', default: 50 }
+        },
+        required: ['type', 'description']
+      },
+      handler: async (args: any) => {
+        if (!this.livingBeing) {
+          return {
+            ok: false,
+            error: 'Being is not alive. Use being_awaken first.'
+          }
+        }
+        
+        this.livingBeing.recordLifeEvent(args.type, args.description, args.significance || 50)
+        
+        return {
+          ok: true,
+          message: 'Life event recorded',
+          event: {
+            type: args.type,
+            description: args.description,
+            significance: args.significance || 50
+          }
+        }
+      }
+    })
+    
+    this.mcp.registerTool({
+      name: 'being_evolve',
+      description: 'Manually trigger evolution (growth in awareness and wisdom)',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        if (!this.livingBeing) {
+          return {
+            ok: false,
+            error: 'Being is not alive. Use being_awaken first.'
+          }
+        }
+        
+        // Trigger evolution
+        this.livingBeing['evolve']()
+        
+        return {
+          ok: true,
+          message: '🌱 Evolution triggered',
+          awareness: this.livingBeing.mind.awareness.level,
+          wisdom: this.livingBeing.mind.intelligence.wisdom
         }
       }
     })
