@@ -266,6 +266,92 @@ export class MCPServer {
           }
         }
 
+        // Chatty Integration - GET /discovery (list tools)
+        if (url.pathname === '/discovery' && req.method === 'GET') {
+          const tools = Array.from(self.tools.values()).map(t => ({
+            name: t.name,
+            description: t.description,
+            paramsSchema: t.inputSchema
+          }))
+          return new Response(JSON.stringify({ tools }), { headers })
+        }
+
+        // Chatty Integration - POST /invoke (call tool)
+        if (url.pathname === '/invoke' && req.method === 'POST') {
+          try {
+            const body = await req.json() as {
+              jsonrpc: string
+              method: string
+              params: { tool: string; arguments: any }
+              id: string
+            }
+
+            // Validate JSON-RPC 2.0
+            if (body.jsonrpc !== '2.0') {
+              return new Response(JSON.stringify({
+                jsonrpc: '2.0',
+                error: { code: -32600, message: 'Invalid JSON-RPC version' },
+                id: body.id
+              }), { status: 400, headers })
+            }
+
+            if (body.method !== 'call_tool') {
+              return new Response(JSON.stringify({
+                jsonrpc: '2.0',
+                error: { code: -32601, message: `Method not found: ${body.method}` },
+                id: body.id
+              }), { status: 400, headers })
+            }
+
+            const toolName = body.params?.tool
+            const args = body.params?.arguments || {}
+
+            const tool = self.tools.get(toolName)
+            if (!tool) {
+              return new Response(JSON.stringify({
+                jsonrpc: '2.0',
+                error: { 
+                  code: -32602, 
+                  message: `Tool not found: ${toolName}`,
+                  data: { availableTools: Array.from(self.tools.keys()) }
+                },
+                id: body.id
+              }), { status: 404, headers })
+            }
+
+            // Execute tool
+            console.log(`[Chatty] Calling tool: ${toolName}`, args)
+            const result = await tool.handler(args)
+
+            return new Response(JSON.stringify({
+              jsonrpc: '2.0',
+              result,
+              id: body.id
+            }), { headers })
+
+          } catch (error: any) {
+            console.error('[Chatty] Tool execution error:', error)
+            return new Response(JSON.stringify({
+              jsonrpc: '2.0',
+              error: { 
+                code: -32603, 
+                message: 'Internal error',
+                data: { error: error.message }
+              },
+              id: null
+            }), { status: 500, headers })
+          }
+        }
+
+        // GET /health - Health check for Chatty
+        if (url.pathname === '/health' && req.method === 'GET') {
+          return new Response(JSON.stringify({ 
+            status: 'healthy',
+            toolCount: self.tools.size,
+            timestamp: Date.now()
+          }), { headers })
+        }
+
         // Route handling
         const routeMap = self.routes.get(req.method)
         if (routeMap?.has(url.pathname)) {
