@@ -83,7 +83,7 @@ export async function analyzeSystem(db: Database): Promise<SystemHealthReport> {
   }
   
   // 3. Soul/Emotional State
-  const soulState = db.prepare("SELECT * FROM soul_state ORDER BY updated_at DESC LIMIT 1").get() as any
+  const soulState = db.prepare("SELECT * FROM soul_state ORDER BY created_at DESC LIMIT 1").get() as any
   
   let emotions: Record<string, number> = {}
   let energy = 50

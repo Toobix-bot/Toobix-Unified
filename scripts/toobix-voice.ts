@@ -55,18 +55,24 @@ Verfügbare Aktionen:
 - code_modify: Code ändern/hinzufügen/löschen
 - code_suggest: Verbesserungsvorschläge
 - system_info: Systemstatus anzeigen
+- autonomous_control: Autonomie-Status oder aktivieren
 - memory_search: Erinnerungen durchsuchen
 - story_info: Story/Level Status
 - chat: Normales Gespräch
+
+WICHTIG:
+- Bei "autonomie", "autonom", "selbstständig" → autonomous_control
+- Bei "status", "system" → system_info
+- Bei "level", "xp", "story" → story_info
 
 User Input: "${voiceInput}"
 
 Antworte NUR mit JSON in diesem Format:
 {
-  "action": "code_modify",
-  "parameters": { "file": "example.ts", "description": "Add new feature" },
+  "action": "autonomous_control",
+  "parameters": { "enable": false },
   "needsConfirmation": true,
-  "description": "Fügt ein neues Feature zu example.ts hinzu"
+  "description": "Zeige Autonomie-Status"
 }`;
 
   try {

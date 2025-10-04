@@ -472,8 +472,11 @@ export class MCPServer {
 
         // Direct tool routes (REST endpoints for quick testing)
         // e.g., POST /rpc/ping, POST /rpc/soul_state
-        if (url.pathname.startsWith('/rpc/') && req.method === 'POST') {
-          const toolName = url.pathname.slice(5) // Remove '/rpc/'
+        // Also supports /tools/{toolName} for consistency
+        if ((url.pathname.startsWith('/rpc/') || url.pathname.startsWith('/tools/')) && req.method === 'POST') {
+          const toolName = url.pathname.startsWith('/rpc/') 
+            ? url.pathname.slice(5)  // Remove '/rpc/'
+            : url.pathname.slice(7)  // Remove '/tools/'
           const tool = self.tools.get(toolName)
           
           if (!tool) {
