@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌙 Code & Story - Living World</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    #world-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #ui-overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      pointer-events: none;
+    }
+
+    .stat-card {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 15px;
+      pointer-events: all;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-bar {
+      height: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 10px 0;
+      position: relative;
+    }
+
+    .stat-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-start), var(--color-end));
+      transition: width 0.5s ease;
+      border-radius: 12px;
+      box-shadow: 0 0 20px var(--glow-color);
+    }
+
+    .stat-label {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+      z-index: 1;
+    }
+
+    .stat-value {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: bold;
+      z-index: 1;
+    }
+
+    #luna-dialogue {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(139, 69, 188, 0.9);
+      backdrop-filter: blur(10px);
+      padding: 20px 40px;
+      border-radius: 20px;
+      max-width: 600px;
+      text-align: center;
+      font-size: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(139, 69, 188, 0.5);
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .luna-icon {
+      font-size: 48px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    #scene-3d {
+      width: 100%;
+      height: 100%;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #fff;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: sparkle 2s infinite;
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: 0; transform: scale(0); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
+    #quest-indicator {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      padding: 15px 25px;
+      border-radius: 15px;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    }
+
+    .level-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    .sound-toggle {
+      position: absolute;
+      top: 20px;
+      right: 300px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      pointer-events: all;
+      transition: all 0.3s;
+    }
+
+    .sound-toggle:hover {
+      background: rgba(0, 0, 0, 0.9);
+      transform: scale(1.05);
+    }
+
+    #audio-context {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="world-canvas"></canvas>
+
+  <div id="ui-overlay">
+    <!-- Stats Panel -->
+    <div class="stat-card" style="width: 350px;">
+      <h2>✨ Your Journey</h2>
+      <div style="margin: 15px 0;">
+        <span style="font-size: 24px; font-weight: bold;">Creator</span>
+        <span class="level-badge">Lv. <span id="player-level">1</span></span>
+      </div>
+
+      <!-- XP Bar -->
+      <div class="stat-bar">
+        <div class="stat-fill" id="xp-bar" style="--color-start: #FFD700; --color-end: #FFA500; --glow-color: rgba(255, 215, 0, 0.6); width: 0%;"></div>
+        <div class="stat-label">✨ XP</div>
+        <div class="stat-value"><span id="xp-current">0</span>/<span id="xp-max">100</span></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stat-bar">
+        <div class="stat-fill" id="love-bar" style="--color-start: #FF69B4; --color-end: #FF1493; --glow-color: rgba(255, 105, 180, 0.6); width: 10%;"></div>
+        <div class="stat-label">💝 Love</div>
+        <div class="stat-value"><span id="love-value">10</span>/100</div>
+      </div>
+
+      <div class="stat-bar">
+        <div class="stat-fill" id="peace-bar" style="--color-start: #87CEEB; --color-end: #4682B4; --glow-color: rgba(135, 206, 235, 0.6); width: 10%;"></div>
+        <div class="stat-label">☮️ Peace</div>
+        <div class="stat-value"><span id="peace-value">10</span>/100</div>
+      </div>
+
+      <div class="stat-bar">
+        <div class="stat-fill" id="wisdom-bar" style="--color-start: #FFD700; --color-end: #DAA520; --glow-color: rgba(255, 215, 0, 0.6); width: 10%;"></div>
+        <div class="stat-label">📚 Wisdom</div>
+        <div class="stat-value"><span id="wisdom-value">10</span>/100</div>
+      </div>
+
+      <div class="stat-bar">
+        <div class="stat-fill" id="creativity-bar" style="--color-start: #DA70D6; --color-end: #BA55D3; --glow-color: rgba(218, 112, 214, 0.6); width: 10%;"></div>
+        <div class="stat-label">🎨 Creativity</div>
+        <div class="stat-value"><span id="creativity-value">10</span>/100</div>
+      </div>
+
+      <div class="stat-bar">
+        <div class="stat-fill" id="stability-bar" style="--color-start: #20B2AA; --color-end: #008B8B; --glow-color: rgba(32, 178, 170, 0.6); width: 10%;"></div>
+        <div class="stat-label">🛡️ Stability</div>
+        <div class="stat-value"><span id="stability-value">10</span>/100</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quest Indicator -->
+  <div id="quest-indicator" style="pointer-events: all;">
+    ⭐ <span id="quest-name">The Great Optimization</span>
+    <div style="font-size: 12px; margin-top: 5px;">
+      <span id="quest-progress">1</span>/5 Milestones
+    </div>
+  </div>
+
+  <!-- Sound Toggle -->
+  <div class="sound-toggle" onclick="toggleSound()">
+    <span id="sound-icon">🔊</span> Sound: <span id="sound-status">ON</span>
+  </div>
+
+  <!-- Luna Dialogue -->
+  <div id="luna-dialogue">
+    <div class="luna-icon">🌙</div>
+    <div id="luna-text">Welcome back, Creator. The digital realm feels warmer when you're here. 💝</div>
+  </div>
+
+  <!-- 3D Scene (Canvas rendering) -->
+  <div id="scene-3d"></div>
+
+  <!-- Audio Context -->
+  <div id="audio-context"></div>
+
+  <script>
+    // WebSocket connection for live updates
+    let ws = null
+    let soundEnabled = true
+
+    // Connect to local server
+    function connect() {
+      try {
+        ws = new WebSocket('ws://localhost:3338')
+
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data)
+          updateWorld(data)
+        }
+
+        ws.onerror = () => {
+          console.log('WebSocket not available - using polling')
+          startPolling()
+        }
+      } catch (e) {
+        console.log('WebSocket not available - using polling')
+        startPolling()
+      }
+    }
+
+    // Polling fallback
+    function startPolling() {
+      setInterval(async () => {
+        try {
+          const response = await fetch('http://localhost:3337/game-state')
+          const data = await response.json()
+          updateWorld(data)
+        } catch (e) {
+          // Server not running
+        }
+      }, 2000)
+    }
+
+    // Update world based on game state
+    function updateWorld(data) {
+      if (!data) return
+
+      // Update player
+      if (data.player) {
+        document.getElementById('player-level').textContent = data.player.level
+        document.getElementById('xp-current').textContent = data.player.xp
+        document.getElementById('xp-max').textContent = data.player.xpToNextLevel
+        updateBar('xp-bar', (data.player.xp / data.player.xpToNextLevel) * 100)
+      }
+
+      // Update stats
+      if (data.stats) {
+        updateStat('love', data.stats.love)
+        updateStat('peace', data.stats.peace)
+        updateStat('wisdom', data.stats.wisdom)
+        updateStat('creativity', data.stats.creativity)
+        updateStat('stability', data.stats.stability)
+      }
+
+      // Update quest
+      if (data.story?.currentQuest) {
+        document.getElementById('quest-name').textContent = data.story.currentQuest
+      }
+
+      // Luna speaks
+      if (data.luna?.message) {
+        showLunaDialogue(data.luna.message)
+      }
+    }
+
+    function updateStat(stat, value) {
+      document.getElementById(`${stat}-value`).textContent = value
+      updateBar(`${stat}-bar`, value)
+    }
+
+    function updateBar(barId, percentage) {
+      const bar = document.getElementById(barId)
+      if (bar) {
+        bar.style.width = `${Math.min(100, Math.max(0, percentage))}%`
+      }
+    }
+
+    function showLunaDialogue(message) {
+      const dialogue = document.getElementById('luna-dialogue')
+      const text = document.getElementById('luna-text')
+      text.textContent = message
+
+      dialogue.style.animation = 'none'
+      setTimeout(() => {
+        dialogue.style.animation = 'fadeIn 0.5s ease'
+      }, 10)
+
+      if (soundEnabled) {
+        playSound('luna-speaks')
+      }
+    }
+
+    // Simple canvas rendering
+    const canvas = document.getElementById('world-canvas')
+    const ctx = canvas.getContext('2d')
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+
+    window.addEventListener('resize', resizeCanvas)
+    resizeCanvas()
+
+    // Render loop
+    let time = 0
+    function render() {
+      time += 0.01
+
+      // Clear
+      ctx.fillStyle = 'transparent'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Draw animated background elements
+      drawStars()
+      drawLuna(time)
+      drawCodeParticles(time)
+
+      requestAnimationFrame(render)
+    }
+
+    function drawStars() {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+      for (let i = 0; i < 100; i++) {
+        const x = (i * 137.5) % canvas.width
+        const y = (i * 73.3) % canvas.height
+        const size = Math.sin(time + i) * 2 + 2
+        ctx.beginPath()
+        ctx.arc(x, y, size, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    function drawLuna(time) {
+      const x = canvas.width / 4
+      const y = canvas.height / 2 + Math.sin(time) * 20
+
+      // Glow
+      const gradient = ctx.createRadialGradient(x, y, 10, x, y, 80)
+      gradient.addColorStop(0, 'rgba(255, 228, 181, 0.6)')
+      gradient.addColorStop(1, 'rgba(255, 228, 181, 0)')
+      ctx.fillStyle = gradient
+      ctx.fillRect(x - 80, y - 80, 160, 160)
+
+      // Moon
+      ctx.fillStyle = '#FFE4B5'
+      ctx.beginPath()
+      ctx.arc(x, y, 50, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Label
+      ctx.fillStyle = '#fff'
+      ctx.font = 'bold 20px Arial'
+      ctx.textAlign = 'center'
+      ctx.fillText('Luna 🌙', x, y + 90)
+    }
+
+    function drawCodeParticles(time) {
+      ctx.fillStyle = 'rgba(100, 200, 255, 0.6)'
+      for (let i = 0; i < 30; i++) {
+        const x = canvas.width / 2 + Math.sin(time + i * 0.5) * 200
+        const y = canvas.height / 2 + Math.cos(time + i * 0.3) * 150
+        ctx.beginPath()
+        ctx.arc(x, y, 3, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // Sound system
+    function playSound(type) {
+      if (!soundEnabled) return
+
+      const ctx = new (window.AudioContext || window.webkitAudioContext)()
+
+      if (type === 'luna-speaks') {
+        // Ethereal tone
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.frequency.value = 440
+        osc.type = 'sine'
+        gain.gain.setValueAtTime(0.1, ctx.currentTime)
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1)
+        osc.start()
+        osc.stop(ctx.currentTime + 1)
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled
+      document.getElementById('sound-icon').textContent = soundEnabled ? '🔊' : '🔇'
+      document.getElementById('sound-status').textContent = soundEnabled ? 'ON' : 'OFF'
+    }
+
+    // Start
+    connect()
+    render()
+
+    // Test update (remove in production)
+    setTimeout(() => {
+      updateWorld({
+        player: { level: 1, xp: 0, xpToNextLevel: 100 },
+        stats: { love: 10, peace: 10, wisdom: 10, creativity: 10, stability: 10 }
+      })
+    }, 1000)
+  </script>
+</body>
+</html>

@@ -51,6 +51,12 @@
     "game:meditate": "bun run packages/story-idle/src/game.ts meditate",
     "game:story": "bun run packages/story-idle/src/game.ts story",
 
+    "visual": "bun run packages/visual-world/src/world.ts",
+    "visual:anim": "bun run packages/visual-world/src/world.ts animation",
+    "visual:sound": "bun run packages/visual-world/src/world.ts sound",
+    "visual:svg": "bun run packages/visual-world/src/world.ts svg",
+    "visual:server": "bun run packages/visual-world/src/stream/live-server.ts",
+
     "terminal": "bun run scripts/toobix-terminal.ts",
     "term": "bun run scripts/toobix-terminal.ts",
     "gui": "bun run scripts/start-gui.ts",

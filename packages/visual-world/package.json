@@ -1,0 +1,22 @@
+{
+  "name": "@toobix/visual-world",
+  "version": "0.1.0",
+  "description": "Living visual universe for Code & Story - animations, 3D world, SVG scenes",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "world": "bun run src/world.ts",
+    "scene": "bun run src/scene-viewer.ts"
+  },
+  "dependencies": {
+    "@toobix/story-idle": "workspace:*",
+    "canvas": "^3.0.0",
+    "blessed": "^0.1.81",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/blessed": "^0.1.25",
+    "@types/ws": "^8.5.12"
+  }
+}

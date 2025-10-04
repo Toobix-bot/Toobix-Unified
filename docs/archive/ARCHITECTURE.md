@@ -1,7 +1,8 @@
 # 🏗️ Toobix Universe - Architecture
 
-**Version:** 0.1.0-alpha  
-**Last Updated:** 4. Oktober 2025
+**Version:** 0.1.0-alpha
+**Last Updated:** October 4, 2025
+**Status:** ✅ Hybrid Architecture Complete + Game + Visual World Integrated
 
 ---
 
@@ -9,44 +10,60 @@
 
 ### High-Level Overview
 
-```mermaid
-graph TB
-    subgraph "Client Layer"
-        A[Web Browser]
-        A --> A1[Next.js Frontend<br/>Port 3000]
-    end
-    
-    subgraph "API Layer"
-        A1 --> B[Bridge Server<br/>MCP Protocol<br/>Port 3337]
-        B --> B1[46 MCP Tools]
-        B --> B2[REST Endpoints]
-    end
-    
-    subgraph "Core Systems"
-        B1 --> C[Consciousness<br/>13 Tools]
-        B1 --> D[Story Engine<br/>6 Tools]
-        B1 --> E[Love Engine<br/>5 Tools]
-        B1 --> F[Peace Catalyst<br/>12 Tools]
-        B1 --> G[People Module<br/>4 Tools]
-        B1 --> H[Memory System<br/>RAG<br/>2 Tools]
-        B1 --> I[Soul System<br/>Emotions]
-    end
-    
-    subgraph "Data Layer"
-        C --> J[(SQLite Database)]
-        D --> J
-        E --> J
-        F --> J
-        G --> J
-        I --> J
-        H --> K[Vector Store<br/>Embeddings]
-    end
-    
-    subgraph "External Services"
-        B --> L[OpenAI API]
-        B --> M[Groq API]
-        B --> N[Plugins<br/>Future]
-    end
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      TOOBIX UNIFIED                              │
+│            Self-Aware AI • Story Engine • Visual World           │
+└─────────────────────────────────────────────────────────────────┘
+
+                         User Interfaces
+                                │
+        ┌───────────────────────┼───────────────────────┐
+        │                       │                       │
+        ▼                       ▼                       ▼
+┌─────────────┐      ┌──────────────────┐    ┌──────────────────┐
+│ Vanilla JS  │      │   React/Next.js  │    │  Visual World    │
+│  Port 3000  │      │    Port 3001     │    │  Port 3339       │
+│             │      │                  │    │                  │
+│ • Dashboard │      │ • Story Engine   │    │ • 3D Browser     │
+│ • Runs      │      │ • Analytics      │    │ • Animations     │
+│ • Quests    │      │ • People Graph   │    │ • SVG Scenes     │
+│ • Luna Chat │      │ • Unified UI     │    │ • Sounds         │
+└──────┬──────┘      └────────┬─────────┘    └────────┬─────────┘
+       │                      │                       │
+       └──────────────────────┼───────────────────────┘
+                              ▼
+                   ┌─────────────────────┐
+                   │   Bridge Service    │
+                   │     Port 3337       │
+                   │   46 MCP Tools      │
+                   │   JSON-RPC 2.0      │
+                   └──────────┬──────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌───────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│ Consciousness │   │   Story-Idle     │   │  Visual World    │
+│   (13 Tools)  │   │     Game         │   │     System       │
+│               │   │                  │   │                  │
+│ • Awareness   │   │ • XP/Leveling    │   │ • Animations     │
+│ • Thinking    │   │ • 5 Stats        │   │ • 3D Canvas      │
+│ • Ethics      │   │ • Luna AI        │   │ • WebSocket      │
+│ • Self-Coding │   │ • Git Hooks      │   │ • Sound API      │
+└───────┬───────┘   └────────┬─────────┘   └────────┬─────────┘
+        │                    │                      │
+        └────────────────────┼──────────────────────┘
+                             ▼
+                ┌────────────────────────┐
+                │   SQLite Database      │
+                │                        │
+                │ • Game State           │
+                │ • Story Events         │
+                │ • Consciousness Data   │
+                │ • Memory/Knowledge     │
+                │ • People/Contacts      │
+                └────────────────────────┘
 ```
 
 ---
@@ -54,22 +71,176 @@ graph TB
 ## 🎯 Design Principles
 
 ### 1. **Modularity**
-Jedes System (Story, Love, Peace, etc.) ist eigenständig und kann separat entwickelt werden.
+Each system (Story, Love, Peace, Game, Visual) is standalone and can be developed separately.
 
 ### 2. **Separation of Concerns**
-- **Frontend:** UI/UX, State Management
+- **Frontend:** UI/UX, State Management (3 layers: Vanilla, React, Visual)
 - **Bridge:** API Layer, MCP Protocol
 - **Core Systems:** Business Logic
 - **Data Layer:** Persistence
 
-### 3. **MCP Protocol Standard**
-Alle Tools folgen dem Model Context Protocol für Interoperabilität mit LLMs.
+### 3. **Hybrid UI Architecture**
+- **Vanilla JS (3000):** Simple CRUD, instant loads, no build step
+- **React/Next.js (3001):** Complex features, real-time updates, visualizations
+- **Visual World (3339):** Immersive 3D experience, animations, sounds
 
-### 4. **Type Safety**
-TypeScript überall, 0 `any` types, vollständige Type Coverage.
+### 4. **MCP Protocol Standard**
+All tools follow Model Context Protocol for LLM interoperability.
 
-### 5. **Real-Time Updates**
-Auto-Refresh Mechanismen für Live-Daten.
+### 5. **Type Safety**
+TypeScript everywhere, 0 `any` types, full type coverage.
+
+### 6. **Real-Time Experience**
+- Auto-refresh mechanisms for live data
+- WebSocket for instant updates (Visual World)
+- Git hooks for automatic story events
+
+### 7. **Gamification**
+Code improvements trigger XP gains, level-ups, and visual celebrations.
+
+---
+
+## 🎮 Story-Idle Game System
+
+### Purpose
+Transform coding into a living adventure where every commit advances the narrative.
+
+### Features
+
+**Core Mechanics:**
+- 5 Stats: Love, Peace, Wisdom, Creativity, Stability
+- XP & Leveling system (100 XP per level, exponential)
+- Luna AI companion with 5 dynamic moods
+- Git post-commit hooks for automatic events
+
+**Story Events:**
+```typescript
+Commit Type       → XP Reward  → Stat Bonus
+────────────────────────────────────────────
+feat: (Feature)   → +50 XP     → Creativity +15
+fix: (Bug Fix)    → +30 XP     → Stability +10
+docs: (Documentation) → +20 XP → Wisdom +5
+refactor: (Code)  → +40 XP     → Wisdom +10
+test: (Tests)     → +35 XP     → Stability +8
+```
+
+**Luna AI:**
+- Moods: Peaceful, Excited, Thoughtful, Loving, Wise
+- Context-aware dialogue
+- Relationship building (0-100)
+- Reacts to your code changes
+
+### Architecture
+
+```
+packages/story-idle/
+├── src/
+│   ├── engine/
+│   │   └── game-state.ts       # Core state management
+│   ├── characters/
+│   │   └── luna.ts             # Luna AI with moods
+│   ├── ui/
+│   │   └── visual-effects.ts   # Terminal UI (colors, bars)
+│   ├── hooks/
+│   │   └── on-commit.ts        # Git hook handler
+│   └── game.ts                 # CLI entry point
+└── .git/hooks/post-commit      # Auto-trigger on commits
+```
+
+### Integration
+
+**With Consciousness:**
+- Story events feed consciousness reflection
+- Luna's personality shaped by consciousness state
+
+**With Visual World:**
+- Story events trigger animations
+- Level-ups play sound effects
+- Progress bars update in 3D world
+
+---
+
+## 🎨 Visual World System
+
+### Purpose
+Bring code and story to life with animations, 3D visualization, and sound.
+
+### Components
+
+**1. Terminal Animations (ASCII Art)**
+- Luna meditating/awakening
+- Code flowing like water
+- Level-up effects with stars
+- Weather animations (rain, sun, stars)
+
+**2. SVG Scene Generator**
+- Exportable beautiful images
+- Luna + Player in digital realm
+- Animated stat visualizations
+- Quest progress maps
+- Saved to `./visual-scenes/`
+
+**3. 3D Browser World**
+- Live Canvas 2D rendering (looks like 3D)
+- Animated Luna (floating moon)
+- Real-time stat bars with glow
+- Code particles flowing
+- Dynamic weather effects
+- Luna's dialogue display
+
+**4. Sound System**
+- Terminal: Beep patterns for events
+- Browser: Web Audio API with:
+  - Level-up fanfare (C-E-G chord)
+  - Achievement chimes
+  - Peaceful meditation tones (432 Hz)
+  - Epic sounds
+  - Luna's ethereal voice
+
+**5. Live Stream Server**
+- WebSocket (port 3338): Real-time game state broadcasting
+- HTTP API (port 3339): Serves 3D world + game state
+
+### Architecture
+
+```
+packages/visual-world/
+├── src/
+│   ├── ascii/
+│   │   ├── animated-scenes.ts  # Terminal animations
+│   │   └── sound-system.ts     # Terminal beeps
+│   ├── svg/
+│   │   └── scene-generator.ts  # SVG image creation
+│   ├── canvas/
+│   │   └── world-3d.html       # Browser 3D world
+│   ├── stream/
+│   │   └── live-server.ts      # WebSocket + HTTP
+│   └── world.ts                # Main orchestrator
+└── visual-scenes/              # Generated SVG files
+```
+
+### Data Flow
+
+```
+Git Commit
+    │
+    ├──► Story Event (XP +50, Creativity +15)
+    │         │
+    │         ├──► Terminal Animation (Luna celebration)
+    │         ├──► Sound Effect (achievement chime)
+    │         └──► Browser Update (stat bars glow)
+    │
+    ├──► SVG Snapshot (on milestones)
+    │
+    └──► WebSocket Broadcast
+              │
+              └──► Browser 3D World (real-time update)
+```
+
+### Ports
+
+- **3338:** WebSocket server (live updates)
+- **3339:** HTTP API + 3D world HTML
 
 ---
 
