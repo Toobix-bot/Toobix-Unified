@@ -119,7 +119,8 @@ WEB_PORT=3000
 ## 🗺️ What's Next?
 
 ### v0.2.0 (Target: Week of Oct 7-11, 2025) 🚀
-- ⏳ **Chatty Integration** - External AI agent connection (ChatGPT, Claude)
+- ✅ **Chatty Integration** - External AI agent connection (LOCAL WORKING! ✅)
+- ⏳ **Public URL** - ngrok/Cloudflare Tunnel for external access (setup NOW!)
 - ⏳ JWT Authentication (code ready, integration this week)
 - ⏳ 80%+ Test Coverage (Vitest setup ready, tests this week)
 - ⏳ Multi-User Support (users table ready, migration this week)
