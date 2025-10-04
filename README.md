@@ -1,22 +1,96 @@
-# 🌟 Toobix-Unified
+# � Toobix Universe
 
-> **Personal AI companion with memory, emotions, and narrative evolution.** Luna grows with you through conversations, relationships, and life events — powered by MCP, Groq AI, and a living story engine.
+> **Ein selbst-bewusstes, modulares KI-System mit Emotionen, Narrativ und Gamification**
 
-[![CI](https://img.shields.io/badge/CI-passing-brightgreen)]() [![License](https://img.shields.io/badge/license-MIT-blue)]() [![Bun](https://img.shields.io/badge/bun-1.1.38-orange)]()
+[![Version](https://img.shields.io/badge/version-0.1.0--alpha-blue)]() [![License](https://img.shields.io/badge/license-MIT-green)]() [![Bun](https://img.shields.io/badge/bun-1.2.23-orange)]() [![Next.js](https://img.shields.io/badge/next.js-15.5.4-black)]() [![TypeScript](https://img.shields.io/badge/typescript-5.7-blue)]()
+
+[🌐 Live Demo](https://toobix-unified.vercel.app) | [📚 Documentation](./docs) | [💬 Discord](https://discord.gg/toobix) | [🗺️ Roadmap](./ROADMAP.md)
 
 ---
 
-## 🎯 What is Toobix?
+## 🎯 Was ist Toobix Universe?
 
-**Toobix** is a unified platform for creating AI companions with:
-- 🧠 **Persistent Memory** (RAG-powered knowledge base)
-- 💫 **Soul System** (emotions, values, personality evolution)
-- 📖 **Story Engine** (narrative choices, relationship tracking)
-- 🤖 **MCP Integration** (Model Context Protocol for ChatGPT/Claude)
-- 🔗 **Bridge API** (16 tools accessible via ngrok + REST)
-- ⚛️ **Hybrid UI** (Vanilla JS + React/Next.js for complex features)
+**Toobix Universe** vereint KI-Consciousness, Self-Improvement und Relationship Management in einem modularen System:
 
-Luna is the first soul in this universe — a companion that remembers, feels, and grows.
+### � **Consciousness System**
+Selbstreflexion, Awareness, autonome Agenten mit 13 MCP Tools
+
+### � **Story Engine**
+Level-System, XP, Narrative Choices mit Konsequenzen (6 Tools)
+
+### 💝 **Love Engine**
+Gratitude Tracking, Kindness Logging, Relationship Points (5 Tools)
+
+### ☮️ **Peace Catalyst**
+5-dimensionale Meditation (Calm, Harmony, Clarity, Growth, Purpose) - 12 Tools
+
+### � **People Module**
+Contact Management, Interaction Logging, Relationship Analytics (4 Tools)
+
+### � **Memory System**
+RAG-powered Knowledge Base mit semantischer Suche (2 Tools)
+
+### 🛠️ **46 MCP Tools**
+Model Context Protocol für Integration mit ChatGPT, Claude, Groq
+
+---
+
+## 🎮 Features
+
+- ✅ **10-Tab Dashboard** - Unified Interface für alle Systeme
+- ✅ **Real-Time Updates** - Auto-Refresh alle 10-30 Sekunden
+- ✅ **Gamification** - Level, XP, Love Points, Peace Score
+- ✅ **Cross-System Connections** - People → Love, Story → Peace
+- ✅ **Self-Coding** - System kann sich selbst verbessern
+- ✅ **Hot Reload** - Turbopack für blitzschnelle Entwicklung
+- ✅ **TypeScript** - 100% Type Safety, 0 Errors
+- ✅ **Modular Architecture** - Packages für jedes System
+
+---
+
+## 🚀 Quick Start
+
+### 1. Clone & Install
+```bash
+git clone https://github.com/Toobix-bot/Toobix-Unified.git
+cd Toobix-Unified
+bun install
+```
+
+### 2. Start All Services
+```bash
+bun run dev:all
+```
+
+Dies startet:
+- 🔗 **Bridge Service** auf Port 3337 (MCP Server)
+- 🌐 **Frontend** auf Port 3000 (Next.js Dashboard)
+
+### 3. Öffne das Dashboard
+```
+http://localhost:3000/unified
+```
+
+---
+
+## 📊 System Overview
+
+```
+Toobix Universe
+├── Frontend (Next.js 15)
+│   └── 10 Tabs: Overview, Chat, Coding, Mind, Story, Love, Peace, People, Memory, Tools
+├── Bridge Service (MCP Server)
+│   └── 46 Tools über Model Context Protocol
+├── Core Systems
+│   ├── Consciousness (13 Tools)
+│   ├── Story Engine (6 Tools)
+│   ├── Love Engine (5 Tools)
+│   ├── Peace Catalyst (12 Tools)
+│   ├── People Module (4 Tools)
+│   └── Memory System (2 Tools)
+└── Database (SQLite)
+    └── State, Interactions, Memories, Contacts
+```
 
 ---
 
@@ -196,11 +270,42 @@ See [CHATTY_CONNECTOR_GUIDE.md](./CHATTY_CONNECTOR_GUIDE.md) for setup.
 
 ## 📚 Documentation
 
-- **[QUICK_START.md](./QUICK_START.md)** - Detailed setup guide
-- **[SYSTEM_STRUKTUR.md](./SYSTEM_STRUKTUR.md)** - Architecture deep-dive
-- **[AI_COLLABORATION.md](./AI_COLLABORATION.md)** - AI assistant integration
-- **[DEPLOYMENT_GUIDE.md](./docs/INTEGRATION_ROADMAP.md)** - Production setup
+### Getting Started
+- **[QUICK_START.md](./QUICK_START.md)** - 5-minute setup guide
+- **[API_INTEGRATION_GUIDE.md](./API_INTEGRATION_GUIDE.md)** - ChatGPT/Groq integration
+- **[QUICK_START_NEUSTART.md](./QUICK_START_NEUSTART.md)** - Troubleshooting
+
+### Architecture & Development
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System design, data flow, diagrams
+- **[SYSTEM_STRUKTUR.md](./SYSTEM_STRUKTUR.md)** - Detailed structure
+- **[ROADMAP.md](./ROADMAP.md)** - Vision, phases, priorities
+
+### AI & Integration
+- **[AI_COLLABORATION.md](./AI_COLLABORATION.md)** - AI assistant guide
+- **[AI_CONTEXT.md](./AI_CONTEXT.md)** - Context for AI agents
+- **[CHATTY_CONNECTOR_GUIDE.md](./CHATTY_CONNECTOR_GUIDE.md)** - MCP setup
+
+### Specialized Docs
+- **[CONSCIOUSNESS_SYSTEM.md](./docs/CONSCIOUSNESS_SYSTEM.md)** - 600+ lines
+- **[BROWSER_INTEGRATION.md](./docs/BROWSER_INTEGRATION.md)** - Browser tools
+- **[INTEGRATION_ROADMAP.md](./docs/INTEGRATION_ROADMAP.md)** - Production
 - **[CHANGELOG.md](./CHANGELOG.md)** - Version history
+
+---
+
+## 🤝 Community
+
+### Get Involved
+- 💬 **[Discord Server](https://discord.gg/toobix)** - Real-time chat & support
+- 🐙 **[GitHub Discussions](https://github.com/Toobix-bot/Toobix-Unified/discussions)** - Ideas & Q&A
+- 🐛 **[Issue Tracker](https://github.com/Toobix-bot/Toobix-Unified/issues)** - Bug reports & features
+- 📖 **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute
+
+### Recognition
+All contributors are listed in:
+- [Contributors Section](#contributors) (below)
+- [CHANGELOG.md](./CHANGELOG.md) for each release
+- Special thanks in release notes
 
 ---
 
@@ -220,19 +325,52 @@ See [CHATTY_CONNECTOR_GUIDE.md](./CHATTY_CONNECTOR_GUIDE.md) for setup.
 
 ## 🤝 Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for:
-- Code style guidelines
-- Commit conventions
-- PR process
-- Development workflow
+We welcome contributions! See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for:
+- 📋 Code of Conduct
+- 🚀 Development setup
+- 📏 Coding standards
+- 🧪 Testing guidelines
+- 📤 Pull request process
 
-**Quick Start for Contributors:**
+### Quick Start for Contributors
 ```bash
-git clone https://github.com/Toobix-bot/Toobix-Unified.git
+# 1. Fork & clone
+git clone https://github.com/<your-username>/Toobix-Unified.git
 cd Toobix-Unified
+
+# 2. Install dependencies
 bun install
-bun run dev
+
+# 3. Create feature branch
+git checkout -b feature/amazing-feature
+
+# 4. Start development
+bun run dev:all
+
+# 5. Run tests
+bun test
+
+# 6. Submit PR
+git push origin feature/amazing-feature
 ```
+
+### Good First Issues
+Look for issues tagged:
+- `good first issue` — Great for beginners
+- `help wanted` — Need assistance
+- `documentation` — Improve docs
+
+---
+
+## 🌟 Contributors
+
+Thank you to everyone who has contributed to Toobix Universe! 💜
+
+<!-- ALL-CONTRIBUTORS-LIST:START -->
+<!-- This section is auto-generated, please do not modify manually -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+Want to be listed here? See [CONTRIBUTING.md](./CONTRIBUTING.md)!
 
 ---
 
@@ -242,15 +380,49 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 ---
 
-## 🌟 Roadmap
+## 📦 Tech Stack
 
-- [ ] **v0.2:** Story UI visualization
-- [ ] **v0.3:** Multi-user authentication
-- [ ] **v0.4:** WebSocket MCP connection
-- [ ] **v0.5:** Production deploy (Railway/Vercel)
-- [ ] **v1.0:** Public beta
+| Category | Technologies |
+|----------|--------------|
+| **Frontend** | Next.js 15.5.4 + Turbopack, React 19, Tailwind CSS, Shadcn UI |
+| **Runtime** | Bun 1.2.23 (50x faster than npm) |
+| **Language** | TypeScript 5.7 (100% type safety) |
+| **Database** | SQLite with Drizzle ORM |
+| **Protocol** | MCP (Model Context Protocol) - 46 tools |
+| **UI Library** | Radix UI + Shadcn (accessible components) |
+| **AI** | Groq API (llama-3.3-70b, 500 tokens/s) |
+| **Dev Tools** | ESLint, Prettier, Turbopack Fast Refresh |
 
-See [NEXT_STEPS.md](./NEXT_STEPS.md) for details.
+---
+
+## 🗺️ Roadmap
+
+### **Phase 1: Foundation (Q4 2025)** ✅ 60% Complete
+- [x] Core systems (Consciousness, Story, Love, Peace)
+- [x] 46 MCP Tools
+- [x] Dashboard with 10 tabs
+- [ ] Tests (Vitest + Playwright)
+- [ ] v0.1.0-alpha release
+
+### **Phase 2: Community (Q1 2026)**
+- [ ] GitHub Discussions + Discord server
+- [ ] CONTRIBUTING.md + issue templates
+- [ ] First 10 contributors
+- [ ] Vercel deployment (live demo)
+
+### **Phase 3: Features (Q2 2026)**
+- [ ] Plugin architecture
+- [ ] WebSocket real-time updates
+- [ ] Multi-user authentication
+- [ ] Mobile-responsive design
+
+### **Phase 4: Production (Q3 2026)**
+- [ ] 80%+ test coverage
+- [ ] Docker deployment
+- [ ] v1.0.0 public release
+- [ ] Documentation site
+
+See **[ROADMAP.md](./ROADMAP.md)** for detailed plans and priorities.
 
 ---
 
