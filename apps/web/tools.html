@@ -3,426 +3,418 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Toobix Unified - Tool Dashboard</title>
+  <title>Toobix Tool Dashboard</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
     :root[data-theme="dark"] {
-      --bg-primary: #0a0a0f;
-      --bg-secondary: #13131a;
-      --bg-card: rgba(255, 255, 255, 0.05);
-      --bg-card-hover: rgba(255, 255, 255, 0.08);
-      --text-primary: #ffffff;
-      --text-secondary: #a0a0b8;
+      --bg: #0a0a0f;
+      --card: rgba(255,255,255,0.05);
+      --text: #ffffff;
+      --text-dim: #a0a0b8;
       --accent: #667eea;
-      --accent-hover: #764ba2;
-      --border: rgba(255, 255, 255, 0.1);
+      --border: rgba(255,255,255,0.1);
       --success: #10b981;
-      --warning: #f59e0b;
       --error: #ef4444;
     }
-
+    
     :root[data-theme="light"] {
-      --bg-primary: #f5f7fa;
-      --bg-secondary: #ffffff;
-      --bg-card: rgba(102, 126, 234, 0.05);
-      --bg-card-hover: rgba(102, 126, 234, 0.1);
-      --text-primary: #1a1a2e;
-      --text-secondary: #6b7280;
+      --bg: #f5f7fa;
+      --card: rgba(102,126,234,0.05);
+      --text: #1a1a2e;
+      --text-dim: #6b7280;
       --accent: #667eea;
-      --accent-hover: #764ba2;
-      --border: rgba(0, 0, 0, 0.1);
+      --border: rgba(0,0,0,0.1);
       --success: #059669;
-      --warning: #d97706;
       --error: #dc2626;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      transition: background 0.3s;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
       padding: 20px;
     }
 
-    /* Header */
     .header {
+      max-width: 1400px;
+      margin: 0 auto 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 0;
+      padding-bottom: 20px;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 30px;
     }
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-icon {
-      font-size: 2em;
-      filter: drop-shadow(0 0 10px var(--accent));
-    }
-
+    .logo { display: flex; align-items: center; gap: 15px; }
     .logo h1 {
-      font-size: 1.8em;
-      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      font-size: 2em;
+      background: linear-gradient(135deg, var(--accent), #764ba2);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .header-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
     .btn {
       padding: 10px 20px;
-      background: var(--bg-card);
+      background: var(--card);
       border: 1px solid var(--border);
       border-radius: 8px;
-      color: var(--text-primary);
+      color: var(--text);
       cursor: pointer;
       transition: all 0.3s;
-      font-size: 0.95em;
     }
 
-    .btn:hover {
-      background: var(--bg-card-hover);
-      transform: translateY(-2px);
-    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { background: var(--accent); color: white; }
 
-    .btn-primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-hover);
-    }
-
-    /* Tool Categories */
-    .tool-categories {
+    .categories {
+      max-width: 1400px;
+      margin: 0 auto 30px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 15px;
-      margin-bottom: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
     }
 
-    .category-btn {
-      padding: 15px;
-      background: var(--bg-card);
+    .cat-btn {
+      padding: 12px;
+      background: var(--card);
       border: 2px solid var(--border);
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: all 0.3s;
       text-align: center;
+      transition: all 0.3s;
     }
 
-    .category-btn.active {
-      border-color: var(--accent);
-      background: var(--bg-card-hover);
-    }
+    .cat-btn.active { border-color: var(--accent); }
+    .cat-btn:hover { transform: translateY(-2px); }
 
-    .category-btn:hover {
-      transform: translateY(-3px);
-    }
-
-    .category-icon {
-      font-size: 2em;
-      margin-bottom: 8px;
-    }
-
-    .category-name {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .category-count {
-      color: var(--text-secondary);
-      font-size: 0.85em;
-    }
-
-    /* Tools Grid */
-    .tools-grid {
+    .tools {
+      max-width: 1400px;
+      margin: 0 auto;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
       gap: 20px;
     }
 
-    .tool-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(10px);
+    .tool {
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 15px;
+      border-radius: 12px;
       padding: 20px;
       transition: all 0.3s;
     }
 
-    .tool-card:hover {
-      background: var(--bg-card-hover);
+    .tool:hover {
       transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+      box-shadow: 0 10px 30px rgba(102,126,234,0.2);
     }
 
-    .tool-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 15px;
-    }
+    .tool-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+    .tool-icon { font-size: 2em; }
+    .tool-name { font-size: 1.2em; font-weight: 600; margin-bottom: 8px; }
+    .tool-desc { color: var(--text-dim); font-size: 0.9em; margin-bottom: 15px; }
 
-    .tool-icon {
-      font-size: 2em;
-    }
-
-    .tool-status {
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 0.75em;
-      font-weight: 600;
-    }
-
-    .status-ready {
-      background: rgba(16, 185, 129, 0.2);
-      color: var(--success);
-    }
-
-    .status-busy {
-      background: rgba(245, 158, 11, 0.2);
-      color: var(--warning);
-    }
-
-    .tool-name {
-      font-size: 1.2em;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .tool-desc {
-      color: var(--text-secondary);
-      font-size: 0.9em;
-      margin-bottom: 15px;
-      line-height: 1.5;
-    }
-
-    .tool-inputs {
-      margin-bottom: 15px;
-    }
-
-    .input-group {
-      margin-bottom: 12px;
-    }
-
-    .input-label {
-      display: block;
-      color: var(--text-secondary);
-      font-size: 0.85em;
-      margin-bottom: 6px;
-    }
-
+    .input-group { margin-bottom: 12px; }
+    .input-label { display: block; color: var(--text-dim); font-size: 0.85em; margin-bottom: 6px; }
     .input {
       width: 100%;
-      padding: 10px 12px;
-      background: var(--bg-secondary);
+      padding: 10px;
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
-      color: var(--text-primary);
+      color: var(--text);
       font-size: 0.95em;
     }
 
-    .input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
+    .input:focus { outline: none; border-color: var(--accent); }
+    .textarea { min-height: 80px; resize: vertical; font-family: inherit; }
 
-    .textarea {
-      min-height: 80px;
-      resize: vertical;
-      font-family: inherit;
-    }
-
-    .select {
-      cursor: pointer;
-    }
-
-    .tool-actions {
-      display: flex;
-      gap: 10px;
-    }
-
-    .tool-result {
+    .actions { display: flex; gap: 10px; margin-top: 15px; }
+    
+    .result {
       margin-top: 15px;
       padding: 12px;
-      background: var(--bg-secondary);
+      background: var(--bg);
       border-radius: 8px;
       font-size: 0.9em;
       max-height: 200px;
       overflow-y: auto;
+      display: none;
     }
 
-    .result-success {
-      border-left: 3px solid var(--success);
-    }
+    .result.success { border-left: 3px solid var(--success); }
+    .result.error { border-left: 3px solid var(--error); }
+    .result pre { white-space: pre-wrap; word-break: break-all; }
 
-    .result-error {
-      border-left: 3px solid var(--error);
-    }
-
-    /* Results Panel */
     .results-panel {
       position: fixed;
       bottom: 20px;
       right: 20px;
       width: 400px;
       max-height: 500px;
-      background: var(--bg-secondary);
+      background: var(--card);
       border: 1px solid var(--border);
       border-radius: 15px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
       overflow: hidden;
-      z-index: 1000;
-      transition: all 0.3s;
-    }
-
-    .results-panel.minimized {
-      max-height: 60px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     }
 
     .results-header {
       padding: 15px;
-      background: var(--bg-card);
+      background: var(--bg);
       border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
-      align-items: center;
       cursor: pointer;
     }
 
-    .results-title {
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .results-content { padding: 15px; max-height: 400px; overflow-y: auto; }
+    .result-item { padding: 12px; background: var(--bg); border-radius: 8px; margin-bottom: 10px; }
+    .result-time { color: var(--text-dim); font-size: 0.75em; }
+    .result-tool { font-weight: 600; margin: 6px 0; }
 
-    .results-content {
-      padding: 15px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .result-item {
-      padding: 12px;
-      background: var(--bg-card);
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-
-    .result-time {
-      color: var(--text-secondary);
-      font-size: 0.75em;
-      margin-bottom: 6px;
-    }
-
-    .result-tool {
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .result-data {
-      font-family: 'Courier New', monospace;
-      font-size: 0.85em;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-
-    /* Loading */
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .loading {
-      display: inline-block;
-      animation: spin 1s linear infinite;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .tools-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .results-panel {
-        width: calc(100% - 40px);
-        right: 20px;
-      }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading { display: inline-block; animation: spin 1s linear infinite; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <div class="logo">
-        <span class="logo-icon">🌉</span>
-        <div>
-          <h1>Tool Dashboard</h1>
-          <p style="color: var(--text-secondary); font-size: 0.9em;">34 MCP Tools • Bridge Port 3337</p>
-        </div>
+  <div class="header">
+    <div class="logo">
+      <span style="font-size: 2em;">🌉</span>
+      <div>
+        <h1>Toobix Tools</h1>
+        <p style="color: var(--text-dim); font-size: 0.9em;">52 MCP Tools • Bridge Port 3337</p>
       </div>
-      <div class="header-actions">
-        <button class="btn" onclick="toggleTheme()">
-          <span id="theme-icon">🌙</span>
-        </button>
-        <button class="btn btn-primary" onclick="testConnection()">
-          Test Bridge
-        </button>
-      </div>
-    </header>
-
-    <!-- Tool Categories -->
-    <div class="tool-categories" id="categories">
-      <!-- Dynamically loaded -->
     </div>
-
-    <!-- Tools Grid -->
-    <div class="tools-grid" id="tools-grid">
-      <!-- Tools will be dynamically loaded here -->
+    <div style="display: flex; gap: 10px;">
+      <button class="btn" onclick="toggleTheme()">🌓</button>
+      <button class="btn btn-primary" onclick="testBridge()">Test Bridge</button>
     </div>
   </div>
 
-  <!-- Results Panel -->
-  <div class="results-panel" id="results-panel">
+  <div class="categories" id="categories"></div>
+  <div class="tools" id="tools"></div>
+
+  <div class="results-panel">
     <div class="results-header" onclick="toggleResults()">
-      <div class="results-title">
-        <span>📊</span>
-        <span>Tool Results</span>
-      </div>
-      <span id="results-toggle">▼</span>
+      <span>📊 Results</span>
+      <span id="toggle">▼</span>
     </div>
-    <div class="results-content" id="results-content">
+    <div class="results-content" id="results">
       <div class="result-item">
-        <div class="result-time">System ready</div>
-        <div class="result-tool">Toobix Bridge</div>
-        <div class="result-data">Waiting for first tool execution...</div>
+        <div class="result-time">Ready</div>
+        <div class="result-tool">Waiting for first execution...</div>
       </div>
     </div>
   </div>
 
-  <script src="./tools.js"></script>
+  <script>
+    const BRIDGE = 'http://localhost:3337';
+    const TOOLS = [
+      // Memory
+      { id: 'memory_search', cat: 'memory', icon: '🔍', name: 'Memory Search', desc: 'RAG search', inputs: [
+        { name: 'query', type: 'text', label: 'Search Query', required: true },
+        { name: 'limit', type: 'number', label: 'Max Results', default: 5 }
+      ]},
+      { id: 'memory_add', cat: 'memory', icon: '💾', name: 'Add Memory', desc: 'Store knowledge', inputs: [
+        { name: 'text', type: 'textarea', label: 'Content', required: true }
+      ]},
+      
+      // Love
+      { id: 'love_add_gratitude', cat: 'love', icon: '🙏', name: 'Add Gratitude', desc: 'Gratitude entry', inputs: [
+        { name: 'content', type: 'textarea', label: 'Content', required: true },
+        { name: 'category', type: 'select', label: 'Category', options: ['person', 'moment', 'achievement', 'nature', 'other'], required: true },
+        { name: 'intensity', type: 'number', label: 'Intensity (1-10)', default: 7, min: 1, max: 10 }
+      ]},
+      { id: 'love_add_kindness', cat: 'love', icon: '💝', name: 'Log Kindness', desc: 'Kindness act', inputs: [
+        { name: 'description', type: 'text', label: 'Description', required: true },
+        { name: 'type', type: 'select', label: 'Type', options: ['given', 'received'], required: true },
+        { name: 'category', type: 'select', label: 'Category', options: ['help', 'gift', 'time', 'words', 'presence'], required: true }
+      ]},
+      { id: 'love_get_score', cat: 'love', icon: '❤️', name: 'Love Score', desc: 'Get love score', inputs: [] },
+      
+      // Peace
+      { id: 'peace_get_state', cat: 'peace', icon: '🕊️', name: 'Peace State', desc: '5 agents state', inputs: [] },
+      { id: 'peace_calm_meditate', cat: 'peace', icon: '🧘', name: 'Meditate', desc: 'Log meditation', inputs: [
+        { name: 'duration', type: 'number', label: 'Duration (min)', default: 10, min: 1 }
+      ]},
+      { id: 'peace_calm_breathing', cat: 'peace', icon: '😮‍💨', name: 'Breathing', desc: 'Breathing exercise', inputs: [] },
+      { id: 'peace_clarity_journal', cat: 'peace', icon: '📝', name: 'Journal', desc: 'Journal entry', inputs: [
+        { name: 'entry', type: 'textarea', label: 'Entry', required: true },
+        { name: 'wordCount', type: 'number', label: 'Word Count', default: 100 }
+      ]},
+      
+      // Story
+      { id: 'story_state', cat: 'story', icon: '📊', name: 'Story State', desc: 'Current story', inputs: [] },
+      { id: 'story_refresh', cat: 'story', icon: '🔄', name: 'Refresh Options', desc: 'New options', inputs: [] },
+      
+      // System
+      { id: 'ping', cat: 'system', icon: '🏓', name: 'Ping', desc: 'Connection test', inputs: [] }
+    ];
+
+    const CATEGORIES = [
+      { id: 'all', icon: '⚡', name: 'All', count: TOOLS.length },
+      { id: 'memory', icon: '💾', name: 'Memory', count: 2 },
+      { id: 'love', icon: '💝', name: 'Love', count: 3 },
+      { id: 'peace', icon: '🕊️', name: 'Peace', count: 4 },
+      { id: 'story', icon: '📖', name: 'Story', count: 2 },
+      { id: 'system', icon: '🔧', name: 'System', count: 1 }
+    ];
+
+    let currentCat = 'all';
+
+    function init() {
+      renderCategories();
+      renderTools();
+    }
+
+    function renderCategories() {
+      document.getElementById('categories').innerHTML = CATEGORIES.map(c => `
+        <div class="cat-btn ${c.id === currentCat ? 'active' : ''}" onclick="filterCat('${c.id}')">
+          <div style="font-size: 1.5em;">${c.icon}</div>
+          <div style="font-weight: 600; margin: 5px 0;">${c.name}</div>
+          <div style="font-size: 0.85em; color: var(--text-dim);">${c.count} tools</div>
+        </div>
+      `).join('');
+    }
+
+    function renderTools() {
+      const filtered = currentCat === 'all' ? TOOLS : TOOLS.filter(t => t.cat === currentCat);
+      document.getElementById('tools').innerHTML = filtered.map(t => `
+        <div class="tool">
+          <div class="tool-header">
+            <span class="tool-icon">${t.icon}</span>
+          </div>
+          <div class="tool-name">${t.name}</div>
+          <div class="tool-desc">${t.desc}</div>
+          ${t.inputs.map(i => renderInput(t.id, i)).join('')}
+          <div class="actions">
+            <button class="btn btn-primary" onclick="exec('${t.id}')">Execute</button>
+            ${t.inputs.length ? `<button class="btn" onclick="clear('${t.id}')">Clear</button>` : ''}
+          </div>
+          <div class="result" id="result-${t.id}"></div>
+        </div>
+      `).join('');
+    }
+
+    function renderInput(toolId, input) {
+      const id = `${toolId}-${input.name}`;
+      if (input.type === 'textarea') {
+        return `<div class="input-group">
+          <label class="input-label">${input.label}${input.required ? ' *' : ''}</label>
+          <textarea id="${id}" class="input textarea" ${input.required ? 'required' : ''}></textarea>
+        </div>`;
+      }
+      if (input.type === 'select') {
+        return `<div class="input-group">
+          <label class="input-label">${input.label}${input.required ? ' *' : ''}</label>
+          <select id="${id}" class="input" ${input.required ? 'required' : ''}>
+            <option value="">Select...</option>
+            ${input.options.map(o => `<option value="${o}">${o}</option>`).join('')}
+          </select>
+        </div>`;
+      }
+      return `<div class="input-group">
+        <label class="input-label">${input.label}${input.required ? ' *' : ''}</label>
+        <input type="${input.type}" id="${id}" class="input" 
+          ${input.default !== undefined ? `value="${input.default}"` : ''}
+          ${input.min ? `min="${input.min}"` : ''}
+          ${input.max ? `max="${input.max}"` : ''}
+          ${input.required ? 'required' : ''} />
+      </div>`;
+    }
+
+    async function exec(toolId) {
+      const tool = TOOLS.find(t => t.id === toolId);
+      const args = {};
+      
+      for (const input of tool.inputs) {
+        const val = document.getElementById(`${toolId}-${input.name}`).value;
+        if (val) args[input.name] = input.type === 'number' ? parseFloat(val) : val;
+      }
+
+      const resultDiv = document.getElementById(`result-${toolId}`);
+      resultDiv.style.display = 'block';
+      resultDiv.className = 'result';
+      resultDiv.innerHTML = '<div class="loading">⏳</div> Executing...';
+
+      try {
+        const res = await fetch(`${BRIDGE}/tools/execute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool: toolId, args })
+        });
+        const data = await res.json();
+        resultDiv.className = 'result success';
+        resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        addResult(tool.name, data);
+      } catch (err) {
+        resultDiv.className = 'result error';
+        resultDiv.innerHTML = `<pre>Error: ${err.message}</pre>`;
+      }
+    }
+
+    function clear(toolId) {
+      const tool = TOOLS.find(t => t.id === toolId);
+      for (const input of tool.inputs) {
+        const el = document.getElementById(`${toolId}-${input.name}`);
+        el.value = input.default || '';
+      }
+      document.getElementById(`result-${toolId}`).style.display = 'none';
+    }
+
+    function filterCat(cat) {
+      currentCat = cat;
+      renderCategories();
+      renderTools();
+    }
+
+    function addResult(name, data) {
+      const results = document.getElementById('results');
+      const item = document.createElement('div');
+      item.className = 'result-item';
+      item.innerHTML = `
+        <div class="result-time">${new Date().toLocaleTimeString()}</div>
+        <div class="result-tool">${name}</div>
+        <pre style="font-size: 0.85em; margin-top: 5px;">${JSON.stringify(data, null, 2)}</pre>
+      `;
+      results.insertBefore(item, results.firstChild);
+      while (results.children.length > 10) results.removeChild(results.lastChild);
+    }
+
+    async function testBridge() {
+      try {
+        const res = await fetch(`${BRIDGE}/health`);
+        const data = await res.json();
+        alert(`✅ Bridge Connected!\n\nStatus: ${data.status}\nTools: ${data.tools}`);
+      } catch (err) {
+        alert(`❌ Bridge Error!\n\n${err.message}\n\nStart Bridge: bun run packages/bridge/src/index.ts`);
+      }
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const theme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+    }
+
+    function toggleResults() {
+      const content = document.querySelector('.results-content');
+      const toggle = document.getElementById('toggle');
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+        toggle.textContent = '▼';
+      } else {
+        content.style.display = 'none';
+        toggle.textContent = '▲';
+      }
+    }
+
+    const saved = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    init();
+  </script>
 </body>
 </html>
