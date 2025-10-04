@@ -15,6 +15,7 @@
     "dev:bridge": "bun run packages/bridge/src/index.ts",
     "dev:api": "bun run scripts/api-server.ts",
     "dev:diary": "bun run scripts/luna-chatbot.ts",
+    "dev:gui": "bun run scripts/dev-gui.ts",
     
     "start": "bun run scripts/start-all.ts",
     "start:full": "bun run scripts/start-all.ts --mode full",

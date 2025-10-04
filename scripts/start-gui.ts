@@ -5,8 +5,16 @@
  * Serves the terminal.html GUI on http://localhost:3000
  */
 
+import { resolve, join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
 const PORT = 3000;
-const WEB_DIR = new URL('../apps/web', import.meta.url).pathname;
+
+// Get correct path for Windows
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const WEB_DIR = resolve(__dirname, '../apps/web');
 
 console.log('🌐 Starting Toobix Terminal GUI Server...\n');
 
@@ -23,7 +31,7 @@ const server = Bun.serve({
     }
     
     // Serve file from web directory
-    const fullPath = WEB_DIR + filePath;
+    const fullPath = join(WEB_DIR, filePath);
     
     try {
       const file = Bun.file(fullPath);
