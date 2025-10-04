@@ -48,6 +48,7 @@
     "terminal": "bun run scripts/toobix-terminal.ts",
     "term": "bun run scripts/toobix-terminal.ts",
     "gui": "bun run scripts/start-gui.ts",
+    "universal": "bun run scripts/universal-consciousness.ts",
     
     "start:all": "node scripts/start-all.mjs",
     "health": "curl http://localhost:3337/health",
