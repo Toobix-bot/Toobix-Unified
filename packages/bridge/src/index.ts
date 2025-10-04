@@ -34,6 +34,10 @@ import { EventPipeline } from '../../core/src/pipeline/event-pipeline.ts'
 // NEW: Performance Layer
 import { apiCache, memoryCache, valuesCache, hashObject } from '../../core/src/performance/cache.ts'
 
+// NEW: Security Layer (Week 1)
+import { createRateLimitMiddleware, globalRateLimiter } from '../../core/src/security/rate-limiter.ts'
+import { validateInput, memorySchemas, contractsSchemas, valuesSchemas, pipelineSchemas } from '../../core/src/security/input-validation.ts'
+
 export class BridgeService {
   private mcp: MCPServer
   private db: Database
@@ -67,8 +71,9 @@ export class BridgeService {
     console.log(`📁 Opening database: ${dbPath}`)
     this.db = new Database(dbPath)
     
-    // Initialize services
-    this.memory = new MemoryService(this.db)
+    // Initialize services WITH embeddings support
+    const openaiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
+    this.memory = new MemoryService(this.db, openaiKey)  // Pass API key for vector search
     this.actions = new ActionsService(this.db)
     this.ai = new GroqService(config.groqApiKey || process.env.GROQ_API_KEY || '')
     this.soul = new SoulService(this.db)
@@ -216,7 +221,11 @@ export class BridgeService {
     console.log('      - peace_purpose_intention: Set intention')
     console.log('      - peace_get_actions     : Recent actions')
     console.log('      - peace_get_conflicts   : Unresolved conflicts')
-    console.log('\n💡 Press Ctrl+C to stop\n')
+    console.log('\n� Security:')
+    console.log('      - Rate limiting: 60 req/min per identifier')
+    console.log('      - Input validation: All tools')
+    console.log('      - Vector search: ' + (process.env.OPENAI_API_KEY ? 'ENABLED ✅' : 'DISABLED (set OPENAI_API_KEY)'))
+    console.log('\n�💡 Press Ctrl+C to stop\n')
   }
 
   private async initializeTables() {
@@ -250,10 +259,10 @@ export class BridgeService {
   }
 
   private async loadTools() {
-    // Memory tools
+    // Memory tools (WITH VALIDATION)
     this.mcp.registerTool({
       name: 'memory_search',
-      description: 'Search in knowledge base using RAG (cached for 10min)',
+      description: 'Search in knowledge base using RAG with hybrid vector+keyword search (cached for 10min)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -263,16 +272,28 @@ export class BridgeService {
         required: ['query']
       },
       handler: async (args: any) => {
+        // Validate input
+        const validation = validateInput(memorySchemas.search, args)
+        if (!validation.success) {
+          throw new Error(`Validation failed: ${validation.errors?.join(', ')}`)
+        }
+
+        // Check rate limit
+        const rateLimitResult = globalRateLimiter.checkLimit('memory_search')
+        if (!rateLimitResult.allowed) {
+          throw new Error(`Rate limit exceeded. Retry after ${rateLimitResult.retryAfter}s`)
+        }
+
         // Check cache first (10min TTL)
-        const cacheKey = `search:${hashObject(args)}`
+        const cacheKey = `search:${hashObject(validation.data)}`
         const cached = memoryCache.get(cacheKey)
         if (cached) {
           console.log('📦 Cache hit: memory_search')
           return cached
         }
 
-        // Execute search
-        const results = await this.memory.search(args.query, args.limit || 5)
+        // Execute search (now with hybrid vector+keyword)
+        const results = await this.memory.search(validation.data!.query, validation.data!.limit || 5)
         
         // Cache results
         memoryCache.set(cacheKey, results, 600000) // 10min TTL
@@ -283,7 +304,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'memory_add',
-      description: 'Add new memory to knowledge base',
+      description: 'Add new memory to knowledge base (with embeddings if OPENAI_API_KEY set)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -293,7 +314,31 @@ export class BridgeService {
         required: ['text']
       },
       handler: async (args: any) => {
-        return await this.memory.add(args.text, args.metadata)
+        // Validate input
+        const validation = validateInput(memorySchemas.add, args)
+        if (!validation.success) {
+          throw new Error(`Validation failed: ${validation.errors?.join(', ')}`)
+        }
+
+        // Check rate limit
+        const rateLimitResult = globalRateLimiter.checkLimit('memory_add')
+        if (!rateLimitResult.allowed) {
+          throw new Error(`Rate limit exceeded. Retry after ${rateLimitResult.retryAfter}s`)
+        }
+
+        return await this.memory.add(validation.data!.text, validation.data?.metadata)
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'memory_stats',
+      description: 'Get memory system statistics (total memories, chunks, vector search status)',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        return await this.memory.getStats()
       }
     })
 
