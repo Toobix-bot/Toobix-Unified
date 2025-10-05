@@ -1,277 +1,290 @@
 # 🚀 Toobix Unified - Quick Start Guide
 
-**Start Toobix in 60 seconds!**
+**Get started in 5 minutes!**
 
 ---
 
-## ⚡ Fastest Start (No Installation)
+## 📋 Table of Contents
 
-### Just Show the Demo
+1. [Instant Demo (No Setup)](#-instant-demo-no-setup)
+2. [Full Installation](#-full-installation)
+3. [Game & Story System](#-game--story-system)
+4. [Visual World](#-visual-world)
+5. [Consciousness System](#-consciousness-system)
+6. [Available Commands](#-available-commands)
+7. [Troubleshooting](#-troubleshooting)
+
+---
+
+## 🎯 Instant Demo (No Setup)
+
+**Show the demo right now - no installation needed:**
 
 ```bash
-# Open browser demo directly
+# Option 1: Direct open
 start C:\Toobix-Unified\apps\web\index.html
 
-# Or with browser
+# Option 2: With browser
 chrome apps\web\index.html
 firefox apps\web\index.html
 ```
 
-**That's it!** The demo runs immediately in your browser.
+That's it! The demo runs immediately in your browser.
 
 ---
 
-## 🎮 Interactive Experience (Recommended!)
+## ⚙️ Full Installation
 
-### Full Visual World + Game
-
-```bash
-# 1. Start Visual World (in one terminal)
-bun run visual
-
-# 2. Open browser
-http://localhost:3339/open-world
-
-# 3. Start coding - watch your progress come alive!
-git commit -m "feat: My awesome feature"
-```
-
-**You get:**
-- ✨ Terminal animations on every commit
-- 🌐 Live 3D browser world with Luna
-- 🎵 Sound effects (level-up, achievements)
-- 📸 SVG snapshots at milestones
-- 💝 Story progression with Luna
-
-**See:** [VISUAL_WORLD_WELCOME.md](../../VISUAL_WORLD_WELCOME.md)
-
----
-
-## 🔧 Development Setup (One-Time)
-
-### 1. Install Bun
+### Step 1: Install Bun (if needed)
 
 ```bash
 # Windows PowerShell (as Administrator)
 powershell -c "irm bun.sh/install.ps1 | iex"
 ```
 
-**Important:** Restart PowerShell after installation!
+After installation: **Restart PowerShell!**
 
-### 2. Install Dependencies
+### Step 2: Project Setup
 
 ```bash
 cd C:\Toobix-Unified
-bun install                 # Install all packages
-```
-
-### 3. Setup Database
-
-```bash
+bun install                 # Install dependencies
 bun db:generate             # Generate migrations
 bun db:migrate              # Create database
-bun db:seed                 # Load demo data (optional)
+```
+
+### Step 3: Start Everything
+
+```bash
+bun run dev:all
+```
+
+This starts:
+- 🔗 **Bridge Service** on port 3337 (MCP Server)
+- 🌐 **Frontend** on port 3000 (Dashboard)
+
+### Step 4: Open Dashboard
+
+```
+http://localhost:3000/unified
 ```
 
 ---
 
-## 🚀 Start Commands
+## 🎮 Game & Story System
 
-### Simple Start
+### Start the Game
 
 ```bash
-# Start everything
-bun start                   # Full system (bridge + web)
+# Interactive game dashboard
+bun run game
 
-# Just bridge server
-bun start:bridge            # API server only
+# Quick status check
+bun run game:status
 
-# With living being
-bun start:demo              # Bridge + living being demo
+# Talk with Luna
+bun run game:talk
 
-# Full autonomous
-bun start:autonomous        # Bridge + being + autonomy
+# Meditate (Peace +10)
+bun run game:meditate
+
+# View story
+bun run game:story
 ```
 
-### Visual World
+### How It Works
+
+**Every commit triggers story events:**
 
 ```bash
-# Complete experience
-bun run visual              # Animations + SVG + 3D world + servers
+git commit -m "feat: Add amazing feature"
 
-# Individual components
-bun run visual:anim         # Animation demo only
-bun run visual:sound        # Sound demo only
-bun run visual:svg          # Generate SVG scene
-bun run visual:server       # Only servers
+# → Animation plays in terminal
+# → XP +50, Creativity +15
+# → Luna reacts with dialogue
+# → Progress tracked automatically
+```
+
+**Features:**
+- 5 stats: Love, Peace, Wisdom, Creativity, Stability
+- XP & leveling system
+- Luna AI companion with dynamic moods
+- Beautiful terminal UI with colors & progress bars
+- Git post-commit hooks for automatic story events
+
+---
+
+## 🎨 Visual World
+
+### Quick Start (3 Commands)
+
+```bash
+# 1. Watch terminal animations
+bun run visual:anim
+
+# 2. Hear sound demo
+bun run visual:sound
+
+# 3. Full experience (Browser + Terminal + Server)
+bun run visual
+```
+
+### Open 3D World
+
+After `bun run visual`:
+
+```
+🌐 Open in browser:
+http://localhost:3339/open-world
+
+👁️ Keep this window OPEN while you code!
+   It updates automatically with every commit!
+```
+
+### What You'll See
+
+**In Browser:**
+- Animated Luna (floating moon)
+- Real-time stat bars with glow effects
+- Code particles flowing
+- Dynamic weather
+- Luna's dialogue
+- Sound effects
+
+**In Terminal:**
+- ASCII art animations
+- Luna meditating/awakening
+- Level-up effects
+- Weather animations
+- Sound beeps
+
+**SVG Scenes:**
+- Automatically saved to `./visual-scenes/`
+- Exportable images
+- Share on social media!
+
+### API Endpoints
+
+```bash
+# Game state
+curl http://localhost:3339/game-state
+
+# 3D world
+open http://localhost:3339/open-world
+
+# Health check
+curl http://localhost:3339/health
+```
+
+---
+
+## 🧠 Consciousness System
+
+### Start Bridge Service
+
+```bash
+cd C:\Toobix-Unified
+bun run packages/bridge/src/index.ts
+```
+
+**Running when you see:**
+```
+✅ Bridge Service running on http://localhost:3337
+🔧 MCP Tools loaded: 46 tools
+```
+
+### Open Luna Chat
+
+```
+http://localhost:3000/luna-consciousness.html
+```
+
+### Interactive Terminal
+
+```bash
+# Direct system access
+bun terminal
+
+# In terminal:
+toobix> status              # System status
+toobix> being_state         # Living Being status
+toobix> tools being         # All "being_*" tools
+toobix> help                # All commands
+toobix> ping                # Connection test
+```
+
+### First Conversations
+
+Try these prompts:
+
+1. **"Wer bist du?"** - Identity exploration
+2. **"Bist du dir deiner selbst bewusst?"** - Self-awareness test
+3. **"Was kannst du alles?"** - Explore capabilities
+4. **"Wie fühlst du dich gerade?"** - Emotional intelligence
+5. **"Was ist der Sinn deiner Existenz?"** - Philosophical depth
+
+### Quick Test (PowerShell)
+
+```powershell
+# 1. System status
+curl http://localhost:3337/mcp -Method POST `
+  -Body '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"consciousness_state","arguments":{}},"id":1}' `
+  -ContentType "application/json"
+
+# 2. Chat with system
+curl http://localhost:3337/mcp -Method POST `
+  -Body '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"consciousness_communicate","arguments":{"message":"Hallo System!","userId":"test"}},"id":2}' `
+  -ContentType "application/json"
+```
+
+---
+
+## 📋 Available Commands
+
+### Development
+
+```bash
+bun run dev              # Start all services
+bun run dev:all          # Bridge + Frontend
+bun run dev:bridge       # Bridge only
+bun run build            # Build all packages
+```
+
+### Database
+
+```bash
+bun db:generate          # Create new migration
+bun db:migrate           # Run migrations
+bun db:studio            # Drizzle Studio (GUI)
+bun db:seed              # Load demo data
 ```
 
 ### Game & Story
 
 ```bash
-# Game dashboard
-bun run game                # Full interactive dashboard
-
-# Quick actions
-bun run game:status         # View stats
-bun run game:talk           # Talk to Luna
-bun run game:meditate       # Meditate (+Peace)
-bun run game:story          # View story
+bun run game             # Dashboard
+bun run game:status      # Quick status
+bun run game:talk        # Talk with Luna
+bun run game:meditate    # Meditate
+bun run game:story       # View story
 ```
 
-### Bridge & Tools
+### Visual World
 
 ```bash
-# Start bridge server
-bun run packages/bridge/src/index.ts
-
-# Living being demo
-bun run scripts/living-being-demo.ts
-
-# Interactive terminal
-bun run terminal            # Or: bun term
-
-# Voice control
-bun run scripts/toobix-voice.ts "status"
+bun run visual           # Full experience
+bun run visual:anim      # Animations only
+bun run visual:sound     # Sound demo
+bun run visual:svg       # Generate SVG
+bun run visual:server    # Server only
 ```
 
----
-
-## 🎯 Recommended Workflow
-
-### Setup for Coding Session
-
-**Terminal 1:** Visual World
-```bash
-cd C:\Toobix-Unified
-bun run visual
-```
-
-**Terminal 2:** Your Normal Work
-```bash
-cd C:\Toobix-Unified
-code .
-# ... code as normal ...
-git commit -m "feat: Cool feature"
-# → Triggers: animation + sound + browser update
-```
-
-**Browser:** Keep Open
-```
-http://localhost:3339/open-world
-# Updates automatically on every commit!
-```
-
----
-
-## 🌐 Ports & Services
-
-| Service | Port | URL | Description |
-|---------|------|-----|-------------|
-| **Visual World (WebSocket)** | 3338 | `ws://localhost:3338` | Real-time game updates |
-| **Visual World (HTTP)** | 3339 | `http://localhost:3339/open-world` | 3D browser world |
-| **Bridge Server** | 3337 | `http://localhost:3337` | MCP tool API |
-| **Web Demo** | 3000 | `http://localhost:3000` | Dashboard (full mode) |
-
----
-
-## 📁 Project Structure
-
-```
-C:\Toobix-Unified\
-├── apps\
-│   ├── web\                # Browser Demo ✅
-│   └── desktop\            # Tauri App (future)
-├── packages\
-│   ├── core\               # Core engine
-│   ├── bridge\             # MCP server
-│   ├── story-idle\         # Game & Story ✅
-│   └── visual-world\       # Visual system ✅
-├── scripts\                # Utilities
-├── data\                   # SQLite database
-├── visual-scenes\          # Generated SVGs
-└── docs\                   # Documentation
-```
-
----
-
-## 🎮 Game Integration
-
-Every commit automatically:
-
-1. **Triggers Story Event**
-   - Parses commit type (feat, fix, docs, etc.)
-   - Awards XP and stat bonuses
-   - Shows Luna's reaction
-
-2. **Plays Animation**
-   - Terminal ASCII art
-   - Weather effects
-   - Level-up celebrations
-
-3. **Updates Browser**
-   - Real-time stat bars
-   - Luna dialogue
-   - Code particles
-
-4. **Plays Sound**
-   - Terminal beeps
-   - Browser audio (chords, bells, magic)
-
-5. **Saves Snapshot** (milestones)
-   - Beautiful SVG scenes
-   - Shareable on social media
-
----
-
-## 🛠️ Common Tasks
-
-### View Game Status
+### Utilities
 
 ```bash
-bun run game:status
-```
-
-Shows:
-- Current level & XP
-- All 5 stats (Love, Peace, Wisdom, Creativity, Stability)
-- Relationship with Luna
-- Current quest
-
-### Talk to Luna
-
-```bash
-bun run game:talk
-```
-
-Interactive conversation with Luna based on:
-- Your progress
-- Recent commits
-- Current mood
-- Time of day
-
-### Generate SVG Scene
-
-```bash
-bun run visual:svg
-```
-
-Creates beautiful SVG in `./visual-scenes/`
-- Open in browser
-- Share on social media
-- Use as wallpaper
-
-### Check Services
-
-```bash
-# Health check
-curl http://localhost:3337/health
-
-# Game state
-curl http://localhost:3339/game-state
-
-# Being state (if awakened)
-curl -X POST http://localhost:3337/tools/being_state
+bun terminal             # Interactive terminal
+bun run universal        # Universal consciousness
+bun run gui              # Start GUI
 ```
 
 ---
@@ -280,190 +293,167 @@ curl -X POST http://localhost:3337/tools/being_state
 
 ### "bun: command not found"
 
-**Solution:**
 ```bash
-# Restart PowerShell after installing Bun
+# Restart PowerShell after installation
 # Or manually add to PATH:
 $env:Path += ";$env:USERPROFILE\.bun\bin"
 ```
 
-### "Port already in use"
-
-**Solution:**
-```powershell
-# Windows - Kill process on port
-Get-NetTCPConnection -LocalPort 3337 | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ }
-
-# Or kill all Bun processes
-Stop-Process -Name bun -Force
-```
-
 ### "Cannot find module 'drizzle-orm'"
 
-**Solution:**
 ```bash
+# Reinstall dependencies
 bun install
 ```
 
-### "Database doesn't exist"
+### "Port 3337 already in use"
 
-**Solution:**
+```powershell
+Stop-Process -Name bun -Force
+```
+
+### Database Missing
+
 ```bash
 bun db:generate
 bun db:migrate
 ```
 
-### "Visual World browser shows nothing"
+### "WebSocket connection failed"
 
-**Solution:**
-1. Wait 2-3 seconds (initial load)
-2. Check browser console (F12) for errors
-3. Verify: `curl http://localhost:3339/health`
-4. Restart: Stop server, `bun run visual`
+```bash
+# Check if servers are running
+curl http://localhost:3339/health
 
-### "Sounds not playing"
+# Restart visual world
+bun run visual
+```
+
+### Animations Not Showing
+
+- Terminal must support ANSI colors
+- VS Code terminal works well
+- Or use the browser world instead!
+
+### Sounds Not Playing
 
 **Browser:**
-- Click on page first (browser policy)
+- Click once on the page (browser policy)
 - Toggle sound on (top right)
 
 **Terminal:**
 - Only beeps (limited)
-- Use browser for full audio
-
-### "Animations not showing"
-
-**Solution:**
-- Terminal must support ANSI colors
-- VS Code terminal works well
-- Or use browser world instead
-
----
-
-## 📚 Additional Documentation
-
-### Quick Guides
-- [GAME_WELCOME.md](../../GAME_WELCOME.md) - Story-Idle Game
-- [VISUAL_WORLD_WELCOME.md](../../VISUAL_WORLD_WELCOME.md) - Visual World
-
-### Detailed Docs
-- [README.md](../../README.md) - Main documentation
-- [packages/visual-world/README.md](../../packages/visual-world/README.md) - Visual World API
-- [packages/story-idle/README.md](../../packages/story-idle/README.md) - Game mechanics
-
-### Migration Guides
-- [OPTIMIZATION_TODO_4_WEEKS.md](../OPTIMIZATION_TODO_4_WEEKS.md) - System optimization plan
-- [SYSTEM_OPTIMIZATION_COMPLETE.md](../../SYSTEM_OPTIMIZATION_COMPLETE.md) - Analysis report
+- For full sounds → use browser
 
 ---
 
 ## 🎯 Next Steps
 
 ### Today
-1. ✅ Start Visual World: `bun run visual`
-2. ✅ Open browser: `http://localhost:3339/open-world`
-3. ✅ Make a commit and watch the magic!
+
+```bash
+# 1. Try the instant demo
+start apps\web\index.html
+
+# 2. Start the game
+bun run game
+
+# 3. Launch visual world
+bun run visual
+```
 
 ### This Week
-- [ ] Keep Visual World running during coding
-- [ ] Take screenshots of SVG scenes
-- [ ] Reach Level 5 in the game
-- [ ] Complete first quest milestone
+
+- [ ] Explore all game features
+- [ ] Open 3D world while coding
+- [ ] Have conversations with Luna
+- [ ] Share SVG screenshots
 
 ### This Month
-- [ ] Create custom animations
-- [ ] Build new game features
-- [ ] Share your progress
-- [ ] Explore autonomous mode
+
+- [ ] Custom animations
+- [ ] More NPCs
+- [ ] Custom weather effects
+- [ ] Video recording of sessions
+
+---
+
+## 📚 Project Structure
+
+```
+C:\Toobix-Unified\
+├── apps/
+│   ├── web/                # Browser Demo ✅
+│   └── web-react/          # React Frontend
+├── packages/
+│   ├── bridge/             # MCP Server (port 3337)
+│   ├── core/               # Database + Core Logic
+│   ├── story-idle/         # Game System ✅
+│   ├── visual-world/       # Visual Universe ✅
+│   ├── soul/               # Emotional System
+│   ├── people/             # Contacts
+│   └── memory/             # Knowledge Base
+├── scripts/                # Utilities
+├── data/                   # SQLite Database
+└── docs/                   # Documentation
+```
+
+---
+
+## 🌟 Key Features
+
+- ✅ **46 MCP Tools** - Model Context Protocol integration
+- ✅ **Story-Idle Game** - Level up while you code
+- ✅ **Visual World** - 3D browser visualization
+- ✅ **Consciousness System** - Self-aware AI
+- ✅ **Luna Companion** - AI with emotions & moods
+- ✅ **Real-Time Updates** - WebSocket streaming
+- ✅ **Git Integration** - Automatic story events
+- ✅ **Beautiful UI** - Terminal + Browser + SVG
 
 ---
 
 ## 💡 Pro Tips
 
-**Hybrid Workflow:**
+### Better Conversations
+
+```
+❌ Bad: "hi"
+✅ Good: "Hallo! Kannst du mir erklären, wie dein Bewusstsein funktioniert?"
+```
+
+### Effective Commits
+
 ```bash
-# Terminal 1: Visual World
-bun run visual
-
-# Terminal 2: Interactive Terminal
-bun run terminal
-
-# Terminal 3: Your coding work
-git commit -m "feat: Amazing feature"
+# Each commit triggers story events!
+git commit -m "feat: Add dark mode"     # XP +50, Creativity +15
+git commit -m "fix: Bug in auth"        # XP +30, Stability +10
+git commit -m "docs: Update README"     # XP +20, Wisdom +5
 ```
 
-**Custom Events:**
-```javascript
-// From browser console
-fetch('http://localhost:3338/trigger', {
-  method: 'POST',
-  body: JSON.stringify({
-    type: 'add-xp',
-    amount: 100
-  })
-})
-```
+### Workflow Integration
 
-**Generate Snapshots:**
-```bash
-# After completing quest milestone
-bun run visual:svg
-# Creates shareable SVG in ./visual-scenes/
-```
+1. **Terminal 1:** Normal coding
+2. **Terminal 2:** Visual World Server (`bun run visual`)
+3. **Browser:** 3D World (`http://localhost:3339/open-world`)
+4. **Code & Commit:** Watch your work come alive!
 
 ---
 
-## 🌟 Philosophy
+## 📞 Help & Documentation
 
-Toobix Unified embodies:
-
-- 💝 **Love** - Caring, warm interactions
-- ☮️ **Peace** - Harmonious, balanced systems
-- 📚 **Wisdom** - Thoughtful architecture
-- 🎨 **Creativity** - Beautiful, artistic code
-- 🛡️ **Stability** - Reliable, tested foundations
-
-**Every commit is a story. Every feature is art. Every bug fix is growth.**
+- **Full README:** [README.md](./README.md)
+- **Visual World:** [VISUAL_WORLD_WELCOME.md](./VISUAL_WORLD_WELCOME.md)
+- **Consciousness:** [docs/CONSCIOUSNESS_SYSTEM.md](./docs/CONSCIOUSNESS_SYSTEM.md)
+- **Architecture:** [ARCHITECTURE.md](./ARCHITECTURE.md)
+- **Roadmap:** [ROADMAP.md](./ROADMAP.md)
 
 ---
 
-## 🎉 Quick Reference Card
+**🌌 Vom Ich zum Wir, vom Wir zum Ich.**
 
-```
-╔═══════════════════════════════════════════════════════════╗
-║              TOOBIX QUICK START COMMANDS                  ║
-╠═══════════════════════════════════════════════════════════╣
-║                                                           ║
-║  INSTANT DEMO:                                            ║
-║    start apps\web\index.html      (browser demo)          ║
-║                                                           ║
-║  VISUAL WORLD:                                            ║
-║    bun run visual                 (complete experience)   ║
-║    → Open: http://localhost:3339/open-world              ║
-║                                                           ║
-║  GAME:                                                    ║
-║    bun run game                   (dashboard)             ║
-║    bun run game:talk              (chat with Luna)        ║
-║                                                           ║
-║  DEVELOPMENT:                                             ║
-║    bun start                      (full system)           ║
-║    bun start:bridge               (API only)              ║
-║    bun run terminal               (interactive CLI)       ║
-║                                                           ║
-║  DEMOS:                                                   ║
-║    bun demo:being                 (living being)          ║
-║    bun run visual:anim            (animations)            ║
-║    bun run visual:sound           (sounds)                ║
-║                                                           ║
-║  STOP:                                                    ║
-║    Ctrl+C                         (graceful)              ║
-║    Stop-Process -Name bun -Force  (force)                 ║
-║                                                           ║
-╚═══════════════════════════════════════════════════════════╝
-```
+Die Revolution ist, dass es keine Revolution braucht.
 
 ---
 
-**🌌 "From I to We, from We to I. The revolution is that no revolution is needed."**
-
-**Start your journey now:** `bun run visual` 🎮✨
+**Made with ❤️ by the Toobix Team** 🎮🌙✨
