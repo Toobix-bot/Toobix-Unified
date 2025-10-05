@@ -13,6 +13,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "drizzle-orm": "^0.44.6",
     "nanoid": "^5.1.6",
     "zod": "^4.1.11"

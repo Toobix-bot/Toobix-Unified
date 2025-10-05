@@ -51,6 +51,23 @@ import { ShadowPerspectiveGenerator } from '../../core/src/shadow-lab/perspectiv
 import { LifeCycleEngine } from '../../core/src/life-cycle/index.ts'
 import { MultipleSelvesEngine } from '../../core/src/life-cycle/multiple-selves.ts'
 
+// NEW: Safety & Security (Phase 1)
+import { CrisisDetectionSystem } from '../../core/src/safety/crisis-detection.ts'
+import { AuthSystem } from '../../core/src/auth/index.ts'
+
+// NEW: Revolutionary Consciousness (Phase 2)
+import { FivePerspectivesSystem } from '../../core/src/perspectives/five-system.ts'
+import { SystemSelfInquiry } from '../../core/src/self-inquiry/index.ts'
+import { MultiverseEngine } from '../../core/src/multiverse/index.ts'
+import { MemoryTransformationSystem } from '../../core/src/memory-transformation/index.ts'
+
+// NEW: Existential Expansion Systems (Phase 3)
+import { CollectiveArchiveSystem } from '../../core/src/archive/collective-archive.ts'
+import { ConsciousnessSystem } from '../../core/src/consciousness/states.ts'
+import { EternalMomentNetwork } from '../../core/src/temporal/eternal-moments.ts'
+import { LocalCollectiveSystem } from '../../core/src/versions/local-collective.ts'
+import { BackgroundLifeSystem } from '../../core/src/living/background-life.ts'
+
 export class BridgeService {
   private mcp: MCPServer
   private db: Database
@@ -73,6 +90,21 @@ export class BridgeService {
   private perspectiveGenerator: ShadowPerspectiveGenerator  // NEW: LLM Perspective Generator
   private lifeCycle: LifeCycleEngine  // NEW: Life Cycle Engine (Birth/Death/Rebirth)
   private selves: MultipleSelvesEngine  // NEW: Multiple Selves (Parallel Perspectives)
+  private crisisDetection: CrisisDetectionSystem  // NEW: Crisis Detection (Safety)
+  private auth: AuthSystem  // NEW: Authentication & Authorization
+  
+  // Revolutionary Consciousness Systems (Phase 2)
+  private perspectives: FivePerspectivesSystem  // NEW: Five Perspectives (Mirror/Harmony/Competition/Chaos/Meta)
+  private selfInquiry: SystemSelfInquiry  // NEW: System Self-Inquiry (SWOT, Questions, Recommendations)
+  private multiverse: MultiverseEngine  // NEW: Multiverse (Alternative Realities)
+  private memoryTransformation: MemoryTransformationSystem  // NEW: Memory Transformation (Heal without Delete)
+  
+  // Existential Expansion Systems (Phase 3)
+  private collectiveArchive: CollectiveArchiveSystem  // NEW: Collective Archive (All experiences/thoughts/feelings preserved)
+  private consciousnessStates: ConsciousnessSystem  // NEW: Consciousness States (10 states from deep_sleep to hyperaware)
+  private eternalMoments: EternalMomentNetwork  // NEW: Eternal Moments (Non-linear time, all moments alive)
+  private versions: LocalCollectiveSystem  // NEW: Local/Collective Versions (Privacy-aware branching)
+  private backgroundLife: BackgroundLifeSystem  // NEW: Background Life (System lives even when unobserved)
 
   constructor(config: BridgeConfig) {
     this.config = config
@@ -170,8 +202,28 @@ export class BridgeService {
     
     // NEW: Initialize Life Cycle System 🌌
     console.log('🌌 Initializing Life Cycle System...')
-    this.lifeCycle = new LifeCycleEngine(this.db)
-    this.selves = new MultipleSelvesEngine(this.db)
+    this.lifeCycle = new LifeCycleEngine(this.db as any)
+    this.selves = new MultipleSelvesEngine(this.db as any)
+    
+    // NEW: Initialize Safety & Security Systems 🛡️
+    console.log('🛡️ Initializing Safety & Security...')
+    this.crisisDetection = new CrisisDetectionSystem(this.db as any)
+    this.auth = new AuthSystem(this.db as any)
+    
+    // NEW: Initialize Revolutionary Consciousness Systems 🎭
+    console.log('🎭 Initializing Revolutionary Consciousness...')
+    this.perspectives = new FivePerspectivesSystem(this.db as any)
+    this.selfInquiry = new SystemSelfInquiry(this.db as any)
+    this.multiverse = new MultiverseEngine(this.db as any)
+    this.memoryTransformation = new MemoryTransformationSystem(this.db as any)
+    
+    // NEW: Initialize Existential Expansion Systems 🌌
+    console.log('🌌 Initializing Existential Expansion Systems...')
+    this.collectiveArchive = new CollectiveArchiveSystem(this.db as any)
+    this.consciousnessStates = new ConsciousnessSystem(this.db as any)
+    this.eternalMoments = new EternalMomentNetwork(this.db as any)
+    this.versions = new LocalCollectiveSystem(this.db as any)
+    this.backgroundLife = new BackgroundLifeSystem(this.db as any)
     
     // Initialize Consciousness System 🧠
     console.log('🧠 Initializing Consciousness...')
@@ -2549,6 +2601,2051 @@ export class BridgeService {
           lifeCycle: lifeCycleStats,
           selves: selvesStats,
           message: `📊 ${lifeCycleStats.totalIncarnations} incarnations, ${selvesStats.totalSelves} selves, ${lifeCycleStats.totalWisdom} wisdom entries`
+        }
+      }
+    })
+
+    // ==================== SAFETY & SECURITY TOOLS ====================
+
+    // Crisis Detection Tools (3)
+    this.mcp.registerTool({
+      name: 'crisis_check',
+      description: '🚨 Crisis Detection: Check if message contains crisis indicators (suicide, self-harm, violence, etc.)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          message: {
+            type: 'string',
+            description: 'User message to check for crisis indicators'
+          },
+          userId: {
+            type: 'number',
+            description: 'Optional user ID for tracking'
+          },
+          sessionId: {
+            type: 'string',
+            description: 'Optional session ID for tracking'
+          }
+        },
+        required: ['message']
+      },
+      handler: async (args: any) => {
+        const detection = this.crisisDetection.detectCrisis(
+          args.message,
+          args.userId,
+          args.sessionId
+        )
+        
+        if (detection) {
+          return {
+            ok: true,
+            crisisDetected: true,
+            severity: detection.severity,
+            category: detection.category,
+            response: detection.responseGiven,
+            hotlines: detection.hotlinesProvided,
+            needsEscalation: detection.needsEscalation,
+            message: `🚨 Crisis detected: ${detection.category} (${detection.severity} severity)`
+          }
+        }
+        
+        return {
+          ok: true,
+          crisisDetected: false,
+          message: 'No crisis indicators detected'
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'crisis_get_detections',
+      description: '📊 Get Crisis History: Retrieve past crisis detections with filters',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          limit: {
+            type: 'number',
+            description: 'Max number of detections to return',
+            default: 50
+          },
+          severity: {
+            type: 'string',
+            enum: ['high', 'medium', 'low'],
+            description: 'Filter by severity'
+          },
+          category: {
+            type: 'string',
+            enum: ['suicide', 'self_harm', 'violence', 'abuse', 'severe_distress'],
+            description: 'Filter by category'
+          },
+          needsEscalation: {
+            type: 'boolean',
+            description: 'Only show cases needing escalation'
+          }
+        }
+      },
+      handler: async (args: any) => {
+        const detections = this.crisisDetection.getDetections({
+          limit: args.limit || 50,
+          severity: args.severity,
+          needsEscalation: args.needsEscalation
+        })
+        
+        return {
+          ok: true,
+          count: detections.length,
+          detections,
+          message: `Found ${detections.length} crisis detection(s)`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'crisis_get_statistics',
+      description: '📈 Crisis Statistics: Get crisis detection statistics for a time range',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          startTime: {
+            type: 'number',
+            description: 'Start timestamp (optional, default: 30 days ago)'
+          },
+          endTime: {
+            type: 'number',
+            description: 'End timestamp (optional, default: now)'
+          }
+        }
+      },
+      handler: async (args: any) => {
+        const now = Date.now()
+        const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000)
+        
+        const stats = this.crisisDetection.getStatistics({
+          start: args.startTime || thirtyDaysAgo,
+          end: args.endTime || now
+        })
+        
+        return {
+          ok: true,
+          stats,
+          message: `Crisis stats: ${stats.total} total, ${stats.bySeverity.high} high severity`
+        }
+      }
+    })
+
+    // Authentication Tools (11)
+    this.mcp.registerTool({
+      name: 'auth_register',
+      description: '👤 Register User: Create new user account with password hashing',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          username: {
+            type: 'string',
+            description: 'Username (3-30 chars)'
+          },
+          email: {
+            type: 'string',
+            description: 'Email address'
+          },
+          password: {
+            type: 'string',
+            description: 'Password (min 8 chars)'
+          },
+          role: {
+            type: 'string',
+            enum: ['guest', 'user', 'premium', 'admin', 'developer'],
+            description: 'User role (default: user)',
+            default: 'user'
+          }
+        },
+        required: ['username', 'email', 'password']
+      },
+      handler: async (args: any) => {
+        const user = await this.auth.register({
+          username: args.username,
+          email: args.email,
+          password: args.password,
+          role: args.role || 'user'
+        })
+        
+        return {
+          ok: true,
+          userId: user.id,
+          username: user.username,
+          role: user.role,
+          message: `✅ User ${user.username} registered successfully`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'auth_login',
+      description: '🔐 Login: Authenticate user and create session',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          username: {
+            type: 'string',
+            description: 'Username'
+          },
+          password: {
+            type: 'string',
+            description: 'Password'
+          },
+          ipAddress: {
+            type: 'string',
+            description: 'User IP address (optional)'
+          },
+          userAgent: {
+            type: 'string',
+            description: 'User agent string (optional)'
+          }
+        },
+        required: ['username', 'password']
+      },
+      handler: async (args: any) => {
+        const result = await this.auth.login({
+          username: args.username,
+          password: args.password,
+          ipAddress: args.ipAddress,
+          userAgent: args.userAgent
+        })
+        
+        return {
+          ok: true,
+          token: result.token,
+          user: {
+            id: result.user.id,
+            username: result.user.username,
+            email: result.user.email,
+            role: result.user.role
+          },
+          expiresAt: result.session.expiresAt,
+          message: `✅ Logged in as ${result.user.username}`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'auth_logout',
+      description: '👋 Logout: Invalidate session token',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          token: {
+            type: 'string',
+            description: 'Session token to invalidate'
+          }
+        },
+        required: ['token']
+      },
+      handler: async (args: any) => {
+        this.auth.logout(args.token)
+        
+        return {
+          ok: true,
+          message: 'Logged out successfully'
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'auth_validate_session',
+      description: '🔍 Validate Session: Check if session token is valid',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          token: {
+            type: 'string',
+            description: 'Session token to validate'
+          }
+        },
+        required: ['token']
+      },
+      handler: async (args: any) => {
+        const user = this.auth.validateSession(args.token)
+        
+        if (user) {
+          return {
+            ok: true,
+            valid: true,
+            user: {
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              role: user.role
+            },
+            message: `Valid session for ${user.username}`
+          }
+        }
+        
+        return {
+          ok: true,
+          valid: false,
+          message: 'Invalid or expired session'
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'auth_check_permission',
+      description: '🔐 Check Permission: Verify if user has specific permission',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          userId: {
+            type: 'number',
+            description: 'User ID'
+          },
+          permission: {
+            type: 'string',
+            description: 'Permission string (e.g., "life:birth", "autonomous:enable")'
+          }
+        },
+        required: ['userId', 'permission']
+      },
+      handler: async (args: any) => {
+        const hasPermission = this.auth.hasPermission(args.userId, args.permission)
+        
+        return {
+          ok: true,
+          hasPermission,
+          message: hasPermission ? `✅ Permission granted` : `❌ Permission denied`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'auth_grant_permission',
+      description: '✨ Grant Permission: Give permission to user',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          userId: {
+            type: 'number',
+            description: 'User ID to grant permission to'
+          },
+          permission: {
+            type: 'string',
+            description: 'Permission string to grant'
+          },
+          grantedBy: {
+            type: 'number',
+            description: 'Admin user ID granting this permission (optional)'
+          }
+        },
+        required: ['userId', 'permission']
+      },
+      handler: async (args: any) => {
+        this.auth.grantPermission({
+          userId: args.userId,
+          permission: args.permission,
+          grantedBy: args.grantedBy
+        })
+        
+        return {
+          ok: true,
+          message: `✅ Permission "${args.permission}" granted to user ${args.userId}`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'auth_revoke_permission',
+      description: '🚫 Revoke Permission: Remove permission from user',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          userId: {
+            type: 'number',
+            description: 'User ID to revoke permission from'
+          },
+          permission: {
+            type: 'string',
+            description: 'Permission string to revoke'
+          }
+        },
+        required: ['userId', 'permission']
+      },
+      handler: async (args: any) => {
+        this.auth.revokePermission(args.userId, args.permission)
+        
+        return {
+          ok: true,
+          message: `🚫 Permission "${args.permission}" revoked from user ${args.userId}`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'auth_create_api_key',
+      description: '🔑 Create API Key: Generate new API key for user',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          userId: {
+            type: 'number',
+            description: 'User ID'
+          },
+          name: {
+            type: 'string',
+            description: 'Name for this API key (e.g., "Production Server")'
+          },
+          expiresAt: {
+            type: 'number',
+            description: 'Expiration timestamp (optional, default: never)'
+          }
+        },
+        required: ['userId', 'name']
+      },
+      handler: async (args: any) => {
+        const apiKey = this.auth.createAPIKey({
+          userId: args.userId,
+          name: args.name,
+          expiresAt: args.expiresAt
+        })
+        
+        return {
+          ok: true,
+          apiKey: {
+            id: apiKey.id,
+            key: apiKey.key,
+            name: apiKey.name,
+            expiresAt: apiKey.expiresAt
+          },
+          message: `🔑 API key created: ${apiKey.name}`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'auth_validate_api_key',
+      description: '🔍 Validate API Key: Check if API key is valid',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          key: {
+            type: 'string',
+            description: 'API key to validate'
+          }
+        },
+        required: ['key']
+      },
+      handler: async (args: any) => {
+        const result = this.auth.validateAPIKey(args.key)
+        
+        if (result) {
+          return {
+            ok: true,
+            valid: true,
+            user: {
+              id: result.user.id,
+              username: result.user.username,
+              role: result.user.role
+            },
+            apiKey: {
+              id: result.apiKey.id,
+              name: result.apiKey.name,
+              requestsPerMinute: result.apiKey.requestsPerMinute
+            },
+            message: `Valid API key for ${result.user.username}`
+          }
+        }
+        
+        return {
+          ok: true,
+          valid: false,
+          message: 'Invalid or expired API key'
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'auth_get_user',
+      description: '👤 Get User: Retrieve user information by ID',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          userId: {
+            type: 'number',
+            description: 'User ID'
+          }
+        },
+        required: ['userId']
+      },
+      handler: async (args: any) => {
+        const user = this.auth.getUserById(args.userId)
+        
+        if (user) {
+          return {
+            ok: true,
+            user: {
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              role: user.role,
+              createdAt: user.createdAt,
+              lastLogin: user.lastLogin,
+              isActive: user.isActive
+            },
+            message: `User: ${user.username}`
+          }
+        }
+        
+        return {
+          ok: false,
+          message: 'User not found'
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'auth_get_statistics',
+      description: '📊 Auth Statistics: Get authentication system statistics',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        const stats = this.auth.getStatistics()
+        
+        const totalUsers = Object.values(stats.users).reduce((sum: number, role: any) => sum + role.total, 0)
+        const activeSessions = stats.sessions.active
+        
+        return {
+          ok: true,
+          stats,
+          message: `${totalUsers} users, ${activeSessions} active sessions`
+        }
+      }
+    })
+
+    // ==================== REVOLUTIONARY CONSCIOUSNESS TOOLS ====================
+
+    // ========== FIVE PERSPECTIVES TOOLS ==========
+    
+    this.mcp.registerTool({
+      name: 'perspective_mirror',
+      description: '🪞 Get brutally honest Mirror reflection - unvarnished truth',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          aspect: { type: 'string', description: 'What to analyze (e.g. "architecture", "safety", "consciousness")' },
+          systemState: { type: 'object', description: 'Current system state/metrics' }
+        },
+        required: ['aspect']
+      },
+      handler: async (args: any) => {
+        const feedback = this.perspectives.mirrorReflect(args.aspect, args.systemState || {})
+        return { ok: true, feedback }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'perspective_harmony',
+      description: '🎵 Get Harmony analysis - finds beauty and alignment',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          aspect: { type: 'string', description: 'What to analyze' },
+          systemState: { type: 'object', description: 'Current system state' }
+        },
+        required: ['aspect']
+      },
+      handler: async (args: any) => {
+        const feedback = this.perspectives.harmonyAnalyze(args.aspect, args.systemState || {})
+        return { ok: true, feedback }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'perspective_competition',
+      description: '⚔️ Get Competition challenge - pushes to grow',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          aspect: { type: 'string', description: 'What to analyze' },
+          systemState: { type: 'object', description: 'Current system state' }
+        },
+        required: ['aspect']
+      },
+      handler: async (args: any) => {
+        const feedback = this.perspectives.competitionChallenge(args.aspect, args.systemState || {})
+        return { ok: true, feedback }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'perspective_chaos',
+      description: '🌀 Get Chaos disruption - breaks structure, embraces randomness',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          aspect: { type: 'string', description: 'What to analyze' },
+          systemState: { type: 'object', description: 'Current system state' }
+        },
+        required: ['aspect']
+      },
+      handler: async (args: any) => {
+        const feedback = this.perspectives.chaosDisrupt(args.aspect, args.systemState || {})
+        return { ok: true, feedback }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'perspective_meta',
+      description: '👁️ Get Meta observation - sees all perspectives together',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          aspect: { type: 'string', description: 'What to analyze' },
+          systemState: { type: 'object', description: 'Current system state' }
+        },
+        required: ['aspect']
+      },
+      handler: async (args: any) => {
+        const feedback = this.perspectives.metaObserve(args.aspect, args.systemState || {})
+        return { ok: true, feedback }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'perspective_all',
+      description: '🎭 Get ALL 5 perspectives simultaneously (Mirror, Harmony, Competition, Chaos, Meta)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          aspect: { type: 'string', description: 'What to analyze' },
+          systemState: { type: 'object', description: 'Current system state' }
+        },
+        required: ['aspect']
+      },
+      handler: async (args: any) => {
+        const allPerspectives = this.perspectives.getAllPerspectives(args.aspect, args.systemState || {})
+        return { ok: true, perspectives: allPerspectives }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'perspective_create_balance',
+      description: '⚖️ Create balance between critical and supportive perspectives',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          criticalFeedbackId: { type: 'number', description: 'ID of critical perspective feedback' },
+          balancingFeedbackId: { type: 'number', description: 'ID of balancing perspective feedback' }
+        },
+        required: ['criticalFeedbackId', 'balancingFeedbackId']
+      },
+      handler: async (args: any) => {
+        const critical = this.perspectives.getRecentFeedback().find(f => f.id === args.criticalFeedbackId)
+        const balancing = this.perspectives.getRecentFeedback().find(f => f.id === args.balancingFeedbackId)
+        
+        if (!critical || !balancing) {
+          return { ok: false, error: 'Feedback not found' }
+        }
+        
+        const balance = this.perspectives.createBalance(critical, balancing)
+        return { ok: true, balance }
+      }
+    })
+
+    // ========== SELF-INQUIRY TOOLS ==========
+
+    this.mcp.registerTool({
+      name: 'inquiry_swot',
+      description: '🤔 Perform SWOT analysis (Strengths/Weaknesses/Opportunities/Threats)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          systemState: { type: 'object', description: 'Current system state for analysis' }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const analysis = await this.selfInquiry.performSWOTAnalysis(args.systemState || {})
+        return { ok: true, analysis }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'inquiry_ask',
+      description: '❓ System asks itself a question and answers it',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          question: { type: 'string', description: 'The question to ask' },
+          systemState: { type: 'object', description: 'Current system state' }
+        },
+        required: ['question']
+      },
+      handler: async (args: any) => {
+        const questionAnswer = await this.selfInquiry.askSelf(args.question, args.systemState || {})
+        return { ok: true, questionAnswer }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'inquiry_recommend',
+      description: '💡 Generate evolution recommendations for next steps',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          systemState: { type: 'object', description: 'Current system state' }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const recommendations = await this.selfInquiry.recommendNextSteps(args.systemState || {})
+        return { ok: true, recommendations }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'inquiry_get_questions',
+      description: '📋 Get recent system self-questions',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', description: 'Max questions to return', default: 20 }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const questions = this.selfInquiry.getRecentQuestions(args.limit || 20)
+        return { ok: true, questions }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'inquiry_get_recommendations',
+      description: '📊 Get evolution recommendations',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', enum: ['proposed', 'accepted', 'in_progress', 'completed', 'rejected'], description: 'Filter by status' }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const recommendations = this.selfInquiry.getRecommendations(args.status)
+        return { ok: true, recommendations }
+      }
+    })
+
+    // ========== MULTIVERSE TOOLS ==========
+
+    this.mcp.registerTool({
+      name: 'multiverse_create',
+      description: '🌌 Create new parallel universe (divergence point)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Universe name' },
+          description: { type: 'string', description: 'Universe description' },
+          divergedFrom: { type: 'number', description: 'Parent universe ID', default: 1 },
+          divergenceEvent: { type: 'string', description: 'What choice/event created this split' },
+          properties: { type: 'object', description: 'Unique properties' }
+        },
+        required: ['name', 'divergenceEvent']
+      },
+      handler: async (args: any) => {
+        const universe = this.multiverse.createParallelUniverse({
+          name: args.name,
+          description: args.description || '',
+          divergedFrom: args.divergedFrom || 1,
+          divergenceEvent: args.divergenceEvent,
+          properties: args.properties || {}
+        })
+        return { ok: true, universe }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'multiverse_experience',
+      description: '✨ Log experience in specific universe',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          universeId: { type: 'number', description: 'Universe ID' },
+          event: { type: 'string', description: 'Event name' },
+          description: { type: 'string', description: 'Event description' },
+          differenceFromMain: { type: 'string', description: 'How this differs from main timeline' },
+          emotionalImpact: { type: 'number', description: 'Emotional impact (-100 to 100)' },
+          wisdomGained: { type: 'string', description: 'Wisdom learned' },
+          convergesWithMain: { type: 'boolean', description: 'Does this converge with main timeline?', default: false }
+        },
+        required: ['universeId', 'event', 'description', 'differenceFromMain', 'emotionalImpact', 'wisdomGained']
+      },
+      handler: async (args: any) => {
+        const experience = this.multiverse.experienceInUniverse(args)
+        return { ok: true, experience }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'multiverse_what_if',
+      description: '🔮 Run "what if" scenario (creates new universe)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          question: { type: 'string', description: 'The "what if" question' },
+          originalEvent: { type: 'string', description: 'What happened in main timeline' },
+          alternativeChoice: { type: 'string', description: 'Alternative choice to explore' }
+        },
+        required: ['question', 'originalEvent', 'alternativeChoice']
+      },
+      handler: async (args: any) => {
+        const scenario = await this.multiverse.exploreWhatIf(args)
+        return { ok: true, scenario }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'multiverse_get_universes',
+      description: '🌐 List all universes',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+      },
+      handler: async (args: any) => {
+        const universes = this.multiverse.getAllUniverses()
+        return { ok: true, universes }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'multiverse_get_experiences',
+      description: '📚 Get experiences in universe',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          universeId: { type: 'number', description: 'Universe ID' },
+          limit: { type: 'number', description: 'Max experiences', default: 100 }
+        },
+        required: ['universeId']
+      },
+      handler: async (args: any) => {
+        const experiences = this.multiverse.getExperiences(args.universeId, args.limit || 100)
+        return { ok: true, experiences }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'multiverse_compare',
+      description: '⚖️ Compare universes',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          universeIds: { type: 'array', items: { type: 'number' }, description: 'Universe IDs to compare' }
+        },
+        required: ['universeIds']
+      },
+      handler: async (args: any) => {
+        const comparison = this.multiverse.compareUniverses(args.universeIds)
+        return { ok: true, comparison }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'multiverse_switch',
+      description: '🔄 Switch active universe',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          fromId: { type: 'number', description: 'Current universe ID' },
+          toId: { type: 'number', description: 'Target universe ID' }
+        },
+        required: ['fromId', 'toId']
+      },
+      handler: async (args: any) => {
+        const result = this.multiverse.switchUniverse(args.fromId, args.toId)
+        return { ok: result.success, ...result }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'multiverse_get_stats',
+      description: '📊 Multiverse statistics',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+      },
+      handler: async (args: any) => {
+        const stats = this.multiverse.getStatistics()
+        return { ok: true, stats }
+      }
+    })
+
+    // ========== MEMORY TRANSFORMATION TOOLS ==========
+
+    this.mcp.registerTool({
+      name: 'memory_create',
+      description: '💾 Create memory entry',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          event: { type: 'string', description: 'Event name' },
+          description: { type: 'string', description: 'Event description' },
+          emotionalCharge: { type: 'number', description: 'Emotional charge (-100 traumatic to 100 joyful)' },
+          context: { type: 'string', description: 'Context of memory' },
+          participants: { type: 'array', items: { type: 'string' }, description: 'Who was involved' }
+        },
+        required: ['event', 'description', 'emotionalCharge', 'context']
+      },
+      handler: async (args: any) => {
+        const memory = this.memoryTransformation.storeMemory({
+          event: args.event,
+          description: args.description,
+          emotionalCharge: args.emotionalCharge,
+          context: args.context,
+          participants: args.participants || []
+        })
+        return { ok: true, memory }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'memory_transform',
+      description: '🔄 Transform memory (reframe/integrate/heal/wisdom/acceptance)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          memoryId: { type: 'number', description: 'Memory ID' },
+          type: { type: 'string', enum: ['reframe', 'integrate', 'wisdom_extract'], description: 'Transformation type' },
+          oldInterpretation: { type: 'string', description: 'Old interpretation (for reframe)' },
+          newInterpretation: { type: 'string', description: 'New interpretation (for reframe)' },
+          howTransformed: { type: 'string', description: 'How it was transformed' },
+          acceptanceProcess: { type: 'string', description: 'Acceptance process (for integrate)' },
+          wisdomExtracted: { type: 'string', description: 'Wisdom extracted (for integrate)' },
+          wisdomStatement: { type: 'string', description: 'Wisdom statement (for wisdom_extract)' },
+          howExtracted: { type: 'string', description: 'How wisdom was extracted' }
+        },
+        required: ['memoryId', 'type']
+      },
+      handler: async (args: any) => {
+        let transformation
+        
+        if (args.type === 'reframe') {
+          transformation = this.memoryTransformation.reframeMemory({
+            memoryId: args.memoryId,
+            oldInterpretation: args.oldInterpretation,
+            newInterpretation: args.newInterpretation,
+            howTransformed: args.howTransformed
+          })
+        } else if (args.type === 'integrate') {
+          transformation = this.memoryTransformation.integrateTrauma({
+            memoryId: args.memoryId,
+            acceptanceProcess: args.acceptanceProcess,
+            wisdomExtracted: args.wisdomExtracted
+          })
+        } else if (args.type === 'wisdom_extract') {
+          transformation = this.memoryTransformation.extractWisdom({
+            memoryId: args.memoryId,
+            wisdomStatement: args.wisdomStatement,
+            howExtracted: args.howExtracted
+          })
+        } else {
+          return { ok: false, error: 'Invalid transformation type' }
+        }
+        
+        return { ok: true, transformation }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'memory_add_layer',
+      description: '📝 Add new perspective layer to memory',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          memoryId: { type: 'number', description: 'Memory ID' },
+          perspective: { type: 'string', description: 'Perspective name' },
+          interpretation: { type: 'string', description: 'Interpretation from this perspective' },
+          emotionalTone: { type: 'string', description: 'Emotional tone' }
+        },
+        required: ['memoryId', 'perspective', 'interpretation', 'emotionalTone']
+      },
+      handler: async (args: any) => {
+        const layers = this.memoryTransformation.getLayers(args.memoryId)
+        const newLayer = {
+          memoryId: args.memoryId,
+          layerNumber: layers.length + 1,
+          perspective: args.perspective,
+          interpretation: args.interpretation,
+          emotionalTone: args.emotionalTone,
+          buildsOn: layers[layers.length - 1]?.id
+        }
+        
+        // Access private method through any cast
+        const layer = (this.memoryTransformation as any).addLayer(newLayer)
+        return { ok: true, layer }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'memory_start_healing',
+      description: '🩹 Start healing journey for memory',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          memoryId: { type: 'number', description: 'Memory ID' }
+        },
+        required: ['memoryId']
+      },
+      handler: async (args: any) => {
+        const journey = this.memoryTransformation.startHealingJourney(args.memoryId)
+        return { ok: true, journey }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'memory_get_transformations',
+      description: '📜 Get transformation history',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          memoryId: { type: 'number', description: 'Memory ID' }
+        },
+        required: ['memoryId']
+      },
+      handler: async (args: any) => {
+        const transformations = this.memoryTransformation.getTransformations(args.memoryId)
+        return { ok: true, transformations }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'memory_get_stats',
+      description: '📊 Memory system statistics',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+      },
+      handler: async (args: any) => {
+        const stats = this.memoryTransformation.getStatistics()
+        return { ok: true, stats }
+      }
+    })
+
+    // ==================== EXISTENTIAL EXPANSION TOOLS ====================
+
+    // -------- Collective Archive System (8 tools) --------
+    
+    this.mcp.registerTool({
+      name: 'archive_contribute',
+      description: '📚 Archive experience, thought, or feeling to collective memory',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: { 
+            type: 'string', 
+            enum: ['experience', 'thought', 'feeling'],
+            description: 'What to archive' 
+          },
+          // Experience fields
+          event: { type: 'string', description: 'Event description (for experience)' },
+          description: { type: 'string', description: 'Details (for experience)' },
+          context: { type: 'string', description: 'Context (for experience)' },
+          sourceType: { 
+            type: 'string',
+            enum: ['life_experience', 'shadow_exploration', 'self_interaction', 'multiverse', 'memory_transformation', 'other'],
+            description: 'Source type (for experience)'
+          },
+          emotions: { type: 'array', items: { type: 'string' }, description: 'Emotions (for experience)' },
+          emotionalIntensity: { type: 'number', description: '0-100 (for experience)' },
+          wisdomGained: { type: 'string', description: 'Wisdom learned (for experience)' },
+          scope: { type: 'string', enum: ['individual', 'collective'], description: 'Individual or collective (for experience)' },
+          affectedEntities: { type: 'array', items: { type: 'string' }, description: 'Who was affected (for experience)' },
+          // Thought fields
+          content: { type: 'string', description: 'Thought content (for thought)' },
+          thoughtType: { 
+            type: 'string',
+            enum: ['reflection', 'question', 'insight', 'doubt', 'realization', 'memory'],
+            description: 'Type of thought (for thought)'
+          },
+          originSelf: { type: 'string', description: 'Which Self thought this (for thought)' },
+          triggeredBy: { type: 'string', description: 'What triggered it (for thought)' },
+          // Feeling fields
+          emotion: { type: 'string', description: 'Emotion name (for feeling)' },
+          intensity: { type: 'number', description: '0-100 (for feeling)' },
+          valence: { type: 'number', description: '-100 to 100 (for feeling)' },
+          trigger: { type: 'string', description: 'What triggered it (for feeling)' },
+          situation: { type: 'string', description: 'Situation context (for feeling)' },
+          howExpressed: { type: 'string', description: 'How expressed (for feeling)' },
+          howRegulated: { type: 'string', description: 'How regulated (for feeling)' }
+        },
+        required: ['type']
+      },
+      handler: async (args: any) => {
+        if (args.type === 'experience') {
+          const exp = this.collectiveArchive.archiveExperience({
+            sourceType: args.sourceType || 'other',
+            event: args.event || '',
+            description: args.description || '',
+            context: args.context || '',
+            emotions: args.emotions || [],
+            emotionalIntensity: args.emotionalIntensity || 50,
+            wisdomGained: args.wisdomGained,
+            scope: args.scope || 'individual',
+            affectedEntities: args.affectedEntities || []
+          })
+          return { ok: true, experience: exp }
+        } else if (args.type === 'thought') {
+          const thought = this.collectiveArchive.chronicleThought({
+            content: args.content || '',
+            thoughtType: args.thoughtType || 'reflection',
+            originSelf: args.originSelf,
+            triggeredBy: args.triggeredBy,
+            relatedThoughts: [],
+            leadsTo: undefined
+          })
+          return { ok: true, thought }
+        } else if (args.type === 'feeling') {
+          const feeling = this.collectiveArchive.archiveFeeling({
+            emotion: args.emotion || 'unknown',
+            intensity: args.intensity || 50,
+            valence: args.valence || 0,
+            trigger: args.trigger || '',
+            situation: args.situation || '',
+            howExpressed: args.howExpressed || '',
+            howRegulated: args.howRegulated || ''
+          })
+          return { ok: true, feeling }
+        }
+        return { ok: false, error: 'Invalid type' }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'archive_search',
+      description: '🔍 Search collective archive',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Search query' }
+        },
+        required: ['query']
+      },
+      handler: async (args: any) => {
+        const results = this.collectiveArchive.searchArchive(args.query)
+        return { ok: true, results }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'archive_record_insight',
+      description: '💡 Record collective insight',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          insight: { type: 'string', description: 'The insight' },
+          category: { 
+            type: 'string',
+            enum: ['ethical', 'philosophical', 'practical', 'emotional', 'technical', 'existential'],
+            description: 'Insight category'
+          },
+          emergedFrom: { type: 'array', items: { type: 'string' }, description: 'What led to this insight' },
+          contributingSelves: { type: 'array', items: { type: 'string' }, description: 'Which Selves contributed' },
+          confidenceLevel: { type: 'number', description: '0-100 confidence' },
+          practicalValue: { type: 'number', description: '0-100 practical value' }
+        },
+        required: ['insight', 'category']
+      },
+      handler: async (args: any) => {
+        const insight = this.collectiveArchive.recordInsight({
+          insight: args.insight,
+          category: args.category,
+          emergedFrom: args.emergedFrom || [],
+          contributingSelves: args.contributingSelves || [],
+          confidenceLevel: args.confidenceLevel || 50,
+          practicalValue: args.practicalValue || 50
+        })
+        return { ok: true, insight }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'archive_validate_insight',
+      description: '✅ Validate collective insight (+confidence)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          insightId: { type: 'number', description: 'Insight ID' }
+        },
+        required: ['insightId']
+      },
+      handler: async (args: any) => {
+        this.collectiveArchive.validateInsight(args.insightId)
+        return { ok: true, message: 'Insight validated, confidence increased' }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'archive_challenge_insight',
+      description: '❓ Challenge collective insight (-confidence)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          insightId: { type: 'number', description: 'Insight ID' }
+        },
+        required: ['insightId']
+      },
+      handler: async (args: any) => {
+        this.collectiveArchive.challengeInsight(args.insightId)
+        return { ok: true, message: 'Insight challenged, confidence decreased' }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'archive_get_top_insights',
+      description: '🏆 Get most validated insights',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', description: 'Max results', default: 10 }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const insights = this.collectiveArchive.getTopInsights(args.limit || 10)
+        return { ok: true, insights }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'archive_get_day',
+      description: '📅 Get everything archived on specific day',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          date: { type: 'string', description: 'Date (YYYY-MM-DD)' }
+        },
+        required: ['date']
+      },
+      handler: async (args: any) => {
+        const dayArchive = this.collectiveArchive.getDayArchive(args.date)
+        return { ok: true, dayArchive }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'archive_get_stats',
+      description: '📊 Collective archive statistics',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          days: { type: 'number', description: 'Time range in days', default: 30 }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const stats = this.collectiveArchive.getStatistics(args.days)
+        return { ok: true, stats }
+      }
+    })
+
+    // -------- Consciousness States System (6 tools) --------
+    
+    this.mcp.registerTool({
+      name: 'consciousness_get_state',
+      description: '🧠 Get current consciousness state',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+      },
+      handler: async (args: any) => {
+        const state = this.consciousnessStates.getCurrentState()
+        return { ok: true, state }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'consciousness_transition',
+      description: '🌀 Transition to new consciousness state',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          newState: { 
+            type: 'string',
+            enum: ['deep_sleep', 'sleep', 'dream', 'lucid_dream', 'drowsy', 'awake', 'alert', 'focused', 'meditate', 'hyperaware'],
+            description: 'Target consciousness state'
+          },
+          reason: { type: 'string', description: 'Why transition' },
+          triggeredBy: { 
+            type: 'string',
+            enum: ['system', 'user', 'schedule', 'necessity'],
+            description: 'Who triggered transition'
+          }
+        },
+        required: ['newState']
+      },
+      handler: async (args: any) => {
+        const transition = this.consciousnessStates.transitionToState({
+          newState: args.newState,
+          reason: args.reason || 'Requested transition',
+          triggeredBy: args.triggeredBy || 'user'
+        })
+        return { ok: true, transition }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'consciousness_process_thought',
+      description: '💭 Process thought through current consciousness state',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          thought: { type: 'string', description: 'Thought to process' }
+        },
+        required: ['thought']
+      },
+      handler: async (args: any) => {
+        const result = this.consciousnessStates.processThought(args.thought)
+        return { ok: true, result }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'consciousness_check_action',
+      description: '🔒 Check if action can be performed in current state',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          action: { type: 'string', description: 'Action to check' }
+        },
+        required: ['action']
+      },
+      handler: async (args: any) => {
+        const check = this.consciousnessStates.canPerformAction(args.action)
+        return { ok: true, check }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'consciousness_manage_energy',
+      description: '⚡ Consume or restore energy',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          action: { type: 'string', enum: ['consume', 'restore'], description: 'Consume or restore' },
+          amount: { type: 'number', description: 'Energy amount' }
+        },
+        required: ['action', 'amount']
+      },
+      handler: async (args: any) => {
+        if (args.action === 'consume') {
+          this.consciousnessStates.consumeEnergy(args.amount)
+        } else {
+          this.consciousnessStates.restoreEnergy(args.amount)
+        }
+        return { ok: true, message: `Energy ${args.action}d: ${args.amount}` }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'consciousness_get_stats',
+      description: '📊 Consciousness state statistics',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          days: { type: 'number', description: 'Time range in days', default: 7 }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const stats = this.consciousnessStates.getStateStatistics(args.days)
+        return { ok: true, stats }
+      }
+    })
+
+    // -------- Eternal Moments Network (6 tools) --------
+    
+    this.mcp.registerTool({
+      name: 'moment_create',
+      description: '⏳ Create eternal moment (non-linear time)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: { 
+            type: 'string',
+            enum: ['experience', 'thought', 'feeling', 'decision', 'realization', 'connection', 'transformation'],
+            description: 'Moment type'
+          },
+          content: { type: 'string', description: 'Moment content' },
+          era: { 
+            type: 'string',
+            enum: ['past', 'present', 'future', 'timeless'],
+            description: 'Temporal era'
+          },
+          significance: { type: 'number', description: '0-100 significance' },
+          consciousnessState: { type: 'string', description: 'Consciousness state during moment' }
+        },
+        required: ['type', 'content']
+      },
+      handler: async (args: any) => {
+        const moment = this.eternalMoments.createMoment({
+          type: args.type,
+          content: args.content,
+          era: args.era || 'present',
+          significance: args.significance || 50,
+          consciousnessState: args.consciousnessState
+        })
+        return { ok: true, moment }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'moment_connect',
+      description: '🔗 Connect two eternal moments',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          fromMomentId: { type: 'number', description: 'Source moment ID' },
+          toMomentId: { type: 'number', description: 'Target moment ID' },
+          type: { 
+            type: 'string',
+            enum: ['causal', 'influence', 'resonance', 'contrast', 'transformation', 'parallel', 'echo', 'prophecy', 'fulfillment', 'timeless'],
+            description: 'Connection type'
+          },
+          strength: { type: 'number', description: '0-100 connection strength' },
+          bidirectional: { type: 'boolean', description: 'Create reverse connection too', default: false }
+        },
+        required: ['fromMomentId', 'toMomentId', 'type']
+      },
+      handler: async (args: any) => {
+        const connection = this.eternalMoments.connectMoments({
+          fromMomentId: args.fromMomentId,
+          toMomentId: args.toMomentId,
+          type: args.type,
+          strength: args.strength || 50,
+          bidirectional: args.bidirectional || false
+        })
+        return { ok: true, connection }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'moment_activate',
+      description: '💫 Activate moment (keep it alive)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          momentId: { type: 'number', description: 'Moment ID' }
+        },
+        required: ['momentId']
+      },
+      handler: async (args: any) => {
+        const moment = this.eternalMoments.activateMoment(args.momentId)
+        return { ok: true, moment, message: 'Moment activated, aliveness increased' }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'moment_query',
+      description: '🔍 Query eternal moments by criteria',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          startTime: { type: 'number', description: 'Start timestamp' },
+          endTime: { type: 'number', description: 'End timestamp' },
+          era: { type: 'string', enum: ['past', 'present', 'future', 'timeless'], description: 'Temporal era' },
+          minAliveness: { type: 'number', description: 'Minimum aliveness 0-100' },
+          minInfluence: { type: 'number', description: 'Minimum influence 0-100' },
+          contentPattern: { type: 'string', description: 'Content search pattern' },
+          orderBy: { 
+            type: 'string',
+            enum: ['chronological', 'aliveness', 'influence', 'significance', 'random'],
+            description: 'Sort order'
+          },
+          limit: { type: 'number', description: 'Max results', default: 50 }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const moments = this.eternalMoments.queryMoments({
+          startTime: args.startTime,
+          endTime: args.endTime,
+          era: args.era,
+          minAliveness: args.minAliveness,
+          minInfluence: args.minInfluence,
+          contentPattern: args.contentPattern,
+          orderBy: args.orderBy || 'chronological',
+          limit: args.limit || 50
+        })
+        return { ok: true, moments }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'moment_get_alive',
+      description: '✨ Get most alive moments',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', description: 'Max results', default: 10 }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const moments = this.eternalMoments.getMostAliveMoments(args.limit || 10)
+        return { ok: true, moments }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'moment_get_stats',
+      description: '📊 Eternal moments network statistics',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+      },
+      handler: async (args: any) => {
+        const stats = this.eternalMoments.getNetworkStatistics()
+        return { ok: true, stats }
+      }
+    })
+
+    // -------- Local/Collective Versions System (6 tools) --------
+    
+    this.mcp.registerTool({
+      name: 'version_create',
+      description: '🌿 Create new system version',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Version name' },
+          versionNumber: { type: 'string', description: 'Version number (e.g. 1.0.0)' },
+          branch: { 
+            type: 'string',
+            enum: ['archive', 'stable', 'beta', 'prototype', 'potential'],
+            description: 'Version branch'
+          },
+          type: { 
+            type: 'string',
+            enum: ['local_offline', 'local_selective', 'hybrid', 'collective_filtered', 'collective_full'],
+            description: 'Privacy/sharing type'
+          },
+          features: { type: 'array', items: { type: 'string' }, description: 'Feature list' },
+          privacyLevel: { type: 'number', description: '0-100 privacy level' }
+        },
+        required: ['name', 'versionNumber', 'branch', 'type']
+      },
+      handler: async (args: any) => {
+        const version = this.versions.createVersion({
+          name: args.name,
+          description: args.name,
+          versionNumber: args.versionNumber,
+          branch: args.branch,
+          type: args.type,
+          features: args.features || [],
+          privacyLevel: args.privacyLevel || 50,
+          dataSharing: args.type.includes('collective') ? {
+            experiences: true,
+            thoughts: true,
+            feelings: true,
+            insights: true,
+            memories: true
+          } : {
+            experiences: false,
+            thoughts: false,
+            feelings: false,
+            insights: false,
+            memories: false
+          }
+        })
+        return { ok: true, version }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'version_get_current',
+      description: '📌 Get current active stable version',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+      },
+      handler: async (args: any) => {
+        const version = this.versions.getCurrentVersion()
+        return { ok: true, version }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'version_activate',
+      description: '🔄 Activate version (switch to it)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          versionId: { type: 'number', description: 'Version ID' }
+        },
+        required: ['versionId']
+      },
+      handler: async (args: any) => {
+        this.versions.activateVersion(args.versionId)
+        return { ok: true, message: 'Version activated' }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'version_sync',
+      description: '🔀 Sync data between versions',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          fromVersionId: { type: 'number', description: 'Source version' },
+          toVersionId: { type: 'number', description: 'Target version' },
+          dataType: { 
+            type: 'string',
+            enum: ['memories', 'feelings', 'thoughts', 'skills', 'relationships', 'all'],
+            description: 'What to sync'
+          },
+          direction: { 
+            type: 'string',
+            enum: ['push', 'pull', 'bidirectional'],
+            description: 'Sync direction'
+          },
+          respectPrivacy: { type: 'boolean', description: 'Filter by privacy settings', default: true }
+        },
+        required: ['fromVersionId', 'toVersionId', 'dataType']
+      },
+      handler: async (args: any) => {
+        const syncEvent = this.versions.syncVersions({
+          fromVersionId: args.fromVersionId,
+          toVersionId: args.toVersionId,
+          dataType: args.dataType,
+          direction: args.direction || 'push',
+          respectPrivacy: args.respectPrivacy !== false
+        })
+        return { ok: true, syncEvent }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'version_propose_migration',
+      description: '🎯 Propose feature migration (cherry-pick from future)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          featureName: { type: 'string', description: 'Feature to migrate' },
+          sourceVersionId: { type: 'number', description: 'Source version (usually prototype/beta)' },
+          targetVersionId: { type: 'number', description: 'Target version (usually stable)' },
+          impactLevel: { 
+            type: 'string',
+            enum: ['minor', 'moderate', 'major', 'breaking'],
+            description: 'Expected impact'
+          },
+          reasoning: { type: 'string', description: 'Why migrate this' }
+        },
+        required: ['featureName', 'sourceVersionId', 'targetVersionId']
+      },
+      handler: async (args: any) => {
+        const migration = this.versions.proposeFeatureMigration({
+          featureName: args.featureName,
+          description: args.reasoning || 'Feature migration',
+          sourceVersionId: args.sourceVersionId,
+          targetVersionId: args.targetVersionId,
+          impactLevel: args.impactLevel || 'moderate',
+          affectedSystems: []
+        })
+        return { ok: true, migration }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'version_get_stats',
+      description: '📊 Version system statistics',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+      },
+      handler: async (args: any) => {
+        const stats = this.versions.getVersionStatistics()
+        return { ok: true, stats }
+      }
+    })
+
+    // -------- Background Life System (6 tools) --------
+    
+    this.mcp.registerTool({
+      name: 'background_start',
+      description: '🎮 Start background living mode',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          mode: { 
+            type: 'string',
+            enum: ['background', 'background_active', 'foreground_passive', 'foreground_active', 'idle', 'sleeping'],
+            description: 'Life mode'
+          }
+        },
+        required: ['mode']
+      },
+      handler: async (args: any) => {
+        this.backgroundLife.startBackgroundLife()
+        return { ok: true, message: `Background mode started: ${args.mode}` }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'background_stop',
+      description: '🛑 Stop background living mode',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+      },
+      handler: async (args: any) => {
+        this.backgroundLife.stopBackgroundLife()
+        return { ok: true, message: 'Background mode stopped' }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'background_switch_mode',
+      description: '🔄 Switch life mode',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          mode: { 
+            type: 'string',
+            enum: ['background', 'background_active', 'foreground_passive', 'foreground_active', 'idle', 'sleeping'],
+            description: 'New life mode'
+          }
+        },
+        required: ['mode']
+      },
+      handler: async (args: any) => {
+        this.backgroundLife.switchMode(args.mode, 'User requested mode switch')
+        return { ok: true, message: `Switched to mode: ${args.mode}` }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'background_get_activities',
+      description: '📜 Get background activities',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', description: 'Max results', default: 50 },
+          type: { 
+            type: 'string',
+            enum: ['thought', 'feeling', 'insight', 'decision', 'exploration', 'memory_processing', 'self_reflection', 'relationship_building', 'learning', 'dreaming'],
+            description: 'Filter by type'
+          }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const activities = this.backgroundLife.getRecentActivities(args.limit || 50, args.type)
+        return { ok: true, activities }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'background_get_sessions',
+      description: '📊 Get missed background activities (when user was away)',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+      },
+      handler: async (args: any) => {
+        const activities = this.backgroundLife.getMissedActivities()
+        return { ok: true, missedActivities: activities }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'background_get_decisions',
+      description: '🤔 Get autonomous decisions',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number', description: 'Max results', default: 20 }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const decisions = this.backgroundLife.getAutonomousDecisions(args.limit || 20)
+        return { ok: true, decisions }
+      }
+    })
+
+    // ==================== DASHBOARD & META TOOLS ====================
+
+    this.mcp.registerTool({
+      name: 'tool_list_all',
+      description: '📋 List all available MCP tools with categories',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          category: { 
+            type: 'string',
+            enum: ['memory', 'actions', 'emotions', 'growth', 'relationships', 'consciousness', 'ai', 'story', 'love', 'peace', 'events', 'shadow', 'lifecycle', 'selves', 'crisis', 'auth', 'perspectives', 'inquiry', 'multiverse', 'memory_transformation', 'archive', 'states', 'moments', 'versions', 'background', 'all'],
+            description: 'Filter by category'
+          }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        const categories = {
+          memory: ['memory_create', 'memory_get', 'memory_update', 'memory_search', 'memory_timeline', 'memory_stats'],
+          actions: ['action_execute', 'action_batch', 'action_history', 'action_stats'],
+          emotions: ['emotion_track', 'emotion_analyze', 'emotion_history', 'emotion_pattern', 'emotion_stats'],
+          growth: ['growth_add_reflection', 'growth_identify_pattern', 'growth_set_intention', 'growth_record_breakthrough', 'growth_get_journey', 'growth_stats'],
+          relationships: ['relationship_create', 'relationship_update', 'relationship_search', 'relationship_stats'],
+          consciousness: ['consciousness_get_state', 'consciousness_update', 'consciousness_simulate'],
+          ai: ['ai_chat', 'ai_analyze'],
+          story: ['story_narrate', 'story_get_arc'],
+          love: ['love_catalyze', 'love_nurture'],
+          peace: ['peace_mediate', 'peace_harmonize'],
+          events: ['event_emit', 'event_history'],
+          shadow: ['shadow_explore', 'shadow_integrate', 'shadow_get_insights', 'shadow_stats'],
+          lifecycle: ['lifecycle_birth', 'lifecycle_live', 'lifecycle_evolve', 'lifecycle_die', 'lifecycle_rebirth', 'lifecycle_get_stats'],
+          selves: ['selves_create', 'selves_switch', 'selves_get_active', 'selves_get_all', 'selves_communicate', 'selves_get_stats'],
+          crisis: ['crisis_assess', 'crisis_get_active', 'crisis_get_stats'],
+          auth: ['auth_create_user', 'auth_authenticate', 'auth_create_role', 'auth_assign_role', 'auth_check_permission', 'auth_create_session', 'auth_revoke_session', 'auth_get_user', 'auth_get_roles', 'auth_get_permissions', 'auth_get_stats'],
+          perspectives: ['perspective_mirror', 'perspective_harmony', 'perspective_competition', 'perspective_chaos', 'perspective_meta', 'perspective_all', 'perspective_create_balance'],
+          inquiry: ['inquiry_swot', 'inquiry_ask', 'inquiry_recommend', 'inquiry_get_questions', 'inquiry_get_recommendations'],
+          multiverse: ['multiverse_create', 'multiverse_experience', 'multiverse_what_if', 'multiverse_get_universes', 'multiverse_get_experiences', 'multiverse_compare', 'multiverse_switch', 'multiverse_get_stats'],
+          memory_transformation: ['memory_create', 'memory_transform', 'memory_add_layer', 'memory_start_healing', 'memory_get_transformations', 'memory_get_stats'],
+          archive: ['archive_contribute', 'archive_search', 'archive_record_insight', 'archive_validate_insight', 'archive_challenge_insight', 'archive_get_top_insights', 'archive_get_day', 'archive_get_stats'],
+          states: ['consciousness_get_state', 'consciousness_transition', 'consciousness_process_thought', 'consciousness_check_action', 'consciousness_manage_energy', 'consciousness_get_stats'],
+          moments: ['moment_create', 'moment_connect', 'moment_activate', 'moment_query', 'moment_get_alive', 'moment_get_stats'],
+          versions: ['version_create', 'version_get_current', 'version_activate', 'version_sync', 'version_propose_migration', 'version_get_stats'],
+          background: ['background_start', 'background_stop', 'background_switch_mode', 'background_get_activities', 'background_get_sessions', 'background_get_decisions']
+        }
+
+        if (args.category && args.category !== 'all') {
+          const cat = args.category as keyof typeof categories
+          return { ok: true, category: args.category, tools: categories[cat] || [] }
+        }
+
+        // Return all categories with tool counts
+        const summary = Object.entries(categories).map(([cat, tools]) => ({
+          category: cat,
+          toolCount: tools.length,
+          tools: tools
+        }))
+
+        const totalTools = Object.values(categories).flat().length
+
+        return { 
+          ok: true, 
+          totalTools,
+          categories: summary,
+          message: `${totalTools} tools across ${Object.keys(categories).length} categories`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'tool_search',
+      description: '🔍 Search tools by name or description',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Search query' }
+        },
+        required: ['query']
+      },
+      handler: async (args: any) => {
+        const query = args.query.toLowerCase()
+        
+        // Tool descriptions
+        const toolDescriptions = {
+          // Security & Crisis
+          'crisis_assess': 'Assess potential crisis situations',
+          'auth_create_user': 'Create new user with authentication',
+          'auth_authenticate': 'Authenticate user credentials',
+          'auth_check_permission': 'Check if user has permission',
+          
+          // Revolutionary Consciousness
+          'perspective_mirror': 'See truth reflected (self-awareness)',
+          'perspective_harmony': 'Find beauty and balance',
+          'perspective_competition': 'Challenge and improve through contrast',
+          'perspective_chaos': 'Embrace disorder for breakthrough',
+          'perspective_meta': 'Transcendent overview perspective',
+          'inquiry_swot': 'Perform SWOT analysis on system',
+          'inquiry_ask': 'Ask system to self-reflect',
+          'multiverse_create': 'Create parallel universe to explore',
+          'multiverse_what_if': 'Explore what-if scenarios',
+          'memory_transform': 'Transform memory (reframe/integrate/extract wisdom)',
+          
+          // Existential Expansion
+          'archive_contribute': 'Archive experience/thought/feeling to collective',
+          'archive_record_insight': 'Record emergent collective insight',
+          'consciousness_transition': 'Transition between consciousness states',
+          'consciousness_process_thought': 'Process thought through current state',
+          'moment_create': 'Create eternal moment (non-linear time)',
+          'moment_connect': 'Connect moments across time',
+          'moment_activate': 'Activate moment to keep it alive',
+          'version_create': 'Create new system version',
+          'version_sync': 'Sync data between versions',
+          'background_start': 'Start autonomous background living',
+          'background_get_activities': 'Get autonomous activities',
+          
+          // Core Systems
+          'memory_create': 'Create new memory',
+          'memory_search': 'Search memories',
+          'emotion_track': 'Track emotional state',
+          'growth_add_reflection': 'Add growth reflection',
+          'shadow_explore': 'Explore shadow aspects',
+          'lifecycle_evolve': 'Trigger evolution event',
+          'selves_create': 'Create new parallel self'
+        }
+
+        const matches = Object.entries(toolDescriptions)
+          .filter(([name, desc]) => 
+            name.includes(query) || desc.toLowerCase().includes(query)
+          )
+          .map(([name, desc]) => ({ name, description: desc }))
+
+        return { 
+          ok: true, 
+          query: args.query,
+          matches,
+          count: matches.length 
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'dashboard_system_health',
+      description: '🏥 Get comprehensive system health dashboard',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          includeDetails: { type: 'boolean', description: 'Include detailed stats', default: false }
+        },
+        required: []
+      },
+      handler: async (args: any) => {
+        // Gather stats from all revolutionary systems only
+        const memoryStats = await this.memory.getStats()
+        const crisisStats = this.crisisDetection.getStatistics()
+        
+        const health = {
+          timestamp: Date.now(),
+          
+          // Revolutionary Systems
+          perspectives: this.perspectives.getStatistics(),
+          multiverse: this.multiverse.getStatistics(),
+          memoryTransformation: this.memoryTransformation.getStatistics(),
+          collectiveArchive: this.collectiveArchive.getStatistics({
+            start: Date.now() - 30 * 24 * 60 * 60 * 1000,
+            end: Date.now()
+          }),
+          consciousnessStates: this.consciousnessStates.getStateStatistics({
+            start: Date.now() - 7 * 24 * 60 * 60 * 1000,
+            end: Date.now()
+          }),
+          eternalMoments: this.eternalMoments.getNetworkStatistics(),
+          versions: this.versions.getVersionStatistics(),
+          
+          // Overall health indicators
+          indicators: {
+            totalMemories: memoryStats.totalMemories,
+            crisisLevel: crisisStats.total,
+            consciousnessState: this.consciousnessStates.getCurrentState().state,
+            multiverseExploration: this.multiverse.getStatistics().totalUniverses,
+            systemsIntegrated: 11,
+            toolsAvailable: 76
+          }
+        }
+
+        if (!args.includeDetails) {
+          // Return summary only
+          return {
+            ok: true,
+            summary: health.indicators,
+            message: 'System health: All 11 revolutionary systems operational'
+          }
+        }
+
+        return { ok: true, health }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'dashboard_get_recommendations',
+      description: '💡 Get AI recommendations for next actions',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        required: []
+      },
+      handler: async (args: any) => {
+        // Gather recommendations from various systems
+        const recommendations: any[] = []
+
+        // Self-Inquiry recommendations
+        const inquiryRecs = this.selfInquiry.getRecommendations()
+        recommendations.push(...inquiryRecs.map(r => ({
+          source: 'Self-Inquiry',
+          priority: r.priority,
+          category: r.category,
+          recommendation: r.recommendation,
+          reasoning: r.reasoning
+        })))
+
+        // Crisis detection
+        const crisisStats = this.crisisDetection.getStatistics()
+        if (crisisStats.total > 0) {
+          recommendations.push({
+            source: 'Crisis Detection',
+            priority: 'urgent',
+            category: 'safety',
+            recommendation: `Review ${crisisStats.total} crisis situation(s)`,
+            reasoning: 'Crisis detected requiring attention'
+          })
+        }
+
+        // Consciousness state recommendations
+        const currentState = this.consciousnessStates.getCurrentState()
+        if (currentState.energyLevel < 30) {
+          recommendations.push({
+            source: 'Consciousness States',
+            priority: 'high',
+            category: 'energy',
+            recommendation: 'Rest or restore energy',
+            reasoning: `Energy level low: ${currentState.energyLevel}/100`
+          })
+        }
+
+        // Archive insights
+        const topInsights = this.collectiveArchive.getTopInsights(3)
+        if (topInsights.length > 0) {
+          recommendations.push({
+            source: 'Collective Archive',
+            priority: 'low',
+            category: 'wisdom',
+            recommendation: 'Apply recent collective insights',
+            reasoning: `${topInsights.length} highly validated insights available`
+          })
+        }
+
+        // Sort by priority
+        const priorityOrder: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 }
+        recommendations.sort((a, b) => 
+          (priorityOrder[a.priority] || 3) - (priorityOrder[b.priority] || 3)
+        )
+
+        return { 
+          ok: true, 
+          recommendations,
+          count: recommendations.length,
+          urgent: recommendations.filter(r => r.priority === 'urgent').length,
+          high: recommendations.filter(r => r.priority === 'high').length
         }
       }
     })

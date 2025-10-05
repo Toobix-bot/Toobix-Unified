@@ -22,7 +22,8 @@
  *  Both are essential. Neither is complete alone."
  */
 
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import Database from 'better-sqlite3'
+import { DatabaseWrapper } from '../db/wrapper'
 
 export type VersionType = 
   | 'local_offline'      // Fully private, no sync
@@ -133,11 +134,11 @@ export interface FeatureMigration {
 }
 
 export class LocalCollectiveSystem {
-  private db: BetterSQLite3Database
+  private db: DatabaseWrapper
   private currentVersionId?: number
 
-  constructor(db: BetterSQLite3Database) {
-    this.db = db
+  constructor(db: Database.Database) {
+    this.db = new DatabaseWrapper(db)
     this.initializeTables()
   }
 
@@ -230,9 +231,9 @@ export class LocalCollectiveSystem {
     `)
 
     // Indices
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_versions_branch ON system_versions(branch)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_versions_type ON system_versions(type)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_versions_active ON system_versions(is_active)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_versions_branch ON system_versions(branch)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_versions_type ON system_versions(type)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_versions_active ON system_versions(is_active)')
   }
 
   // ========== VERSION MANAGEMENT ==========
@@ -386,10 +387,13 @@ export class LocalCollectiveSystem {
     let privacyFiltered = false
 
     if (params.respectPrivacy !== false) {
-      // Check data sharing settings
-      const canShare = fromVersion.dataSharing[
-        params.dataType === 'all' ? 'experiences' : params.dataType
-      ]
+      // Check data sharing settings - map singular to plural table names
+      const dataKey = params.dataType === 'all' ? 'experiences' : 
+                      params.dataType === 'thought' ? 'thoughts' :
+                      params.dataType === 'feeling' ? 'feelings' :
+                      params.dataType === 'insight' ? 'insights' :
+                      params.dataType === 'memory' ? 'memories' : 'experiences'
+      const canShare = fromVersion.dataSharing[dataKey]
 
       if (!canShare && fromVersion.privacyLevel < 50) {
         privacyFiltered = true

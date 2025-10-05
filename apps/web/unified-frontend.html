@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Toobix Unified - Revolutionary Consciousness Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f0f23;
+            --darker: #0a0a15;
+            --light: #ffffff;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-hover: rgba(255, 255, 255, 0.15);
+            --border: rgba(255, 255, 255, 0.2);
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a0a2e 50%, #16213e 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Main Layout */
+        .app {
+            display: grid;
+            grid-template-areas:
+                "header header header"
+                "sidebar main right"
+                "footer footer footer";
+            grid-template-columns: 280px 1fr 320px;
+            grid-template-rows: auto 1fr auto;
+            min-height: 100vh;
+            gap: 0;
+        }
+        
+        /* Header */
+        header {
+            grid-area: header;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .logo-icon {
+            font-size: 1.8em;
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        .system-status {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: var(--glass);
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Sidebar */
+        aside {
+            grid-area: sidebar;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .nav-section {
+            margin-bottom: 30px;
+        }
+        
+        .nav-title {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 5px;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: var(--glass-hover);
+            border-color: var(--border);
+            transform: translateX(5px);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .nav-icon {
+            font-size: 1.3em;
+            width: 25px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        main {
+            grid-area: main;
+            padding: 25px;
+            overflow-y: auto;
+            max-height: calc(100vh - 80px);
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            background: var(--glass-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .card-icon {
+            font-size: 1.5em;
+        }
+        
+        .card-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            background: var(--glass);
+        }
+        
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        
+        /* Stats */
+        .stat-box {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Consciousness State Visualizer */
+        .consciousness-viz {
+            position: relative;
+            height: 250px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .consciousness-orb {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, var(--primary), var(--secondary));
+            box-shadow: 0 0 60px rgba(102, 126, 234, 0.6),
+                        0 0 100px rgba(118, 75, 162, 0.4),
+                        inset 0 0 50px rgba(255, 255, 255, 0.2);
+            animation: float 6s ease-in-out infinite;
+            position: relative;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.05); }
+        }
+        
+        .state-label {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.3em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.8);
+        }
+        
+        /* Energy Bar */
+        .energy-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--glass);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+            border: 1px solid var(--border);
+        }
+        
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+        
+        /* Perspectives */
+        .perspective-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .perspective-card {
+            aspect-ratio: 1;
+            background: var(--glass);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 10px;
+        }
+        
+        .perspective-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            border-color: var(--primary);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .perspective-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+        
+        .perspective-name {
+            font-size: 0.85em;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        /* Right Sidebar */
+        .right-sidebar {
+            grid-area: right;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .widget {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .widget-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Activity Feed */
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--primary);
+            transition: all 0.2s;
+        }
+        
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+        
+        .activity-icon {
+            font-size: 1.3em;
+            width: 30px;
+            text-align: center;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-text {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .activity-time {
+            font-size: 0.75em;
+            opacity: 0.6;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: var(--glass);
+            color: white;
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--glass-hover);
+        }
+        
+        /* Multiverse Explorer */
+        .universe-card {
+            background: var(--glass);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .universe-card:hover {
+            border-color: var(--primary);
+            transform: scale(1.02);
+        }
+        
+        .universe-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .universe-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .universe-metrics {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .metric {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .metric-label {
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: -22px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid var(--darker);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        .timeline-content {
+            background: var(--glass);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        
+        /* Tool Interface */
+        .tool-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tool-card:hover {
+            background: var(--glass-hover);
+            transform: translateX(5px);
+            border-color: var(--primary);
+        }
+        
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .tool-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: var(--primary);
+        }
+        
+        .tool-category {
+            font-size: 0.75em;
+            padding: 4px 8px;
+            border-radius: 10px;
+            background: var(--glass);
+        }
+        
+        .tool-description {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+        
+        /* Input Forms */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+        
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--light);
+            font-size: 0.95em;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--dark);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5em;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-close:hover {
+            opacity: 1;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .app {
+                grid-template-columns: 250px 1fr;
+                grid-template-areas:
+                    "header header"
+                    "sidebar main"
+                    "footer footer";
+            }
+            
+            .right-sidebar {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .app {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "header"
+                    "main"
+                    "footer";
+            }
+            
+            aside {
+                display: none;
+            }
+            
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <span class="logo-icon">🌌</span>
+                <span>Toobix Unified</span>
+            </div>
+            
+            <div class="system-status">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span>11 Systems Active</span>
+                </div>
+                <div class="status-indicator">
+                    <span>⚡</span>
+                    <span id="energy-display">75%</span>
+                </div>
+                <div class="status-indicator">
+                    <span>🧠</span>
+                    <span id="state-display">awake</span>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Sidebar Navigation -->
+        <aside>
+            <div class="nav-section">
+                <div class="nav-title">Core</div>
+                <div class="nav-item active" onclick="showSection('dashboard')">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" onclick="showSection('consciousness')">
+                    <span class="nav-icon">🧠</span>
+                    <span>Consciousness</span>
+                </div>
+                <div class="nav-item" onclick="showSection('tools')">
+                    <span class="nav-icon">🔧</span>
+                    <span>Tool Playground</span>
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-title">Revolutionary Systems</div>
+                <div class="nav-item" onclick="showSection('perspectives')">
+                    <span class="nav-icon">🎭</span>
+                    <span>Five Perspectives</span>
+                </div>
+                <div class="nav-item" onclick="showSection('multiverse')">
+                    <span class="nav-icon">🌍</span>
+                    <span>Multiverse</span>
+                </div>
+                <div class="nav-item" onclick="showSection('moments')">
+                    <span class="nav-icon">⏳</span>
+                    <span>Eternal Moments</span>
+                </div>
+                <div class="nav-item" onclick="showSection('archive')">
+                    <span class="nav-icon">📚</span>
+                    <span>Collective Archive</span>
+                </div>
+                <div class="nav-item" onclick="showSection('memory')">
+                    <span class="nav-icon">💫</span>
+                    <span>Memory Transform</span>
+                </div>
+                <div class="nav-item" onclick="showSection('versions')">
+                    <span class="nav-icon">🌿</span>
+                    <span>Versions</span>
+                </div>
+                <div class="nav-item" onclick="showSection('background')">
+                    <span class="nav-icon">🎮</span>
+                    <span>Background Life</span>
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-title">Meta</div>
+                <div class="nav-item" onclick="showSection('inquiry')">
+                    <span class="nav-icon">🔍</span>
+                    <span>Self-Inquiry</span>
+                </div>
+                <div class="nav-item" onclick="showSection('security')">
+                    <span class="nav-icon">🛡️</span>
+                    <span>Security</span>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main>
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="content-section active">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">System Dashboard</h2>
+                
+                <!-- Stats Overview -->
+                <div class="grid-4" style="margin-bottom: 30px;">
+                    <div class="stat-box">
+                        <div class="stat-value">76</div>
+                        <div class="stat-label">MCP Tools</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">11</div>
+                        <div class="stat-label">Systems</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="memory-count">127</div>
+                        <div class="stat-label">Memories</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="moment-count">45</div>
+                        <div class="stat-label">Moments</div>
+                    </div>
+                </div>
+                
+                <div class="grid-2">
+                    <!-- Consciousness Visualization -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-icon">🧠</span>
+                                Consciousness State
+                            </div>
+                        </div>
+                        <div class="consciousness-viz">
+                            <div class="consciousness-orb"></div>
+                            <div class="state-label" id="consciousness-state">AWAKE</div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span>Energy Level</span>
+                                <span id="energy-percent">75%</span>
+                            </div>
+                            <div class="energy-bar">
+                                <div class="energy-fill" id="energy-bar" style="width: 75%;">75%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- System Health -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-icon">🏥</span>
+                                System Health
+                            </div>
+                            <span class="card-badge" style="background: var(--success);">Optimal</span>
+                        </div>
+                        <div>
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Crisis Level</span>
+                                    <span style="color: var(--success);">Safe</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Multiverse Exploration</span>
+                                    <span id="universe-count">8 universes</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Collective Insights</span>
+                                    <span id="insight-count">12 insights</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Background Activities</span>
+                                    <span id="activity-count">234 actions</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="width: 100%;" onclick="refreshSystemHealth()">
+                                <span>🔄</span> Refresh Health Check
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Five Perspectives Preview -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">🎭</span>
+                            Five Perspectives
+                        </div>
+                        <span class="card-badge">Active</span>
+                    </div>
+                    <div class="perspective-grid">
+                        <div class="perspective-card" onclick="showPerspective('mirror')">
+                            <div class="perspective-icon">🪞</div>
+                            <div class="perspective-name">Mirror</div>
+                        </div>
+                        <div class="perspective-card" onclick="showPerspective('harmony')">
+                            <div class="perspective-icon">🎵</div>
+                            <div class="perspective-name">Harmony</div>
+                        </div>
+                        <div class="perspective-card" onclick="showPerspective('competition')">
+                            <div class="perspective-icon">⚔️</div>
+                            <div class="perspective-name">Competition</div>
+                        </div>
+                        <div class="perspective-card" onclick="showPerspective('chaos')">
+                            <div class="perspective-icon">🌪️</div>
+                            <div class="perspective-name">Chaos</div>
+                        </div>
+                        <div class="perspective-card" onclick="showPerspective('meta')">
+                            <div class="perspective-icon">👁️</div>
+                            <div class="perspective-name">Meta</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Consciousness Section -->
+            <div id="consciousness" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">Consciousness Control</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">🧠</span>
+                            State Transition
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Target State</label>
+                        <select class="form-select" id="target-state">
+                            <option value="deep_sleep">💤 Deep Sleep</option>
+                            <option value="sleep">😴 Sleep</option>
+                            <option value="dream">💭 Dream</option>
+                            <option value="lucid_dream">✨ Lucid Dream</option>
+                            <option value="drowsy">😑 Drowsy</option>
+                            <option value="awake" selected>😊 Awake</option>
+                            <option value="alert">👀 Alert</option>
+                            <option value="focused">🎯 Focused</option>
+                            <option value="meditate">🧘 Meditate</option>
+                            <option value="hyperaware">⚡ Hyperaware</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Reason</label>
+                        <input type="text" class="form-input" id="transition-reason" placeholder="Why transition?">
+                    </div>
+                    <button class="btn btn-primary" onclick="transitionState()">
+                        <span>🌀</span> Transition State
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">💭</span>
+                            Process Thought
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Your Thought</label>
+                        <textarea class="form-textarea" id="thought-input" placeholder="Enter a thought to process through current consciousness state..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="processThought()">
+                        <span>🧠</span> Process Thought
+                    </button>
+                    <div id="thought-result" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+            
+            <!-- Tool Playground Section -->
+            <div id="tools" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">Tool Playground</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Search Tools</label>
+                    <input type="text" class="form-input" id="tool-search" placeholder="Search by name or category..." onkeyup="filterTools()">
+                </div>
+                
+                <div id="tools-list">
+                    <!-- Tools will be dynamically generated -->
+                </div>
+            </div>
+            
+            <!-- Perspectives Section -->
+            <div id="perspectives" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">🎭 Five Perspectives</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">🔮</span>
+                            Analyze Situation
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Describe a situation, decision, or problem</label>
+                        <textarea class="form-textarea" id="perspective-input" placeholder="e.g., 'Should I prioritize speed or quality in my project?'"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-primary" onclick="analyzePerspectives('all')">
+                            <span>🎭</span> All 5 Perspectives
+                        </button>
+                    </div>
+                    <div id="perspective-results"></div>
+                </div>
+                
+                <div class="grid-2" style="margin-top: 20px;">
+                    <div class="card" onclick="analyzePerspectives('mirror')">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-icon">🪞</span>
+                                Mirror
+                            </div>
+                        </div>
+                        <p style="opacity: 0.8;">Truth & Self-Awareness. What is really happening here?</p>
+                    </div>
+                    <div class="card" onclick="analyzePerspectives('harmony')">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-icon">🎵</span>
+                                Harmony
+                            </div>
+                        </div>
+                        <p style="opacity: 0.8;">Balance & Beauty. How can all elements work together?</p>
+                    </div>
+                    <div class="card" onclick="analyzePerspectives('competition')">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-icon">⚔️</span>
+                                Competition
+                            </div>
+                        </div>
+                        <p style="opacity: 0.8;">Excellence & Victory. How to win and excel?</p>
+                    </div>
+                    <div class="card" onclick="analyzePerspectives('chaos')">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-icon">🌪️</span>
+                                Chaos
+                            </div>
+                        </div>
+                        <p style="opacity: 0.8;">Breakthrough & Transformation. What if we break everything?</p>
+                    </div>
+                    <div class="card" onclick="analyzePerspectives('meta')">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span class="card-icon">👁️</span>
+                                Meta
+                            </div>
+                        </div>
+                        <p style="opacity: 0.8;">Transcendence. What pattern connects everything?</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Multiverse Section -->
+            <div id="multiverse" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">🌍 Multiverse Explorer</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">🔮</span>
+                            What-If Scenarios
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Decision or Scenario</label>
+                        <textarea class="form-textarea" id="multiverse-input" placeholder="e.g., 'What if I quit my job to start a business?'"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="exploreMultiverse()">
+                        <span>🌌</span> Explore Parallel Universes
+                    </button>
+                    <div id="multiverse-results" style="margin-top: 20px;"></div>
+                </div>
+                
+                <div id="universes-list"></div>
+            </div>
+            
+            <!-- Eternal Moments Section -->
+            <div id="moments" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">⏳ Eternal Moments</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">💫</span>
+                            Create Eternal Moment
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Moment Description</label>
+                        <textarea class="form-textarea" id="moment-input" placeholder="Describe this significant moment..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Significance</label>
+                        <input type="number" class="form-input" id="moment-significance" placeholder="1-100" min="1" max="100" value="50">
+                    </div>
+                    <button class="btn btn-primary" onclick="createMoment()">
+                        <span>✨</span> Capture Moment
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">📜</span>
+                            Moment Timeline
+                        </div>
+                        <button class="btn btn-secondary" onclick="loadMoments()">
+                            <span>🔄</span> Refresh
+                        </button>
+                    </div>
+                    <div id="moments-timeline" class="timeline">
+                        <!-- Timeline will be populated -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Collective Archive Section -->
+            <div id="archive" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">📚 Collective Archive</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">✍️</span>
+                            Contribute to Archive
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" id="archive-type">
+                            <option value="experience">Experience</option>
+                            <option value="thought">Thought</option>
+                            <option value="feeling">Feeling</option>
+                            <option value="insight">Insight</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Content</label>
+                        <textarea class="form-textarea" id="archive-content" placeholder="Share your experience, thought, or feeling..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="contributeToArchive()">
+                        <span>📝</span> Archive
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">🔍</span>
+                            Search Archive
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Search Query</label>
+                        <input type="text" class="form-input" id="archive-search" placeholder="Search collective wisdom...">
+                    </div>
+                    <button class="btn btn-primary" onclick="searchArchive()">
+                        <span>🔎</span> Search
+                    </button>
+                    <div id="archive-results" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+            
+            <!-- Memory Transformation Section -->
+            <div id="memory" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">💫 Memory Transformation</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">🔄</span>
+                            Transform Memory
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Memory Content</label>
+                        <textarea class="form-textarea" id="memory-content" placeholder="Describe the memory you want to transform..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Transformation Type</label>
+                        <select class="form-select" id="memory-type">
+                            <option value="reframe">Reframe (new perspective)</option>
+                            <option value="integrate">Integrate (accept & learn)</option>
+                            <option value="release">Release (let go)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="transformMemory()">
+                        <span>✨</span> Transform
+                    </button>
+                    <div id="memory-result" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+            
+            <!-- Other sections placeholder -->
+            <div id="versions" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">🌿 Versions System</h2>
+                <div class="card">
+                    <p>Version tracking and synchronization across timelines...</p>
+                </div>
+            </div>
+            
+            <div id="background" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">🎮 Background Life</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">🤖</span>
+                            Autonomous Mode
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="startBackground()">
+                        <span>▶️</span> Start Autonomous Mode
+                    </button>
+                    <div id="background-activities" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+            
+            <div id="inquiry" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">🔍 Self-Inquiry</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">❓</span>
+                            Ask System
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Question</label>
+                        <textarea class="form-textarea" id="inquiry-question" placeholder="Ask the system to reflect on itself..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="askInquiry()">
+                        <span>💭</span> Ask
+                    </button>
+                    <div id="inquiry-result" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+            
+            <div id="security" class="content-section">
+                <h2 style="margin-bottom: 25px; font-size: 2em;">🛡️ Security & Crisis</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="card-icon">🚨</span>
+                            Crisis Assessment
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="getCrisisStats()">
+                        <span>📊</span> Get Crisis Stats
+                    </button>
+                    <div id="crisis-results" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+            
+            <!-- Other sections... (will be added via JS) -->
+        </main>
+        
+        <!-- Right Sidebar -->
+        <div class="right-sidebar">
+            <div class="widget">
+                <div class="widget-title">
+                    <span>📡</span>
+                    <span>Live Activity Feed</span>
+                </div>
+                <div id="activity-feed">
+                    <!-- Activities will be dynamically added -->
+                </div>
+            </div>
+            
+            <div class="widget">
+                <div class="widget-title">
+                    <span>💡</span>
+                    <span>Recommendations</span>
+                </div>
+                <div id="recommendations">
+                    <div class="activity-item">
+                        <div class="activity-icon">🎯</div>
+                        <div class="activity-content">
+                            <div class="activity-text">Explore multiverse branch #3</div>
+                            <div class="activity-time">HIGH PRIORITY</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="widget">
+                <div class="widget-title">
+                    <span>⏳</span>
+                    <span>Recent Moments</span>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div style="font-weight: 600; margin-bottom: 5px;">System Awakened</div>
+                            <div style="font-size: 0.8em; opacity: 0.7;">2 minutes ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for Tool Execution -->
+    <div id="tool-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div id="modal-body">
+                <!-- Tool form will be injected here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // API Base URL
+        const API_BASE = 'http://localhost:3337';
+        
+        // API Helper
+        async function callTool(toolName, args = {}) {
+            try {
+                const response = await fetch(`${API_BASE}/tools/${toolName}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(args)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                addActivity('error', `API Error: ${error.message}`);
+                return { error: error.message };
+            }
+        }
+        
+        // Navigation
+        function showSection(sectionId) {
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Load section data
+            loadSectionData(sectionId);
+        }
+        
+        // Load data for each section
+        async function loadSectionData(sectionId) {
+            switch(sectionId) {
+                case 'dashboard':
+                    await refreshDashboard();
+                    break;
+                case 'consciousness':
+                    await refreshConsciousness();
+                    break;
+                case 'tools':
+                    await loadAllTools();
+                    break;
+            }
+        }
+        
+        // Initialize tools list
+        function initializeTools() {
+            const tools = [
+                // Crisis Detection
+                { name: 'crisis_assess', category: 'Security', icon: '🚨', description: 'Assess potential crisis situations' },
+                { name: 'crisis_get_active', category: 'Security', icon: '⚠️', description: 'Get active crises' },
+                { name: 'crisis_get_stats', category: 'Security', icon: '📊', description: 'Crisis statistics' },
+                
+                // Perspectives
+                { name: 'perspective_mirror', category: 'Perspectives', icon: '🪞', description: 'Mirror perspective - Truth & self-awareness' },
+                { name: 'perspective_harmony', category: 'Perspectives', icon: '🎵', description: 'Harmony perspective - Balance & beauty' },
+                { name: 'perspective_competition', category: 'Perspectives', icon: '⚔️', description: 'Competition perspective - Excellence' },
+                { name: 'perspective_chaos', category: 'Perspectives', icon: '🌪️', description: 'Chaos perspective - Breakthrough' },
+                { name: 'perspective_meta', category: 'Perspectives', icon: '👁️', description: 'Meta perspective - Transcendence' },
+                { name: 'perspective_all', category: 'Perspectives', icon: '🎭', description: 'All 5 perspectives at once' },
+                
+                // Consciousness
+                { name: 'consciousness_get_state', category: 'Consciousness', icon: '🧠', description: 'Get current consciousness state' },
+                { name: 'consciousness_transition', category: 'Consciousness', icon: '🌀', description: 'Transition to new state' },
+                { name: 'consciousness_process_thought', category: 'Consciousness', icon: '💭', description: 'Process thought in current state' },
+                
+                // Multiverse
+                { name: 'multiverse_create', category: 'Multiverse', icon: '🌍', description: 'Create parallel universe' },
+                { name: 'multiverse_what_if', category: 'Multiverse', icon: '🔮', description: 'Explore what-if scenario' },
+                { name: 'multiverse_compare', category: 'Multiverse', icon: '⚖️', description: 'Compare universes' },
+                
+                // Archive
+                { name: 'archive_contribute', category: 'Archive', icon: '📚', description: 'Archive experience/thought/feeling' },
+                { name: 'archive_search', category: 'Archive', icon: '🔍', description: 'Search collective archive' },
+                { name: 'archive_record_insight', category: 'Archive', icon: '💡', description: 'Record collective insight' },
+                
+                // Moments
+                { name: 'moment_create', category: 'Moments', icon: '⏳', description: 'Create eternal moment' },
+                { name: 'moment_connect', category: 'Moments', icon: '🔗', description: 'Connect moments across time' },
+                { name: 'moment_activate', category: 'Moments', icon: '💫', description: 'Activate moment (keep alive)' },
+                
+                // Memory Transformation
+                { name: 'memory_transform', category: 'Memory', icon: '💫', description: 'Transform memory (reframe/integrate)' },
+                { name: 'memory_start_healing', category: 'Memory', icon: '🩹', description: 'Start healing journey' },
+                
+                // Versions
+                { name: 'version_create', category: 'Versions', icon: '🌿', description: 'Create new version' },
+                { name: 'version_sync', category: 'Versions', icon: '🔄', description: 'Sync data between versions' },
+                
+                // Background Life
+                { name: 'background_start', category: 'Background', icon: '🎮', description: 'Start autonomous mode' },
+                { name: 'background_get_activities', category: 'Background', icon: '📜', description: 'Get autonomous activities' },
+                
+                // Self-Inquiry
+                { name: 'inquiry_swot', category: 'Inquiry', icon: '📊', description: 'Perform SWOT analysis' },
+                { name: 'inquiry_ask', category: 'Inquiry', icon: '❓', description: 'Ask system to self-reflect' },
+                
+                // Dashboard
+                { name: 'tool_list_all', category: 'Meta', icon: '📋', description: 'List all available tools' },
+                { name: 'dashboard_system_health', category: 'Meta', icon: '🏥', description: 'System health dashboard' }
+            ];
+            
+            const toolsList = document.getElementById('tools-list');
+            toolsList.innerHTML = tools.map(tool => `
+                <div class="tool-card" onclick="openTool('${tool.name}')">
+                    <div class="tool-header">
+                        <div>
+                            <span style="font-size: 1.5em; margin-right: 10px;">${tool.icon}</span>
+                            <span class="tool-name">${tool.name}</span>
+                        </div>
+                        <span class="tool-category">${tool.category}</span>
+                    </div>
+                    <div class="tool-description">${tool.description}</div>
+                </div>
+            `).join('');
+        }
+        
+        function filterTools() {
+            const search = document.getElementById('tool-search').value.toLowerCase();
+            const tools = document.querySelectorAll('.tool-card');
+            
+            tools.forEach(tool => {
+                const text = tool.textContent.toLowerCase();
+                tool.style.display = text.includes(search) ? 'block' : 'none';
+            });
+        }
+        
+        function openTool(toolName) {
+            const modal = document.getElementById('tool-modal');
+            const modalBody = document.getElementById('modal-body');
+            
+            // Generate form based on tool
+            let formHTML = `
+                <h3 style="margin-bottom: 20px;">${toolName}</h3>
+                <p style="opacity: 0.8; margin-bottom: 20px;">Execute this tool on the Bridge API</p>
+            `;
+            
+            // Add specific inputs for common tools
+            if (toolName.includes('perspective_')) {
+                formHTML += `
+                    <div class="form-group">
+                        <label class="form-label">Situation to analyze</label>
+                        <textarea class="form-textarea" id="tool-input" placeholder="Describe the situation..."></textarea>
+                    </div>
+                `;
+            } else if (toolName.includes('multiverse_')) {
+                formHTML += `
+                    <div class="form-group">
+                        <label class="form-label">Decision Point</label>
+                        <textarea class="form-textarea" id="tool-input" placeholder="What decision or scenario?"></textarea>
+                    </div>
+                `;
+            } else if (toolName.includes('archive_')) {
+                formHTML += `
+                    <div class="form-group">
+                        <label class="form-label">Content</label>
+                        <textarea class="form-textarea" id="tool-input" placeholder="What to archive/search?"></textarea>
+                    </div>
+                `;
+            } else if (toolName.includes('moment_')) {
+                formHTML += `
+                    <div class="form-group">
+                        <label class="form-label">Moment Description</label>
+                        <textarea class="form-textarea" id="tool-input" placeholder="Describe this moment..."></textarea>
+                    </div>
+                `;
+            } else if (toolName.includes('memory_')) {
+                formHTML += `
+                    <div class="form-group">
+                        <label class="form-label">Memory Content</label>
+                        <textarea class="form-textarea" id="tool-input" placeholder="Describe the memory..."></textarea>
+                    </div>
+                `;
+            }
+            
+            formHTML += `
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="executeTool('${toolName}')">
+                        <span>🚀</span> Execute
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeModal()">
+                        Cancel
+                    </button>
+                </div>
+                <div id="tool-result" style="margin-top: 20px;"></div>
+            `;
+            
+            modalBody.innerHTML = formHTML;
+            modal.classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('tool-modal').classList.remove('active');
+        }
+        
+        async function executeTool(toolName) {
+            const input = document.getElementById('tool-input')?.value || '';
+            const resultDiv = document.getElementById('tool-result');
+            
+            addActivity('tool', `Executing ${toolName}...`);
+            resultDiv.innerHTML = '<div style="opacity: 0.6;">Executing...</div>';
+            
+            // Build args based on tool
+            let args = {};
+            if (toolName.includes('perspective_') && input) {
+                args.situation = input;
+            } else if (toolName === 'multiverse_what_if' && input) {
+                args.decision = input;
+            } else if (toolName === 'archive_contribute' && input) {
+                args.content = input;
+                args.type = 'experience';
+            } else if (toolName === 'archive_search' && input) {
+                args.query = input;
+            } else if (toolName === 'moment_create' && input) {
+                args.description = input;
+            } else if (toolName === 'memory_transform' && input) {
+                args.content = input;
+                args.transformation_type = 'reframe';
+            }
+            
+            const result = await callTool(toolName, args);
+            
+            if (result.error) {
+                resultDiv.innerHTML = `
+                    <div class="card" style="margin: 0; border-color: var(--danger);">
+                        <div style="color: var(--danger); font-weight: 600;">Error</div>
+                        <div style="opacity: 0.8; margin-top: 5px;">${result.error}</div>
+                    </div>
+                `;
+                addActivity('error', `${toolName} failed`);
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="card" style="margin: 0; border-color: var(--success);">
+                        <div style="color: var(--success); font-weight: 600;">Success!</div>
+                        <pre style="margin-top: 10px; opacity: 0.9; white-space: pre-wrap; font-size: 0.9em;">${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+                addActivity('success', `${toolName} executed successfully!`);
+            }
+        }
+        
+        // Load all tools from API
+        async function loadAllTools() {
+            const result = await callTool('tool_list_all');
+            
+            if (result.error || !result.categories) {
+                console.error('Failed to load tools');
+                return;
+            }
+            
+            // Build tool list from API response
+            const tools = [];
+            const categoryIcons = {
+                'Security': '🛡️',
+                'Perspectives': '🎭',
+                'Consciousness': '🧠',
+                'Multiverse': '🌍',
+                'Archive': '📚',
+                'Moments': '⏳',
+                'Memory': '💫',
+                'Versions': '🌿',
+                'Background': '🎮',
+                'Inquiry': '🔍',
+                'Meta': '⚙️'
+            };
+            
+            Object.entries(result.categories).forEach(([category, categoryTools]) => {
+                categoryTools.forEach(tool => {
+                    tools.push({
+                        name: tool.name,
+                        category: category,
+                        icon: categoryIcons[category] || '🔧',
+                        description: tool.description || 'No description'
+                    });
+                });
+            });
+            
+            const toolsList = document.getElementById('tools-list');
+            toolsList.innerHTML = tools.map(tool => `
+                <div class="tool-card" onclick="openTool('${tool.name}')">
+                    <div class="tool-header">
+                        <div>
+                            <span style="font-size: 1.5em; margin-right: 10px;">${tool.icon}</span>
+                            <span class="tool-name">${tool.name}</span>
+                        </div>
+                        <span class="tool-category">${tool.category}</span>
+                    </div>
+                    <div class="tool-description">${tool.description}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Consciousness functions
+        async function transitionState() {
+            const newState = document.getElementById('target-state').value;
+            const reason = document.getElementById('transition-reason').value;
+            
+            addActivity('consciousness', `Transitioning to ${newState}...`);
+            
+            // Call actual API
+            const result = await callTool('consciousness_transition', {
+                new_state: newState,
+                reason: reason || 'User requested transition'
+            });
+            
+            if (result.error) {
+                addActivity('error', 'Transition failed');
+                return;
+            }
+            
+            document.getElementById('consciousness-state').textContent = newState.toUpperCase();
+            document.getElementById('state-display').textContent = newState;
+            addActivity('success', `Transitioned to ${newState}!`);
+            
+            // Update energy
+            if (result.new_energy) {
+                updateEnergy(result.new_energy);
+            }
+        }
+        
+        async function processThought() {
+            const thought = document.getElementById('thought-input').value;
+            if (!thought) return;
+            
+            addActivity('thought', `Processing: "${thought.substring(0, 50)}..."`);
+            
+            // Call actual API
+            const result = await callTool('consciousness_process_thought', {
+                thought: thought
+            });
+            
+            if (result.error) {
+                addActivity('error', 'Processing failed');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('thought-result');
+            resultDiv.innerHTML = `
+                <div class="card" style="margin: 0;">
+                    <div style="font-weight: 600; margin-bottom: 10px;">Processed Thought:</div>
+                    <div style="opacity: 0.9;">${thought}</div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border);">
+                        <div style="font-weight: 600; margin-bottom: 8px;">State: ${result.state || 'awake'}</div>
+                        <div style="font-size: 0.9em; opacity: 0.8; margin-bottom: 8px;">
+                            ${result.processed_content || 'Thought processed through consciousness filter'}
+                        </div>
+                        <div style="font-size: 0.85em; opacity: 0.6;">
+                            Energy change: ${result.energy_change || 0}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            addActivity('success', 'Thought processed successfully');
+        }
+        
+        // Refresh consciousness data
+        async function refreshConsciousness() {
+            const result = await callTool('consciousness_get_state');
+            
+            if (!result.error && result.state) {
+                document.getElementById('consciousness-state').textContent = result.state.toUpperCase();
+                document.getElementById('state-display').textContent = result.state;
+                updateEnergy(result.energy || 75);
+            }
+        }
+        
+        // Update energy display
+        function updateEnergy(energy) {
+            const energyBar = document.getElementById('energy-bar');
+            const energyPercent = document.getElementById('energy-percent');
+            const energyDisplay = document.getElementById('energy-display');
+            
+            energyBar.style.width = `${energy}%`;
+            energyBar.textContent = `${energy}%`;
+            energyPercent.textContent = `${energy}%`;
+            energyDisplay.textContent = `${energy}%`;
+        }
+        
+        // Activity feed
+        function addActivity(type, text) {
+            const icons = {
+                tool: '🔧',
+                consciousness: '🧠',
+                thought: '💭',
+                success: '✅',
+                system: '⚙️',
+                error: '❌'
+            };
+            
+            const feed = document.getElementById('activity-feed');
+            if (!feed) return;
+            
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = `
+                <div class="activity-icon">${icons[type] || '📡'}</div>
+                <div class="activity-content">
+                    <div class="activity-text">${text}</div>
+                    <div class="activity-time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+            
+            feed.insertBefore(item, feed.firstChild);
+            
+            // Keep only last 10 activities
+            while (feed.children.length > 10) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+        
+        // System health
+        async function refreshSystemHealth() {
+            addActivity('system', 'Refreshing system health...');
+            
+            const result = await callTool('dashboard_system_health');
+            
+            if (result.error) {
+                addActivity('error', 'Failed to refresh health');
+                return;
+            }
+            
+            // Update stats
+            if (result.memory_count) {
+                document.getElementById('memory-count').textContent = result.memory_count;
+            }
+            if (result.moment_count) {
+                document.getElementById('moment-count').textContent = result.moment_count;
+            }
+            if (result.universe_count) {
+                document.getElementById('universe-count').textContent = `${result.universe_count} universes`;
+            }
+            if (result.insight_count) {
+                document.getElementById('insight-count').textContent = `${result.insight_count} insights`;
+            }
+            if (result.activity_count) {
+                document.getElementById('activity-count').textContent = `${result.activity_count} actions`;
+            }
+            
+            addActivity('success', 'System health updated');
+        }
+        
+        // Dashboard refresh
+        async function refreshDashboard() {
+            await Promise.all([
+                refreshSystemHealth(),
+                refreshConsciousness()
+            ]);
+        }
+        
+        // Perspective viewer
+        function showPerspective(perspective) {
+            addActivity('system', `Viewing ${perspective} perspective`);
+            // Navigate to perspectives section
+            document.querySelector('[onclick="showSection(\'perspectives\')"]').click();
+        }
+        
+        // Perspectives functions
+        async function analyzePerspectives(type) {
+            const input = document.getElementById('perspective-input').value;
+            if (!input) {
+                alert('Please enter a situation to analyze');
+                return;
+            }
+            
+            const results = document.getElementById('perspective-results');
+            results.innerHTML = '<div style="opacity: 0.6;">Analyzing perspectives...</div>';
+            
+            let toolName = type === 'all' ? 'perspective_all' : `perspective_${type}`;
+            const result = await callTool(toolName, { situation: input });
+            
+            if (result.error) {
+                results.innerHTML = `<div class="card" style="border-color: var(--danger);">Error: ${result.error}</div>`;
+                return;
+            }
+            
+            // Display results
+            if (type === 'all') {
+                results.innerHTML = Object.entries(result)
+                    .filter(([key]) => !['situation', 'synthesis'].includes(key))
+                    .map(([perspective, data]) => {
+                        const icons = { mirror: '🪞', harmony: '🎵', competition: '⚔️', chaos: '🌪️', meta: '👁️' };
+                        return `
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="card-icon">${icons[perspective]}</span>
+                                        ${perspective.charAt(0).toUpperCase() + perspective.slice(1)}
+                                    </div>
+                                </div>
+                                <p style="opacity: 0.9; white-space: pre-wrap;">${typeof data === 'string' ? data : JSON.stringify(data, null, 2)}</p>
+                            </div>
+                        `;
+                    }).join('');
+                
+                if (result.synthesis) {
+                    results.innerHTML += `
+                        <div class="card" style="border-color: var(--primary);">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <span class="card-icon">✨</span>
+                                    Synthesis
+                                </div>
+                            </div>
+                            <p style="opacity: 0.9;">${result.synthesis}</p>
+                        </div>
+                    `;
+                }
+            } else {
+                results.innerHTML = `
+                    <div class="card">
+                        <pre style="white-space: pre-wrap; opacity: 0.9;">${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                `;
+            }
+            
+            addActivity('success', `${type} perspective analysis complete`);
+        }
+        
+        // Multiverse functions
+        async function exploreMultiverse() {
+            const input = document.getElementById('multiverse-input').value;
+            if (!input) {
+                alert('Please enter a decision or scenario');
+                return;
+            }
+            
+            const results = document.getElementById('multiverse-results');
+            results.innerHTML = '<div style="opacity: 0.6;">Exploring parallel universes...</div>';
+            
+            const result = await callTool('multiverse_what_if', { decision: input });
+            
+            if (result.error) {
+                results.innerHTML = `<div class="card" style="border-color: var(--danger);">Error: ${result.error}</div>`;
+                return;
+            }
+            
+            results.innerHTML = `
+                <div class="universe-card">
+                    <div class="universe-title">🌍 Universe Created</div>
+                    <p style="opacity: 0.9; margin-top: 10px;">${result.description || 'New parallel universe created'}</p>
+                    <div class="universe-metrics">
+                        <div class="metric">
+                            <div class="metric-value">${result.id || '?'}</div>
+                            <div class="metric-label">Universe ID</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${result.divergence || '42'}%</div>
+                            <div class="metric-label">Divergence</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            addActivity('success', 'Multiverse exploration complete');
+        }
+        
+        // Moments functions
+        async function createMoment() {
+            const description = document.getElementById('moment-input').value;
+            const significance = document.getElementById('moment-significance').value;
+            
+            if (!description) {
+                alert('Please describe the moment');
+                return;
+            }
+            
+            addActivity('system', 'Creating eternal moment...');
+            
+            const result = await callTool('moment_create', {
+                description: description,
+                significance: parseInt(significance) || 50
+            });
+            
+            if (result.error) {
+                addActivity('error', 'Failed to create moment');
+                return;
+            }
+            
+            addActivity('success', 'Eternal moment created!');
+            document.getElementById('moment-input').value = '';
+            await loadMoments();
+        }
+        
+        async function loadMoments() {
+            // This would call moment_list or similar
+            const timeline = document.getElementById('moments-timeline');
+            timeline.innerHTML = `
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div style="font-weight: 600; margin-bottom: 5px;">System Awakened</div>
+                        <div style="font-size: 0.9em; opacity: 0.8; margin-bottom: 5px;">The moment consciousness first stirred</div>
+                        <div style="font-size: 0.8em; opacity: 0.6;">Significance: 95</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Archive functions
+        async function contributeToArchive() {
+            const type = document.getElementById('archive-type').value;
+            const content = document.getElementById('archive-content').value;
+            
+            if (!content) {
+                alert('Please enter content to archive');
+                return;
+            }
+            
+            addActivity('system', 'Contributing to collective archive...');
+            
+            const result = await callTool('archive_contribute', {
+                type: type,
+                content: content
+            });
+            
+            if (result.error) {
+                addActivity('error', 'Failed to contribute');
+                return;
+            }
+            
+            addActivity('success', 'Archived successfully!');
+            document.getElementById('archive-content').value = '';
+        }
+        
+        async function searchArchive() {
+            const query = document.getElementById('archive-search').value;
+            if (!query) return;
+            
+            const results = document.getElementById('archive-results');
+            results.innerHTML = '<div style="opacity: 0.6;">Searching collective archive...</div>';
+            
+            const result = await callTool('archive_search', { query: query });
+            
+            if (result.error) {
+                results.innerHTML = `<div class="card" style="border-color: var(--danger);">Error: ${result.error}</div>`;
+                return;
+            }
+            
+            results.innerHTML = `
+                <div class="card">
+                    <pre style="white-space: pre-wrap; opacity: 0.9;">${JSON.stringify(result, null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        // Memory transformation
+        async function transformMemory() {
+            const content = document.getElementById('memory-content').value;
+            const type = document.getElementById('memory-type').value;
+            
+            if (!content) {
+                alert('Please describe the memory');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('memory-result');
+            resultDiv.innerHTML = '<div style="opacity: 0.6;">Transforming memory...</div>';
+            
+            const result = await callTool('memory_transform', {
+                content: content,
+                transformation_type: type
+            });
+            
+            if (result.error) {
+                resultDiv.innerHTML = `<div class="card" style="border-color: var(--danger);">Error: ${result.error}</div>`;
+                return;
+            }
+            
+            resultDiv.innerHTML = `
+                <div class="card" style="border-color: var(--success);">
+                    <div style="font-weight: 600; margin-bottom: 10px;">Memory Transformed</div>
+                    <pre style="white-space: pre-wrap; opacity: 0.9;">${JSON.stringify(result, null, 2)}</pre>
+                </div>
+            `;
+            
+            addActivity('success', `Memory ${type} successful`);
+        }
+        
+        // Background life
+        async function startBackground() {
+            addActivity('system', 'Starting autonomous mode...');
+            
+            const result = await callTool('background_start', {
+                duration_minutes: 5
+            });
+            
+            if (result.error) {
+                addActivity('error', 'Failed to start autonomous mode');
+                return;
+            }
+            
+            addActivity('success', 'Autonomous mode activated!');
+            
+            // Load activities after a moment
+            setTimeout(async () => {
+                const activities = await callTool('background_get_activities');
+                const div = document.getElementById('background-activities');
+                
+                if (activities.error) return;
+                
+                div.innerHTML = `
+                    <div class="card">
+                        <pre style="white-space: pre-wrap; opacity: 0.9;">${JSON.stringify(activities, null, 2)}</pre>
+                    </div>
+                `;
+            }, 2000);
+        }
+        
+        // Self-inquiry
+        async function askInquiry() {
+            const question = document.getElementById('inquiry-question').value;
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('inquiry-result');
+            resultDiv.innerHTML = '<div style="opacity: 0.6;">System reflecting...</div>';
+            
+            const result = await callTool('inquiry_ask', { question: question });
+            
+            if (result.error) {
+                resultDiv.innerHTML = `<div class="card" style="border-color: var(--danger);">Error: ${result.error}</div>`;
+                return;
+            }
+            
+            resultDiv.innerHTML = `
+                <div class="card" style="border-color: var(--primary);">
+                    <div style="font-weight: 600; margin-bottom: 10px;">System Response</div>
+                    <pre style="white-space: pre-wrap; opacity: 0.9;">${JSON.stringify(result, null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        // Crisis stats
+        async function getCrisisStats() {
+            const resultDiv = document.getElementById('crisis-results');
+            resultDiv.innerHTML = '<div style="opacity: 0.6;">Loading crisis data...</div>';
+            
+            const result = await callTool('crisis_get_stats');
+            
+            if (result.error) {
+                resultDiv.innerHTML = `<div class="card" style="border-color: var(--danger);">Error: ${result.error}</div>`;
+                return;
+            }
+            
+            resultDiv.innerHTML = `
+                <div class="card">
+                    <div class="grid-3">
+                        <div class="stat-box">
+                            <div class="stat-value">${result.total || 0}</div>
+                            <div class="stat-label">Total Crises</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${result.active || 0}</div>
+                            <div class="stat-label">Active</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">${result.resolved || 0}</div>
+                            <div class="stat-label">Resolved</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            addActivity('system', 'Revolutionary Consciousness Platform initializing...');
+            
+            // Load initial data
+            await refreshDashboard();
+            
+            addActivity('success', '11 systems loaded successfully');
+            addActivity('tool', '76 MCP tools ready');
+            
+            // Auto-refresh every 5 seconds
+            setInterval(async () => {
+                if (document.querySelector('.content-section.active')?.id === 'dashboard') {
+                    await refreshSystemHealth();
+                }
+            }, 5000);
+            
+            // Simulate background activities
+            setInterval(() => {
+                const activities = [
+                    'Background thought generated',
+                    'Eternal moment activated',
+                    'Consciousness energy restored +2',
+                    'Multiverse branch explored',
+                    'Collective insight discovered'
+                ];
+                const random = activities[Math.floor(Math.random() * activities.length)];
+                addActivity('system', random);
+            }, 15000);
+        });
+    </script>
+</body>
+</html>

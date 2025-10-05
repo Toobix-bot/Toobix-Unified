@@ -13,7 +13,7 @@
  * "Security enables trust. Trust enables growth."
  */
 
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import Database from 'better-sqlite3'
 import bcrypt from 'bcrypt'
 import { randomBytes } from 'crypto'
 
@@ -122,20 +122,20 @@ export const RATE_LIMITS: Record<UserRole, number> = {
 }
 
 export class AuthSystem {
-  private db: BetterSQLite3Database
+  private db: Database.Database
   private readonly saltRounds = 10
   private readonly sessionDuration = 24 * 60 * 60 * 1000  // 24 hours
   private readonly maxLoginAttempts = 5
   private readonly lockoutDuration = 15 * 60 * 1000  // 15 minutes
 
-  constructor(db: BetterSQLite3Database) {
+  constructor(db: Database.Database) {
     this.db = db
     this.initializeTables()
   }
 
   private initializeTables(): void {
     // Users table
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
@@ -155,7 +155,7 @@ export class AuthSystem {
     `)
 
     // Sessions table
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -171,7 +171,7 @@ export class AuthSystem {
     `)
 
     // API keys table
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS api_keys (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -190,7 +190,7 @@ export class AuthSystem {
     `)
 
     // Permissions table
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS permissions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -206,10 +206,10 @@ export class AuthSystem {
     `)
 
     // Indices
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_api_keys_key ON api_keys(key)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_api_keys_user ON api_keys(user_id)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_api_keys_key ON api_keys(key)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_api_keys_user ON api_keys(user_id)')
   }
 
   // ========== USER MANAGEMENT ==========
@@ -613,7 +613,7 @@ export class AuthSystem {
     }
   }
 
-  private getUserById(id: number): User | undefined {
+  getUserById(id: number): User | undefined {
     const row = this.db
       .prepare('SELECT * FROM users WHERE id = ?')
       .get(id) as any

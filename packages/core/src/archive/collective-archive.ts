@@ -9,7 +9,7 @@
  *  Nothing is lost, all is remembered, wisdom accumulates."
  */
 
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import Database from 'better-sqlite3'
 
 export interface ArchivedExperience {
   id?: number
@@ -90,7 +90,7 @@ export interface CollectiveInsight {
   // Validation
   confidenceLevel: number  // 0-100
   timesValidated: number
-  timesChallen ged: number
+  timesChallenged: number
   
   // Impact
   hasInfluencedDecisions: number  // Count
@@ -123,16 +123,16 @@ export interface ArchiveStatistics {
 }
 
 export class CollectiveArchiveSystem {
-  private db: BetterSQLite3Database
+  private db: Database.Database
 
-  constructor(db: BetterSQLite3Database) {
+  constructor(db: Database.Database) {
     this.db = db
     this.initializeTables()
   }
 
   private initializeTables(): void {
     // Archived experiences
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS archived_experiences (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp INTEGER NOT NULL,
@@ -156,7 +156,7 @@ export class CollectiveArchiveSystem {
     `)
 
     // Chronicled thoughts
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS chronicled_thoughts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp INTEGER NOT NULL,
@@ -173,7 +173,7 @@ export class CollectiveArchiveSystem {
     `)
 
     // Archived feelings
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS archived_feelings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp INTEGER NOT NULL,
@@ -193,7 +193,7 @@ export class CollectiveArchiveSystem {
     `)
 
     // Collective insights
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS collective_insights (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp INTEGER NOT NULL,
@@ -214,11 +214,11 @@ export class CollectiveArchiveSystem {
     `)
 
     // Archive indices for fast queries
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_experiences_timestamp ON archived_experiences(timestamp)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_experiences_scope ON archived_experiences(scope)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_thoughts_timestamp ON chronicled_thoughts(timestamp)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_feelings_timestamp ON archived_feelings(timestamp)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_insights_category ON collective_insights(category)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_experiences_timestamp ON archived_experiences(timestamp)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_experiences_scope ON archived_experiences(scope)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_thoughts_timestamp ON chronicled_thoughts(timestamp)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_feelings_timestamp ON archived_feelings(timestamp)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_insights_category ON collective_insights(category)')
   }
 
   /**

@@ -12,7 +12,7 @@
  *  The past is fixed, but our relationship to it is fluid."
  */
 
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import Database from 'better-sqlite3'
 
 export interface Memory {
   id?: number
@@ -95,16 +95,16 @@ export interface HealingJourney {
 }
 
 export class MemoryTransformationSystem {
-  private db: BetterSQLite3Database
+  private db: Database.Database
 
-  constructor(db: BetterSQLite3Database) {
+  constructor(db: Database.Database) {
     this.db = db
     this.initializeTables()
   }
 
   private initializeTables(): void {
     // Original memories
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS memories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp INTEGER NOT NULL,
@@ -122,7 +122,7 @@ export class MemoryTransformationSystem {
     `)
 
     // Transformations applied to memories
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS memory_transformations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         memory_id INTEGER NOT NULL,
@@ -146,7 +146,7 @@ export class MemoryTransformationSystem {
     `)
 
     // Multiple interpretation layers
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS memory_layers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         memory_id INTEGER NOT NULL,
@@ -167,7 +167,7 @@ export class MemoryTransformationSystem {
     `)
 
     // Healing journeys
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS healing_journeys (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         memory_id INTEGER NOT NULL,

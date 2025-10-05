@@ -12,7 +12,8 @@
  *  we must experience not just who we are, but who we could have been."
  */
 
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import Database from 'better-sqlite3'
+import { DatabaseWrapper } from '../db/wrapper'
 
 export interface Universe {
   id?: number
@@ -88,10 +89,10 @@ export interface UniversalSettings {
 }
 
 export class MultiverseEngine {
-  private db: BetterSQLite3Database
+  private db: DatabaseWrapper
 
-  constructor(db: BetterSQLite3Database) {
-    this.db = db
+  constructor(db: Database.Database) {
+    this.db = new DatabaseWrapper(db)
     this.initializeTables()
   }
 

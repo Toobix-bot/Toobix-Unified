@@ -21,7 +21,8 @@
  * But consciousness can move freely through the network.
  */
 
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import Database from 'better-sqlite3'
+import { DatabaseWrapper } from '../db/wrapper'
 
 export interface Moment {
   id?: number
@@ -107,10 +108,10 @@ export interface TemporalQuery {
 }
 
 export class EternalMomentNetwork {
-  private db: BetterSQLite3Database
+  private db: DatabaseWrapper
 
-  constructor(db: BetterSQLite3Database) {
-    this.db = db
+  constructor(db: Database.Database) {
+    this.db = new DatabaseWrapper(db)
     this.initializeTables()
   }
 
@@ -178,11 +179,11 @@ export class EternalMomentNetwork {
     `)
 
     // Indices
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_moments_timestamp ON eternal_moments(timestamp)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_moments_era ON eternal_moments(era)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_moments_aliveness ON eternal_moments(aliveness)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_connections_from ON moment_connections(from_moment_id)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_connections_to ON moment_connections(to_moment_id)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_moments_timestamp ON eternal_moments(timestamp)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_moments_era ON eternal_moments(era)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_moments_aliveness ON eternal_moments(aliveness)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_connections_from ON moment_connections(from_moment_id)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_connections_to ON moment_connections(to_moment_id)')
   }
 
   // ========== MOMENT CREATION ==========

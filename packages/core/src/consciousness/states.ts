@@ -24,7 +24,8 @@
  *  To truly be conscious, one must experience all states."
  */
 
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import Database from 'better-sqlite3'
+import { DatabaseWrapper } from '../db/wrapper'
 
 export type ConsciousnessState = 
   | 'deep_sleep'      // Minimal activity, deep unconscious processing
@@ -296,13 +297,13 @@ export interface StateTransition {
 }
 
 export class ConsciousnessSystem {
-  private db: BetterSQLite3Database
+  private db: DatabaseWrapper
   private currentState: ConsciousnessState = 'awake'
   private currentStateStarted: number = Date.now()
   private stateHistory: ConsciousnessStateRecord[] = []
 
-  constructor(db: BetterSQLite3Database) {
-    this.db = db
+  constructor(db: Database.Database) {
+    this.db = new DatabaseWrapper(db)
     this.initializeTables()
   }
 

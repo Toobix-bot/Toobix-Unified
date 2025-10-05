@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Consciousness State Speedrun</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0f0a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .timer {
+            font-size: 3em;
+            text-align: center;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .state-progress {
+            display: flex;
+            gap: 5px;
+            margin: 20px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .state-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            transition: all 0.3s;
+        }
+        
+        .state-dot.completed {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-color: #10b981;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+        
+        .state-dot.current {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .challenge {
+            background: rgba(102, 126, 234, 0.1);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .challenge h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .challenge-instruction {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            color: white;
+            font-size: 1em;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-start {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-size: 1.3em;
+            padding: 20px 40px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+        
+        .completion-screen {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .completion-screen h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .score-breakdown {
+            text-align: left;
+            margin: 30px 0;
+        }
+        
+        .score-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .feedback {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .hide {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .state-progress {
+                gap: 3px;
+            }
+            
+            .state-dot {
+                width: 25px;
+                height: 25px;
+                font-size: 0.7em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>🎮 Consciousness State Speedrun</h1>
+            <p class="subtitle">Durchlaufe alle 10 Bewusstseinszustände - wie schnell kannst du gehen?</p>
+        </header>
+        
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <div class="card">
+                <div class="instructions">
+                    <h3>📜 Spielregeln</h3>
+                    <ul>
+                        <li>Durchlaufe alle 10 Consciousness States</li>
+                        <li>Jeder State hat eine passende Challenge</li>
+                        <li>Die Uhr läuft - aber Qualität zählt mehr als Speed!</li>
+                        <li>Deine Antworten werden bewertet</li>
+                        <li>Am Ende: Dein Score + Meta-Insights</li>
+                    </ul>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-start" onclick="startGame()">
+                        <span>🚀</span>
+                        <span>Start Game</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="game-screen" class="hide">
+            <div class="card">
+                <div class="timer" id="timer">00:00</div>
+                
+                <div class="state-progress" id="state-progress">
+                    <!-- Will be populated by JS -->
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="current-state-num">1</div>
+                        <div class="stat-label">Current State</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="completed-count">0</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="quality-score">0</div>
+                        <div class="stat-label">Quality</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="challenge">
+                <h3 id="challenge-title">Challenge Title</h3>
+                <div class="challenge-instruction" id="challenge-instruction">
+                    Challenge instructions will appear here
+                </div>
+                <textarea id="challenge-input" placeholder="Deine Antwort hier..."></textarea>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" id="submit-btn" onclick="submitChallenge()">
+                        <span>✓</span>
+                        <span>Submit & Continue</span>
+                    </button>
+                </div>
+                <div id="feedback" class="feedback hide"></div>
+            </div>
+        </div>
+        
+        <!-- Completion Screen -->
+        <div id="completion-screen" class="hide">
+            <div class="card completion-screen">
+                <h2>🎉 Speedrun Complete!</h2>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="final-time">00:00</div>
+                        <div class="stat-label">Time</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="final-quality">0</div>
+                        <div class="stat-label">Quality Score</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="final-rank">-</div>
+                        <div class="stat-label">Rank</div>
+                    </div>
+                </div>
+                
+                <div class="score-breakdown">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">📊 Score Breakdown</h3>
+                    <div id="score-details"></div>
+                </div>
+                
+                <div class="feedback" id="meta-insight" style="text-align: left;">
+                    <strong>🧠 Meta-Insight:</strong>
+                    <div id="meta-insight-text"></div>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        <span>🔄</span>
+                        <span>Play Again</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Game State
+        const states = [
+            { name: 'deep_sleep', icon: '💤', emoji: '😴' },
+            { name: 'sleep', icon: '😴', emoji: '🌙' },
+            { name: 'dream', icon: '💭', emoji: '🌟' },
+            { name: 'lucid_dream', icon: '✨', emoji: '🎨' },
+            { name: 'drowsy', icon: '😑', emoji: '☕' },
+            { name: 'awake', icon: '😊', emoji: '👁️' },
+            { name: 'alert', icon: '👀', emoji: '⚡' },
+            { name: 'focused', icon: '🎯', emoji: '🔬' },
+            { name: 'meditate', icon: '🧘', emoji: '☮️' },
+            { name: 'hyperaware', icon: '⚡', emoji: '🌌' }
+        ];
+        
+        const challenges = [
+            {
+                title: "💤 Deep Sleep → Sleep",
+                instruction: "Schreibe einen Traum den du hattest (mindestens 100 Wörter). Es kann ein echter Traum sein oder einer den du dir vorstellst.",
+                minWords: 100
+            },
+            {
+                title: "😴 Sleep → Dream",
+                instruction: "Beschreibe oder male (in Worten) ein Traumsymbol. Was bedeutet es für dich?",
+                minWords: 50
+            },
+            {
+                title: "💭 Dream → Lucid Dream",
+                instruction: "Stelle eine 'Was wäre wenn?' Frage und beantworte sie kreativ.",
+                minWords: 50
+            },
+            {
+                title: "✨ Lucid Dream → Drowsy",
+                instruction: "Schreibe eine Erinnerung auf die gerade hochkam. Was macht sie besonders?",
+                minWords: 50
+            },
+            {
+                title: "😑 Drowsy → Awake",
+                instruction: "Nenne 3 Dinge für die du dankbar bist und WARUM (konkret!).",
+                minWords: 30
+            },
+            {
+                title: "😊 Awake → Alert",
+                instruction: "Löse diese Aufgaben: 1) 47+89 2) 156-78 3) 12×15 4) 144÷12 5) Was ist 25% von 400?",
+                minWords: 20
+            },
+            {
+                title: "👀 Alert → Focused",
+                instruction: "Beschreibe einen konkreten Task den du JETZT fokussiert erledigen könntest. Was sind die 3 ersten Schritte?",
+                minWords: 50
+            },
+            {
+                title: "🎯 Focused → Meditate",
+                instruction: "Beobachte 5 Atemzüge bewusst. Beschreibe was du dabei fühlst/denkst/bemerkst.",
+                minWords: 40
+            },
+            {
+                title: "🧘 Meditate → Hyperaware",
+                instruction: "Verbinde 3 scheinbar unverbundene Konzepte. Erkläre die Verbindung.",
+                minWords: 60
+            },
+            {
+                title: "⚡ Hyperaware → Integration",
+                instruction: "Reflexion: Was hast du über dich gelernt während dieses Speedruns? Welche States waren leicht/schwer? Warum?",
+                minWords: 80
+            }
+        ];
+        
+        let currentState = 0;
+        let startTime;
+        let timerInterval;
+        let answers = [];
+        let qualityScores = [];
+        
+        // Initialize
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hide');
+            document.getElementById('game-screen').classList.remove('hide');
+            
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            renderStateProgress();
+            loadChallenge(0);
+        }
+        
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timer').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        
+        function renderStateProgress() {
+            const container = document.getElementById('state-progress');
+            container.innerHTML = states.map((state, i) => `
+                <div class="state-dot ${i < currentState ? 'completed' : i === currentState ? 'current' : ''}" 
+                     title="${state.name}">
+                    ${state.icon}
+                </div>
+            `).join('');
+        }
+        
+        function loadChallenge(index) {
+            const challenge = challenges[index];
+            document.getElementById('challenge-title').textContent = challenge.title;
+            document.getElementById('challenge-instruction').textContent = challenge.instruction;
+            document.getElementById('challenge-input').value = '';
+            document.getElementById('current-state-num').textContent = index + 1;
+            document.getElementById('feedback').classList.add('hide');
+            
+            renderStateProgress();
+        }
+        
+        function submitChallenge() {
+            const input = document.getElementById('challenge-input').value.trim();
+            const challenge = challenges[currentState];
+            
+            if (!input) {
+                showFeedback('❌ Bitte gib eine Antwort ein!', false);
+                return;
+            }
+            
+            const wordCount = input.split(/\s+/).length;
+            if (wordCount < challenge.minWords) {
+                showFeedback(`❌ Zu kurz! Minimum ${challenge.minWords} Wörter (du hast ${wordCount})`, false);
+                return;
+            }
+            
+            // Calculate quality score
+            const quality = calculateQuality(input, challenge);
+            qualityScores.push(quality);
+            answers.push(input);
+            
+            showFeedback(`✅ Gut! Qualität: ${quality}/10`, true);
+            
+            // Update stats
+            document.getElementById('completed-count').textContent = currentState + 1;
+            const avgQuality = Math.round(qualityScores.reduce((a, b) => a + b, 0) / qualityScores.length);
+            document.getElementById('quality-score').textContent = avgQuality;
+            
+            // Next challenge or complete
+            setTimeout(() => {
+                currentState++;
+                if (currentState < challenges.length) {
+                    loadChallenge(currentState);
+                } else {
+                    completeGame();
+                }
+            }, 1500);
+        }
+        
+        function calculateQuality(answer, challenge) {
+            const words = answer.split(/\s+/).length;
+            let score = 5; // Base score
+            
+            // Length bonus
+            if (words > challenge.minWords * 1.5) score += 2;
+            else if (words > challenge.minWords) score += 1;
+            
+            // Depth indicators
+            const depthWords = ['weil', 'because', 'bedeutet', 'fühle', 'erkenne', 'verstehe', 'realisiere'];
+            const hasDepth = depthWords.some(word => answer.toLowerCase().includes(word));
+            if (hasDepth) score += 2;
+            
+            // Specific detail bonus
+            if (answer.includes('zum Beispiel') || answer.includes('konkret') || answer.match(/\d+/)) {
+                score += 1;
+            }
+            
+            return Math.min(10, score);
+        }
+        
+        function showFeedback(message, success) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.classList.remove('hide');
+            feedback.style.borderLeftColor = success ? '#10b981' : '#ef4444';
+        }
+        
+        function completeGame() {
+            clearInterval(timerInterval);
+            
+            const totalTime = Math.floor((Date.now() - startTime) / 1000);
+            const avgQuality = Math.round(qualityScores.reduce((a, b) => a + b, 0) / qualityScores.length);
+            
+            // Show completion screen
+            document.getElementById('game-screen').classList.add('hide');
+            document.getElementById('completion-screen').classList.remove('hide');
+            
+            // Set final stats
+            const minutes = Math.floor(totalTime / 60);
+            const seconds = totalTime % 60;
+            document.getElementById('final-time').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            document.getElementById('final-quality').textContent = avgQuality;
+            
+            // Calculate rank
+            let rank = 'Novice';
+            if (avgQuality >= 8 && totalTime < 600) rank = 'Master';
+            else if (avgQuality >= 7 && totalTime < 900) rank = 'Expert';
+            else if (avgQuality >= 6) rank = 'Adept';
+            document.getElementById('final-rank').textContent = rank;
+            
+            // Score breakdown
+            const scoreDetails = document.getElementById('score-details');
+            scoreDetails.innerHTML = qualityScores.map((score, i) => `
+                <div class="score-item">
+                    <span>${challenges[i].title}</span>
+                    <span style="color: #667eea; font-weight: bold;">${score}/10</span>
+                </div>
+            `).join('');
+            
+            // Meta-insight
+            const insight = generateMetaInsight(qualityScores, totalTime, answers);
+            document.getElementById('meta-insight-text').innerHTML = insight;
+        }
+        
+        function generateMetaInsight(scores, time, answers) {
+            const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+            const bestStateIndex = scores.indexOf(Math.max(...scores));
+            const worstStateIndex = scores.indexOf(Math.min(...scores));
+            
+            let insight = '<div style="margin-top: 10px; line-height: 1.6;">';
+            
+            // Speed vs Quality analysis
+            if (time < 600 && avgScore >= 7) {
+                insight += '⚡ Du bist schnell UND qualitätsbewusst - eine seltene Kombination!<br>';
+            } else if (time > 1200) {
+                insight += '🐢 Du nimmst dir Zeit für Tiefe - Quality over Speed. Das ist wertvoll.<br>';
+            } else if (avgScore < 6) {
+                insight += '💭 Geschwindigkeit ist gut, aber probiere mehr Tiefe in den Antworten.<br>';
+            }
+            
+            // Best/worst states
+            insight += `<br>🌟 Dein stärkster State: <strong>${challenges[bestStateIndex].title}</strong><br>`;
+            insight += `📈 Entwicklungspotential: <strong>${challenges[worstStateIndex].title}</strong><br>`;
+            
+            // Pattern recognition
+            const firstHalf = scores.slice(0, 5).reduce((a, b) => a + b, 0) / 5;
+            const secondHalf = scores.slice(5).reduce((a, b) => a + b, 0) / 5;
+            
+            if (secondHalf > firstHalf + 1) {
+                insight += '<br>📊 Du wurdest stärker während des Spiels - echtes Growth Mindset!';
+            } else if (firstHalf > secondHalf + 1) {
+                insight += '<br>⚡ Starker Start, dann Energie-Abfall - achte auf deine Energie-Levels!';
+            }
+            
+            insight += '</div>';
+            return insight;
+        }
+    </script>
+</body>
+</html>

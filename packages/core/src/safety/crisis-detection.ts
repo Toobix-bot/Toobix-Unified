@@ -14,7 +14,7 @@
  *  A life saved is worth any amount of engineering effort."
  */
 
-import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import Database from 'better-sqlite3'
 
 export interface CrisisKeyword {
   keyword: string
@@ -57,7 +57,7 @@ export interface EmergencyHotline {
 }
 
 export class CrisisDetectionSystem {
-  private db: BetterSQLite3Database
+  private db: Database.Database
   
   // Crisis keywords (German + English)
   private readonly crisisKeywords: CrisisKeyword[] = [
@@ -166,13 +166,13 @@ export class CrisisDetectionSystem {
     }
   ]
 
-  constructor(db: BetterSQLite3Database) {
+  constructor(db: Database.Database) {
     this.db = db
     this.initializeTables()
   }
 
   private initializeTables(): void {
-    this.db.run(`
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS crisis_detections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp INTEGER NOT NULL,
@@ -195,8 +195,8 @@ export class CrisisDetectionSystem {
     `)
 
     // Index for monitoring
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_crisis_timestamp ON crisis_detections(timestamp)')
-    this.db.run('CREATE INDEX IF NOT EXISTS idx_crisis_severity ON crisis_detections(severity)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_crisis_timestamp ON crisis_detections(timestamp)')
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_crisis_severity ON crisis_detections(severity)')
   }
 
   /**
