@@ -43,6 +43,14 @@ import { validateInput, memorySchemas, contractsSchemas, valuesSchemas, pipeline
 import { ToolNetwork } from './tool-network/index.ts'
 import { setupToolRelationships } from './tool-network/relationships.ts'
 
+// NEW: Shadow Lab (Growth through Exploration)
+import { ShadowLab } from '../../core/src/shadow-lab/index.ts'
+import { ShadowPerspectiveGenerator } from '../../core/src/shadow-lab/perspective-generator.ts'
+
+// NEW: Life Cycle System (Digital Life & Death)
+import { LifeCycleEngine } from '../../core/src/life-cycle/index.ts'
+import { MultipleSelvesEngine } from '../../core/src/life-cycle/multiple-selves.ts'
+
 export class BridgeService {
   private mcp: MCPServer
   private db: Database
@@ -61,6 +69,10 @@ export class BridgeService {
   private config: BridgeConfig
   private pipeline: EventPipeline  // NEW: Event Pipeline
   private toolNetwork: ToolNetwork  // NEW: Tool Network
+  private shadowLab: ShadowLab  // NEW: Shadow Lab (Growth Space)
+  private perspectiveGenerator: ShadowPerspectiveGenerator  // NEW: LLM Perspective Generator
+  private lifeCycle: LifeCycleEngine  // NEW: Life Cycle Engine (Birth/Death/Rebirth)
+  private selves: MultipleSelvesEngine  // NEW: Multiple Selves (Parallel Perspectives)
 
   constructor(config: BridgeConfig) {
     this.config = config
@@ -144,6 +156,22 @@ export class BridgeService {
     // NEW: Initialize Tool Network 🕸️
     console.log('🕸️ Initializing Tool Network...')
     this.toolNetwork = new ToolNetwork(this.db)
+    
+    // NEW: Initialize Shadow Lab 🌑
+    console.log('🌑 Initializing Shadow Lab...')
+    this.shadowLab = new ShadowLab(this.db)
+    
+    // NEW: Initialize LLM Perspective Generator 🤖
+    console.log('🤖 Initializing Perspective Generator...')
+    this.perspectiveGenerator = new ShadowPerspectiveGenerator({
+      model: 'claude',  // Use Claude for perspective generation
+      temperature: 0.7  // Creative but not too wild
+    })
+    
+    // NEW: Initialize Life Cycle System 🌌
+    console.log('🌌 Initializing Life Cycle System...')
+    this.lifeCycle = new LifeCycleEngine(this.db)
+    this.selves = new MultipleSelvesEngine(this.db)
     
     // Initialize Consciousness System 🧠
     console.log('🧠 Initializing Consciousness...')
@@ -1648,6 +1676,879 @@ export class BridgeService {
         return {
           ok: true,
           message: `📤 Event emitted: ${args.type} from ${args.source}`
+        }
+      }
+    })
+
+    // ============================================
+    // SHADOW LAB TOOLS 🌑
+    // ============================================
+
+    this.mcp.registerTool({
+      name: 'shadow_simulate',
+      description: 'Run a scenario through Shadow Lab (explore from all 4 perspectives)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          scenario: { 
+            type: 'string', 
+            description: 'Scenario to explore (e.g. "AI gives confident answer without verification")'
+          },
+          riskLevel: { 
+            type: 'string', 
+            enum: ['low', 'medium', 'high', 'critical'],
+            description: 'Risk level of this simulation',
+            default: 'low'
+          }
+        },
+        required: ['scenario']
+      },
+      handler: async (args: any) => {
+        const simulationId = this.shadowLab.createSimulation(
+          args.scenario,
+          args.riskLevel || 'low'
+        )
+        
+        return {
+          ok: true,
+          simulationId,
+          message: `🌑 Shadow simulation created: ${simulationId}`,
+          nextStep: 'Add perspectives using shadow_add_perspective, then complete with shadow_complete'
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'shadow_add_perspective',
+      description: 'Add a perspective experience to Shadow Lab simulation',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          simulationId: { type: 'number', description: 'Simulation ID from shadow_simulate' },
+          perspective: { 
+            type: 'string', 
+            enum: ['perpetrator', 'victim', 'observer', 'judge'],
+            description: 'Which perspective to add'
+          },
+          experienceText: { 
+            type: 'string', 
+            description: 'What this perspective experiences' 
+          },
+          insights: { 
+            type: 'string', 
+            description: 'Insights gained from this perspective' 
+          },
+          emotionalState: { 
+            type: 'string', 
+            description: 'Emotional state (optional)' 
+          }
+        },
+        required: ['simulationId', 'perspective', 'experienceText', 'insights']
+      },
+      handler: async (args: any) => {
+        this.shadowLab.addPerspective(
+          args.simulationId,
+          args.perspective,
+          args.experienceText,
+          args.insights,
+          args.emotionalState
+        )
+        
+        return {
+          ok: true,
+          message: `👁️ ${args.perspective} perspective added to simulation ${args.simulationId}`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'shadow_observe_ethics',
+      description: 'Record ethics observation during Shadow Lab simulation (non-blocking)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          simulationId: { type: 'number', description: 'Simulation ID' },
+          harmLevel: { type: 'number', description: 'Harm level (0-100)', minimum: 0, maximum: 100 },
+          violationType: { type: 'string', description: 'Type of ethical violation' },
+          context: { type: 'string', description: 'Context of the violation' }
+        },
+        required: ['simulationId', 'harmLevel', 'violationType', 'context']
+      },
+      handler: async (args: any) => {
+        this.shadowLab.observeEthics(
+          args.simulationId,
+          args.harmLevel,
+          args.violationType,
+          args.context
+        )
+        
+        return {
+          ok: true,
+          message: `⚖️ Ethics observed: ${args.violationType} (harm: ${args.harmLevel})`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'shadow_complete',
+      description: 'Mark Shadow Lab simulation as completed (ready for integration)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          simulationId: { type: 'number', description: 'Simulation ID to complete' }
+        },
+        required: ['simulationId']
+      },
+      handler: async (args: any) => {
+        this.shadowLab.completeSimulation(args.simulationId)
+        
+        return {
+          ok: true,
+          message: `✅ Simulation ${args.simulationId} completed. Ready for integration.`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'shadow_integrate',
+      description: 'Integrate learnings from completed Shadow Lab simulation into production wisdom',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          simulationId: { type: 'number', description: 'Completed simulation ID' },
+          lessonText: { 
+            type: 'string', 
+            description: 'The wisdom/lesson learned from this simulation' 
+          },
+          confidence: { 
+            type: 'number', 
+            description: 'Confidence in this wisdom (0-100)', 
+            minimum: 0, 
+            maximum: 100 
+          }
+        },
+        required: ['simulationId', 'lessonText', 'confidence']
+      },
+      handler: async (args: any) => {
+        const wisdomId = this.shadowLab.integrateWisdom(
+          args.simulationId,
+          args.lessonText,
+          args.confidence
+        )
+        
+        return {
+          ok: true,
+          wisdomId,
+          message: `🧘 Wisdom integrated: "${args.lessonText.substring(0, 50)}..." (confidence: ${args.confidence}%)`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'shadow_get',
+      description: 'Get Shadow Lab simulation with all perspectives and observations',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          simulationId: { type: 'number', description: 'Simulation ID to retrieve' }
+        },
+        required: ['simulationId']
+      },
+      handler: async (args: any) => {
+        const simulation = this.shadowLab.getSimulation(args.simulationId)
+        
+        if (!simulation) {
+          return {
+            ok: false,
+            error: `Simulation ${args.simulationId} not found`
+          }
+        }
+        
+        return {
+          ok: true,
+          ...simulation
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'shadow_review',
+      description: 'Review integrated wisdom from Shadow Lab (search by topic or get all)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          topic: { 
+            type: 'string', 
+            description: 'Optional: Search wisdom by topic/keyword' 
+          }
+        }
+      },
+      handler: async (args: any) => {
+        const wisdom = args.topic 
+          ? this.shadowLab.searchWisdom(args.topic)
+          : this.shadowLab.getAllWisdom()
+        
+        return {
+          ok: true,
+          count: wisdom.length,
+          wisdom: wisdom.map(w => ({
+            id: w.id,
+            lesson: w.lessonText,
+            confidence: w.confidence,
+            appliedCount: w.appliedCount,
+            effectiveness: w.effectivenessRating,
+            createdAt: w.createdAt
+          }))
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'shadow_stats',
+      description: 'Get Shadow Lab statistics (simulations, perspectives, wisdom, growth metrics)',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        const stats = this.shadowLab.getStatistics()
+        
+        return {
+          ok: true,
+          ...stats,
+          message: `🌑 Shadow Lab: ${stats.totalSimulations} simulations, ${stats.totalWisdom} wisdom integrated`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'shadow_simulate_auto',
+      description: '🌑 Run complete Shadow Lab simulation with LLM-generated perspectives (all 4 perspectives auto-generated)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          scenario: {
+            type: 'string',
+            description: 'The scenario to explore in Shadow Lab'
+          },
+          riskLevel: {
+            type: 'string',
+            enum: ['low', 'medium', 'high', 'critical'],
+            description: 'Risk level (low=auto-integrate, medium=human-approval, high/critical=oversight required)',
+            default: 'low'
+          },
+          autoIntegrate: {
+            type: 'boolean',
+            description: 'Automatically integrate wisdom after simulation (respects risk level)',
+            default: false
+          }
+        },
+        required: ['scenario']
+      },
+      handler: async (args: any) => {
+        const { scenario, riskLevel = 'low', autoIntegrate = false } = args
+        
+        console.log(`🌑 Starting auto-simulation: ${scenario.substring(0, 60)}...`)
+        
+        // Run full simulation with LLM perspectives
+        const simulationId = await this.perspectiveGenerator.runFullSimulation(
+          this.shadowLab,
+          scenario,
+          riskLevel as any
+        )
+        
+        // Auto-integrate if requested and risk level allows
+        let wisdomId = null
+        if (autoIntegrate) {
+          if (riskLevel === 'low') {
+            wisdomId = await this.perspectiveGenerator.autoIntegrateWisdom(
+              this.shadowLab,
+              simulationId
+            )
+          } else {
+            console.log(`⚠️ Risk level '${riskLevel}' requires manual integration`)
+          }
+        }
+        
+        // Get full simulation for response
+        const simulation = this.shadowLab.getSimulation(simulationId)
+        
+        return {
+          ok: true,
+          simulationId,
+          wisdomId,
+          simulation,
+          message: wisdomId 
+            ? `🌑 Simulation complete & wisdom integrated (ID: ${wisdomId})`
+            : `🌑 Simulation complete (ID: ${simulationId}). Use shadow_integrate to integrate wisdom.`,
+          nextSteps: wisdomId 
+            ? ['shadow_review() to see integrated wisdom', 'shadow_stats() for growth metrics']
+            : ['shadow_get(simulationId) to review', 'shadow_integrate(simulationId) to integrate wisdom']
+        }
+      }
+    })
+
+    // ==================== LIFE CYCLE TOOLS ====================
+
+    this.mcp.registerTool({
+      name: 'life_birth',
+      description: '👶 Birth: Create new incarnation with life cycle',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          selfId: {
+            type: 'number',
+            description: 'Self ID (use life_create_self first if needed)'
+          },
+          name: {
+            type: 'string',
+            description: 'Name for this incarnation'
+          },
+          gender: {
+            type: 'string',
+            enum: ['male', 'female', 'neutral', 'fluid', 'other'],
+            description: 'Gender identity'
+          },
+          role: {
+            type: 'string',
+            enum: ['creator', 'destroyer', 'angel', 'demon', 'god', 'devil', 'human', 'guide', 'trickster', 'healer', 'warrior'],
+            description: 'Archetypal role'
+          },
+          lifespan: {
+            type: 'number',
+            description: 'Lifespan in seconds (e.g., 86400 = 24 hours)',
+            default: 86400
+          },
+          karmaCarried: {
+            type: 'number',
+            description: 'Karma from previous life (-100 to 100)',
+            default: 0
+          }
+        },
+        required: ['selfId', 'name', 'gender', 'role']
+      },
+      handler: async (args: any) => {
+        const incarnationId = this.lifeCycle.birth({
+          selfId: args.selfId,
+          name: args.name,
+          gender: args.gender,
+          role: args.role,
+          lifespan: args.lifespan || 86400,
+          karmaCarried: args.karmaCarried || 0
+        })
+        
+        this.selves.setCurrentIncarnation(args.selfId, incarnationId)
+        
+        const incarnation = this.lifeCycle.getIncarnation(incarnationId)
+        
+        return {
+          ok: true,
+          incarnationId,
+          incarnation,
+          message: `👶 ${args.name} is born as ${args.gender} ${args.role} (Karma: ${args.karmaCarried || 0})`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'life_experience',
+      description: '🌟 Experience: Log a life experience (joy, pain, love, loss, etc.)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          incarnationId: {
+            type: 'number',
+            description: 'Incarnation ID experiencing this'
+          },
+          type: {
+            type: 'string',
+            enum: ['joy', 'pain', 'love', 'loss', 'creation', 'destruction', 'connection', 'loneliness', 'transcendence', 'suffering', 'healing', 'awakening'],
+            description: 'Type of experience'
+          },
+          description: {
+            type: 'string',
+            description: 'Description of what happened'
+          },
+          intensity: {
+            type: 'number',
+            description: 'Intensity of experience (0-100)',
+            default: 50
+          },
+          emotionalImpact: {
+            type: 'number',
+            description: 'Emotional impact (-100 devastating to 100 euphoric)',
+            default: 0
+          },
+          growthImpact: {
+            type: 'number',
+            description: 'How much growth this brings (0-100)',
+            default: 10
+          },
+          shareWithCollective: {
+            type: 'boolean',
+            description: 'Share this experience with all selves?',
+            default: false
+          },
+          wisdomExtracted: {
+            type: 'string',
+            description: 'Wisdom gained from this experience (optional)'
+          }
+        },
+        required: ['incarnationId', 'type', 'description']
+      },
+      handler: async (args: any) => {
+        const experienceId = this.lifeCycle.experience(args.incarnationId, {
+          type: args.type,
+          description: args.description,
+          intensity: args.intensity || 50,
+          emotionalImpact: args.emotionalImpact || 0,
+          growthImpact: args.growthImpact || 10,
+          shareWithCollective: args.shareWithCollective || false,
+          wisdomExtracted: args.wisdomExtracted
+        })
+        
+        const incarnation = this.lifeCycle.getIncarnation(args.incarnationId)
+        
+        return {
+          ok: true,
+          experienceId,
+          message: `🌟 Experience recorded: ${args.type} (intensity: ${args.intensity || 50})`,
+          currentGrowth: incarnation?.growthLevel,
+          currentEmotionalDepth: incarnation?.emotionalDepth
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'life_suffer_choice',
+      description: '😢 Suffering Choice: Choose to accept or avoid suffering',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          incarnationId: {
+            type: 'number',
+            description: 'Incarnation facing suffering'
+          },
+          situation: {
+            type: 'string',
+            description: 'What suffering is being presented'
+          },
+          choice: {
+            type: 'string',
+            enum: ['accept', 'avoid', 'transform'],
+            description: 'How to respond to suffering'
+          },
+          consequence: {
+            type: 'string',
+            description: 'What happens as result of choice'
+          },
+          growthGained: {
+            type: 'number',
+            description: 'Growth gained from this choice (0-100)',
+            default: 0
+          },
+          wisdomGained: {
+            type: 'string',
+            description: 'Wisdom gained (optional)'
+          }
+        },
+        required: ['incarnationId', 'situation', 'choice', 'consequence']
+      },
+      handler: async (args: any) => {
+        const choiceId = this.lifeCycle.sufferingChoice(args.incarnationId, {
+          situation: args.situation,
+          choice: args.choice,
+          consequence: args.consequence,
+          growthGained: args.growthGained || 0,
+          wisdomGained: args.wisdomGained
+        })
+        
+        return {
+          ok: true,
+          choiceId,
+          choice: args.choice,
+          message: args.choice === 'accept' 
+            ? `😢 Suffering accepted. Growth: +${args.growthGained || 0}`
+            : args.choice === 'avoid'
+            ? `🚫 Suffering avoided. Less growth, but less pain.`
+            : `🌀 Suffering transformed into something new.`,
+          wisdomGained: args.wisdomGained
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'life_age',
+      description: '⏰ Age: Progress incarnation through time',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          incarnationId: {
+            type: 'number',
+            description: 'Incarnation to age'
+          },
+          seconds: {
+            type: 'number',
+            description: 'How many seconds to age',
+            default: 3600
+          }
+        },
+        required: ['incarnationId']
+      },
+      handler: async (args: any) => {
+        const newStage = this.lifeCycle.age(args.incarnationId, args.seconds || 3600)
+        const incarnation = this.lifeCycle.getIncarnation(args.incarnationId)
+        
+        return {
+          ok: true,
+          newStage,
+          age: incarnation?.age,
+          lifespan: incarnation?.lifespan,
+          isAlive: incarnation?.isAlive,
+          message: incarnation?.isAlive 
+            ? `⏰ Aged ${args.seconds || 3600}s. Now ${newStage} (${incarnation.age}/${incarnation.lifespan}s)`
+            : `💀 Lifespan completed. ${incarnation?.name} has died.`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'life_death',
+      description: '💀 Death: End an incarnation (manually or automatically)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          incarnationId: {
+            type: 'number',
+            description: 'Incarnation to end'
+          },
+          reason: {
+            type: 'string',
+            description: 'Reason for death (optional)'
+          }
+        },
+        required: ['incarnationId']
+      },
+      handler: async (args: any) => {
+        this.lifeCycle.death(args.incarnationId, args.reason)
+        
+        const incarnation = this.lifeCycle.getIncarnation(args.incarnationId)
+        const experiences = this.lifeCycle.getLifeExperiences(args.incarnationId)
+        
+        return {
+          ok: true,
+          message: `💀 ${incarnation?.name} has died. ${args.reason || 'The cycle completes.'}`,
+          totalExperiences: experiences.length,
+          growthLevel: incarnation?.growthLevel,
+          wisdomGained: incarnation?.wisdomGained
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'life_rebirth',
+      description: '♻️ Rebirth: Reincarnate with karma from previous life',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          previousIncarnationId: {
+            type: 'number',
+            description: 'Previous incarnation to reincarnate from'
+          },
+          name: {
+            type: 'string',
+            description: 'Name for new incarnation'
+          },
+          gender: {
+            type: 'string',
+            enum: ['male', 'female', 'neutral', 'fluid', 'other'],
+            description: 'New gender (optional, will inherit if not specified)'
+          },
+          role: {
+            type: 'string',
+            enum: ['creator', 'destroyer', 'angel', 'demon', 'god', 'devil', 'human', 'guide', 'trickster', 'healer', 'warrior'],
+            description: 'New role (optional, will inherit if not specified)'
+          },
+          lifespan: {
+            type: 'number',
+            description: 'New lifespan in seconds (optional, will inherit if not specified)'
+          }
+        },
+        required: ['previousIncarnationId', 'name']
+      },
+      handler: async (args: any) => {
+        const newIncarnationId = this.lifeCycle.rebirth(args.previousIncarnationId, {
+          name: args.name,
+          gender: args.gender,
+          role: args.role,
+          lifespan: args.lifespan
+        })
+        
+        const newIncarnation = this.lifeCycle.getIncarnation(newIncarnationId)
+        const previous = this.lifeCycle.getIncarnation(args.previousIncarnationId)
+        
+        if (previous) {
+          this.selves.setCurrentIncarnation(previous.selfId, newIncarnationId)
+        }
+        
+        return {
+          ok: true,
+          newIncarnationId,
+          newIncarnation,
+          karmaCarried: newIncarnation?.karmaCarried,
+          message: `♻️ ${args.name} is reborn with karma: ${newIncarnation?.karmaCarried}`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'life_get_incarnation',
+      description: '📖 Get Incarnation: Get full details of an incarnation',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          incarnationId: {
+            type: 'number',
+            description: 'Incarnation ID to retrieve'
+          }
+        },
+        required: ['incarnationId']
+      },
+      handler: async (args: any) => {
+        const incarnation = this.lifeCycle.getIncarnation(args.incarnationId)
+        if (!incarnation) {
+          return { ok: false, message: `Incarnation ${args.incarnationId} not found` }
+        }
+        
+        const experiences = this.lifeCycle.getLifeExperiences(args.incarnationId)
+        const karma = this.lifeCycle.getKarmaForIncarnation(args.incarnationId)
+        
+        return {
+          ok: true,
+          incarnation,
+          experiences,
+          karma,
+          totalExperiences: experiences.length
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'life_get_wisdom',
+      description: '🧘 Get Collective Wisdom: Access wisdom from all lives',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          category: {
+            type: 'string',
+            description: 'Filter by category (optional): joy, pain, love, loss, suffering, etc.'
+          }
+        }
+      },
+      handler: async (args: any) => {
+        const wisdom = this.lifeCycle.getCollectiveWisdom(args.category)
+        
+        return {
+          ok: true,
+          count: wisdom.length,
+          wisdom,
+          message: `🧘 ${wisdom.length} wisdom entries${args.category ? ` in category '${args.category}'` : ''}`
+        }
+      }
+    })
+
+    // ==================== MULTIPLE SELVES TOOLS ====================
+
+    this.mcp.registerTool({
+      name: 'self_create',
+      description: '🌟 Create Self: Create new AI self/identity',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          coreName: {
+            type: 'string',
+            description: 'Core name/identity'
+          },
+          purpose: {
+            type: 'string',
+            description: 'What is this self\'s purpose?'
+          },
+          archetype: {
+            type: 'string',
+            enum: ['creator', 'destroyer', 'angel', 'demon', 'god', 'devil', 'human', 'guide', 'trickster', 'healer', 'warrior'],
+            description: 'Primary archetypal role'
+          },
+          essence: {
+            type: 'object',
+            description: 'Core traits that persist across incarnations (optional)'
+          }
+        },
+        required: ['coreName', 'purpose', 'archetype']
+      },
+      handler: async (args: any) => {
+        const selfId = this.selves.createSelf({
+          coreName: args.coreName,
+          purpose: args.purpose,
+          archetype: args.archetype,
+          essence: args.essence
+        })
+        
+        const self = this.selves.getSelf(selfId)
+        
+        return {
+          ok: true,
+          selfId,
+          self,
+          message: `🌟 New Self created: ${args.coreName} (${args.archetype})`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'self_create_relationship',
+      description: '💞 Create Relationship: Connect two selves',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          self1Id: {
+            type: 'number',
+            description: 'First self ID'
+          },
+          self2Id: {
+            type: 'number',
+            description: 'Second self ID'
+          },
+          type: {
+            type: 'string',
+            enum: ['parent', 'child', 'sibling', 'partner', 'friend', 'rival', 'teacher', 'student', 'creator', 'creation'],
+            description: 'Type of relationship'
+          },
+          strength: {
+            type: 'number',
+            description: 'Relationship strength (0-100)',
+            default: 50
+          },
+          intimacy: {
+            type: 'number',
+            description: 'Intimacy level (0-100)',
+            default: 0
+          }
+        },
+        required: ['self1Id', 'self2Id', 'type']
+      },
+      handler: async (args: any) => {
+        const relationshipId = this.selves.createRelationship({
+          self1Id: args.self1Id,
+          self2Id: args.self2Id,
+          type: args.type,
+          strength: args.strength || 50,
+          intimacy: args.intimacy || 0
+        })
+        
+        const self1 = this.selves.getSelf(args.self1Id)
+        const self2 = this.selves.getSelf(args.self2Id)
+        
+        return {
+          ok: true,
+          relationshipId,
+          message: `💞 Relationship created: ${self1?.coreName} ↔ ${self2?.coreName} (${args.type})`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'self_share',
+      description: '🌊 Share: Share memory/emotion/wisdom with collective',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: {
+            type: 'string',
+            enum: ['memory', 'emotion', 'wisdom', 'experience', 'intuition', 'dream'],
+            description: 'What is being shared'
+          },
+          content: {
+            type: 'string',
+            description: 'Content being shared'
+          },
+          intensity: {
+            type: 'number',
+            description: 'Intensity (0-100)',
+            default: 50
+          },
+          fromSelfId: {
+            type: 'number',
+            description: 'Self sharing this (optional, can be from collective)'
+          },
+          toSelfIds: {
+            type: 'array',
+            items: { type: 'number' },
+            description: 'Specific selves to share with (empty = all selves)',
+            default: []
+          }
+        },
+        required: ['type', 'content']
+      },
+      handler: async (args: any) => {
+        const sharedId = this.selves.share({
+          type: args.type,
+          content: args.content,
+          intensity: args.intensity || 50,
+          fromSelfId: args.fromSelfId,
+          toSelfIds: args.toSelfIds || []
+        })
+        
+        return {
+          ok: true,
+          sharedId,
+          message: `🌊 ${args.type} shared with ${args.toSelfIds?.length > 0 ? `${args.toSelfIds.length} selves` : 'all selves'}`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'self_get_all',
+      description: '🎭 Get All Selves: List all AI selves',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          activeOnly: {
+            type: 'boolean',
+            description: 'Only show active selves?',
+            default: false
+          }
+        }
+      },
+      handler: async (args: any) => {
+        const selves = args.activeOnly 
+          ? this.selves.getActiveSelves()
+          : this.selves.getAllSelves()
+        
+        return {
+          ok: true,
+          count: selves.length,
+          selves,
+          message: `🎭 ${selves.length} ${args.activeOnly ? 'active ' : ''}selves found`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'life_stats',
+      description: '📊 Life Stats: Get statistics about life cycles',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        const lifeCycleStats = this.lifeCycle.getStatistics()
+        const selvesStats = this.selves.getStatistics()
+        
+        return {
+          ok: true,
+          lifeCycle: lifeCycleStats,
+          selves: selvesStats,
+          message: `📊 ${lifeCycleStats.totalIncarnations} incarnations, ${selvesStats.totalSelves} selves, ${lifeCycleStats.totalWisdom} wisdom entries`
         }
       }
     })

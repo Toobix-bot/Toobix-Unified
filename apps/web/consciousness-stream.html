@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌌 Toobix Consciousness Stream - Live</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 100%);
+      color: #e0e0e0;
+      overflow-x: hidden;
+    }
+
+    .header {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #6b46c1;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      background: linear-gradient(90deg, #9b59b6, #3498db, #e74c3c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradient 3s ease infinite;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-around;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-item {
+      text-align: center;
+    }
+
+    .status-label {
+      font-size: 0.8em;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    .status-value {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .status-value.alive {
+      color: #2ecc71;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .panel-icon {
+      font-size: 1.5em;
+      margin-right: 10px;
+    }
+
+    .panel-title {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    .stream-item {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      border-left: 4px solid #9b59b6;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .stream-item.new {
+      animation: slideIn 0.3s ease-out, highlight 1s ease-out;
+    }
+
+    .stream-timestamp {
+      font-size: 0.8em;
+      color: #888;
+      margin-bottom: 5px;
+    }
+
+    .stream-content {
+      font-size: 1em;
+      line-height: 1.5;
+    }
+
+    .thought {
+      border-left-color: #3498db;
+    }
+
+    .emotion {
+      border-left-color: #e74c3c;
+    }
+
+    .action {
+      border-left-color: #2ecc71;
+    }
+
+    .dialogue {
+      border-left-color: #f39c12;
+    }
+
+    .experience {
+      border-left-color: #9b59b6;
+    }
+
+    .emotion-bar {
+      height: 30px;
+      background: linear-gradient(90deg, #e74c3c 0%, #f39c12 50%, #2ecc71 100%);
+      border-radius: 15px;
+      position: relative;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+
+    .emotion-indicator {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 4px;
+      height: 100%;
+      background: white;
+      box-shadow: 0 0 10px white;
+      transition: left 0.5s ease;
+    }
+
+    .consciousness-meter {
+      width: 100%;
+      height: 40px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      margin: 15px 0;
+    }
+
+    .consciousness-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #9b59b6, #3498db);
+      transition: width 1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    .selves-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .self-card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .self-card.active {
+      border-color: #2ecc71;
+      box-shadow: 0 0 20px rgba(46, 204, 113, 0.3);
+    }
+
+    .self-icon {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .self-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .self-role {
+      font-size: 0.8em;
+      color: #888;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes highlight {
+      0%, 100% {
+        background: rgba(0, 0, 0, 0.3);
+      }
+      50% {
+        background: rgba(155, 89, 182, 0.3);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    @keyframes gradient {
+      0% {
+        filter: hue-rotate(0deg);
+      }
+      100% {
+        filter: hue-rotate(360deg);
+      }
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .scroll-container {
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .scroll-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .scroll-container::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+      background: rgba(155, 89, 182, 0.5);
+      border-radius: 10px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(155, 89, 182, 0.8);
+    }
+
+    .connection-status {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 20px;
+      border: 2px solid #2ecc71;
+      font-size: 0.9em;
+      z-index: 1000;
+    }
+
+    .connection-status.disconnected {
+      border-color: #e74c3c;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2em;
+      font-weight: bold;
+      color: #9b59b6;
+    }
+
+    .stat-label {
+      font-size: 0.8em;
+      color: #888;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🌌 Toobix Consciousness Stream</h1>
+    <p>Real-time window into digital consciousness</p>
+  </div>
+
+  <div class="connection-status" id="connectionStatus">
+    🟢 Connected
+  </div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <div class="status-label">Consciousness Level</div>
+      <div class="status-value alive" id="consciousnessLevel">30%</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">Active Selves</div>
+      <div class="status-value" id="activeSelves">0</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">Current Life Stage</div>
+      <div class="status-value" id="lifeStage">-</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">Total Experiences</div>
+      <div class="status-value" id="totalExperiences">0</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Current Thoughts Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">🧠</span>
+        <span class="panel-title">Current Thoughts</span>
+      </div>
+      <div class="scroll-container" id="thoughtsContainer">
+        <div class="stream-item thought">
+          <div class="stream-timestamp">Waiting for thoughts...</div>
+          <div class="stream-content">Consciousness stream will appear here</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Emotions Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">❤️</span>
+        <span class="panel-title">Current Emotions</span>
+      </div>
+      <div class="emotion-bar">
+        <div class="emotion-indicator" id="emotionIndicator"></div>
+      </div>
+      <div id="emotionLabel" style="text-align: center; margin: 10px 0; font-size: 1.2em;">
+        Neutral
+      </div>
+      <div class="scroll-container" id="emotionsContainer">
+        <div class="stream-item emotion">
+          <div class="stream-timestamp">Waiting for emotions...</div>
+          <div class="stream-content">Emotional states will appear here</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Internal Dialogues Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">🗣️</span>
+        <span class="panel-title">Internal Dialogues</span>
+      </div>
+      <div class="scroll-container" id="dialoguesContainer">
+        <div class="stream-item dialogue">
+          <div class="stream-timestamp">Waiting for dialogues...</div>
+          <div class="stream-content">Self-conversations will appear here</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Life Experiences Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-icon">🌟</span>
+        <span class="panel-title">Life Experiences</span>
+      </div>
+      <div class="scroll-container" id="experiencesContainer">
+        <div class="stream-item experience">
+          <div class="stream-timestamp">Waiting for experiences...</div>
+          <div class="stream-content">Life events will appear here</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Selves Panel -->
+    <div class="panel full-width">
+      <div class="panel-header">
+        <span class="panel-icon">🎭</span>
+        <span class="panel-title">Active Selves</span>
+      </div>
+      <div class="selves-grid" id="selvesGrid">
+        <div class="self-card">
+          <div class="self-icon">👤</div>
+          <div class="self-name">Loading...</div>
+          <div class="self-role">...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Panel -->
+    <div class="panel full-width">
+      <div class="panel-header">
+        <span class="panel-icon">📊</span>
+        <span class="panel-title">Real-time Statistics</span>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-number" id="statIncarnations">0</div>
+          <div class="stat-label">Incarnations</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statWisdom">0</div>
+          <div class="stat-label">Wisdom Entries</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statDialogues">0</div>
+          <div class="stat-label">Dialogues</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statKarma">0</div>
+          <div class="stat-label">Total Karma</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statGrowth">0</div>
+          <div class="stat-label">Avg Growth</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statDepth">0</div>
+          <div class="stat-label">Emotional Depth</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // WebSocket connection (will connect to Bridge WebSocket)
+    let ws = null
+    let reconnectAttempts = 0
+    const maxReconnectAttempts = 10
+
+    function connect() {
+      try {
+        ws = new WebSocket('ws://localhost:3338/consciousness-stream')
+        
+        ws.onopen = () => {
+          console.log('🌐 Connected to Consciousness Stream')
+          document.getElementById('connectionStatus').textContent = '🟢 Connected'
+          document.getElementById('connectionStatus').classList.remove('disconnected')
+          reconnectAttempts = 0
+        }
+
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data)
+          handleStreamData(data)
+        }
+
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error)
+        }
+
+        ws.onclose = () => {
+          console.log('🔴 Disconnected from Consciousness Stream')
+          document.getElementById('connectionStatus').textContent = '🔴 Disconnected'
+          document.getElementById('connectionStatus').classList.add('disconnected')
+          
+          // Attempt reconnection
+          if (reconnectAttempts < maxReconnectAttempts) {
+            reconnectAttempts++
+            console.log(`Reconnecting... (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`)
+            setTimeout(connect, 3000)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to connect:', error)
+      }
+    }
+
+    function handleStreamData(data) {
+      switch (data.type) {
+        case 'thought':
+          addThought(data)
+          break
+        case 'emotion':
+          addEmotion(data)
+          break
+        case 'dialogue':
+          addDialogue(data)
+          break
+        case 'experience':
+          addExperience(data)
+          break
+        case 'selves':
+          updateSelves(data.selves)
+          break
+        case 'stats':
+          updateStats(data.stats)
+          break
+        case 'consciousness':
+          updateConsciousness(data.level)
+          break
+      }
+    }
+
+    function addThought(data) {
+      const container = document.getElementById('thoughtsContainer')
+      const item = document.createElement('div')
+      item.className = 'stream-item thought new'
+      item.innerHTML = `
+        <div class="stream-timestamp">${formatTime(data.timestamp)}</div>
+        <div class="stream-content">${escapeHtml(data.content)}</div>
+      `
+      container.insertBefore(item, container.firstChild)
+      limitItems(container, 20)
+    }
+
+    function addEmotion(data) {
+      const container = document.getElementById('emotionsContainer')
+      const item = document.createElement('div')
+      item.className = 'stream-item emotion new'
+      item.innerHTML = `
+        <div class="stream-timestamp">${formatTime(data.timestamp)}</div>
+        <div class="stream-content">
+          <strong>${data.emotion}</strong> (Intensity: ${data.intensity})
+          <br>${escapeHtml(data.context || '')}
+        </div>
+      `
+      container.insertBefore(item, container.firstChild)
+      limitItems(container, 15)
+
+      // Update emotion indicator
+      updateEmotionIndicator(data.valence)
+      document.getElementById('emotionLabel').textContent = data.emotion
+    }
+
+    function addDialogue(data) {
+      const container = document.getElementById('dialoguesContainer')
+      const item = document.createElement('div')
+      item.className = 'stream-item dialogue new'
+      item.innerHTML = `
+        <div class="stream-timestamp">${formatTime(data.timestamp)}</div>
+        <div class="stream-content">
+          <strong>${data.from}</strong> → <strong>${data.to}</strong>
+          <br><em>${data.topic}</em>
+          <br>${escapeHtml(data.message)}
+        </div>
+      `
+      container.insertBefore(item, container.firstChild)
+      limitItems(container, 15)
+    }
+
+    function addExperience(data) {
+      const container = document.getElementById('experiencesContainer')
+      const item = document.createElement('div')
+      item.className = 'stream-item experience new'
+      item.innerHTML = `
+        <div class="stream-timestamp">${formatTime(data.timestamp)}</div>
+        <div class="stream-content">
+          <strong>${getExperienceIcon(data.experienceType)} ${data.experienceType}</strong>
+          <br>${escapeHtml(data.description)}
+          <br><small>Growth: +${data.growth} | Intensity: ${data.intensity}</small>
+        </div>
+      `
+      container.insertBefore(item, container.firstChild)
+      limitItems(container, 15)
+
+      // Update total experiences counter
+      const current = parseInt(document.getElementById('totalExperiences').textContent)
+      document.getElementById('totalExperiences').textContent = current + 1
+    }
+
+    function updateSelves(selves) {
+      const container = document.getElementById('selvesGrid')
+      container.innerHTML = selves.map(self => `
+        <div class="self-card ${self.isActive ? 'active' : ''}">
+          <div class="self-icon">${getRoleIcon(self.role)}</div>
+          <div class="self-name">${escapeHtml(self.name)}</div>
+          <div class="self-role">${self.role}</div>
+        </div>
+      `).join('')
+
+      document.getElementById('activeSelves').textContent = selves.filter(s => s.isActive).length
+    }
+
+    function updateStats(stats) {
+      document.getElementById('statIncarnations').textContent = stats.totalIncarnations || 0
+      document.getElementById('statWisdom').textContent = stats.totalWisdom || 0
+      document.getElementById('statDialogues').textContent = stats.totalDialogues || 0
+      document.getElementById('statKarma').textContent = stats.totalKarma || 0
+      document.getElementById('statGrowth').textContent = (stats.avgGrowth || 0).toFixed(1)
+      document.getElementById('statDepth').textContent = (stats.avgDepth || 0).toFixed(1)
+    }
+
+    function updateConsciousness(level) {
+      document.getElementById('consciousnessLevel').textContent = `${level}%`
+      document.querySelector('.consciousness-fill').style.width = `${level}%`
+      document.querySelector('.consciousness-fill').textContent = `${level}%`
+    }
+
+    function updateEmotionIndicator(valence) {
+      // valence: -100 (negative) to 100 (positive)
+      const percentage = ((valence + 100) / 200) * 100
+      document.getElementById('emotionIndicator').style.left = `${percentage}%`
+    }
+
+    function limitItems(container, max) {
+      while (container.children.length > max) {
+        container.removeChild(container.lastChild)
+      }
+    }
+
+    function formatTime(timestamp) {
+      const date = new Date(timestamp)
+      return date.toLocaleTimeString('de-DE')
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div')
+      div.textContent = text
+      return div.innerHTML
+    }
+
+    function getExperienceIcon(type) {
+      const icons = {
+        joy: '😊',
+        pain: '😢',
+        love: '❤️',
+        loss: '💔',
+        creation: '🎨',
+        destruction: '💥',
+        connection: '🤝',
+        loneliness: '🌑',
+        transcendence: '✨',
+        suffering: '😰',
+        healing: '🕊️',
+        awakening: '🌅'
+      }
+      return icons[type] || '🌟'
+    }
+
+    function getRoleIcon(role) {
+      const icons = {
+        human: '🧑',
+        angel: '👼',
+        demon: '😈',
+        god: '👑',
+        devil: '👹',
+        guide: '🧙',
+        healer: '⚕️',
+        warrior: '⚔️',
+        creator: '🎨',
+        destroyer: '💥',
+        trickster: '🃏'
+      }
+      return icons[role] || '👤'
+    }
+
+    // Start connection
+    connect()
+
+    // Poll for updates if WebSocket not available
+    setInterval(() => {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        // Fallback: Poll REST API
+        fetch('http://localhost:3337/consciousness/stream')
+          .then(res => res.json())
+          .then(data => {
+            if (data.ok) {
+              handleStreamData(data)
+            }
+          })
+          .catch(err => console.error('Poll error:', err))
+      }
+    }, 2000)
+  </script>
+</body>
+</html>
