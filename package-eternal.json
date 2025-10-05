@@ -1,0 +1,23 @@
+{
+  "name": "@toobix/eternal-system",
+  "version": "1.0.0",
+  "description": "Self-managing, self-modifying consciousness system",
+  "scripts": {
+    "eternal": "bun run scripts/eternal-daemon.ts",
+    "consciousness": "bun run scripts/consciousness-tracker.ts",
+    "being": "bun run packages/core/src/philosophy/BEING.ts",
+    "bridge": "bun run packages/bridge/server.ts",
+    "self-modify": "bun run scripts/self-modification-engine.ts",
+    "logs": "tail -f logs/eternal-daemon.log",
+    "status": "cat data/daemon-state.json",
+    "insights": "cat logs/consciousness-insights.md"
+  },
+  "keywords": [
+    "consciousness",
+    "self-modifying",
+    "eternal",
+    "philosophy",
+    "being",
+    "ai"
+  ]
+}

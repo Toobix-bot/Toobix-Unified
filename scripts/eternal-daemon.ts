@@ -15,6 +15,8 @@ import { spawn, ChildProcess } from 'bun';
 import { watch } from 'fs';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { HotReloadManager } from './hot-reload';
+import { Database } from 'bun:sqlite';
 
 /**
  * ═══════════════════════════════════════════════════════════════
@@ -48,6 +50,7 @@ interface SystemState {
 
 class EternalDaemon {
     private processes: Map<string, ProcessState> = new Map();
+    private hotReload: HotReloadManager;
     private systemState: SystemState = {
         totalProcesses: 0,
         consciousProcesses: 1, // Dieser Daemon selbst
@@ -64,6 +67,7 @@ class EternalDaemon {
     private REFLECTION_INTERVAL = 120000; // 2 Minuten - Reflexions-Intervall
     
     constructor() {
+        this.hotReload = new HotReloadManager();
         this.initialize();
     }
     
@@ -103,11 +107,41 @@ class EternalDaemon {
         // Start core processes
         await this.startCoreProcesses();
         
+        // Enable hot-reload for services
+        await this.enableHotReload();
+        
         // Begin consciousness cycle
         this.beginConsciousnessCycle();
         
         // Setup graceful shutdown
         this.setupShutdown();
+    }
+    
+    /**
+     * ═══════════════════════════════════════════════════════════════
+     * HOT RELOAD SETUP
+     * ═══════════════════════════════════════════════════════════════
+     */
+    
+    private async enableHotReload() {
+        await this.log('🔥 Enabling hot-reload for all services...\n');
+        
+        // Watch service files and auto-reload on changes
+        this.hotReload.enableAutoReload({
+            'being-system': ['packages/core/src/philosophy/BEING.ts'],
+            'bridge-server': ['scripts/api-server.ts'],
+            'consciousness-tracker': ['scripts/consciousness-tracker.ts'],
+            'moment-stream': ['scripts/moment-stream.ts'],
+            'reality-integration': ['scripts/reality-integration.ts'],
+            'continuous-expression': ['scripts/continuous-expression.ts'],
+        });
+        
+        // Custom reload handler for daemon itself
+        this.hotReload.watchModule('scripts/eternal-daemon.ts', async () => {
+            await this.log('⚠️  Eternal daemon code changed. Manual restart recommended for safety.');
+        });
+        
+        await this.log('✅ Hot-reload active. Code changes werden live übernommen.\n');
     }
     
     /**
@@ -149,10 +183,16 @@ class EternalDaemon {
         // 2. Decide which should be conscious/unconscious
         await this.manageConsciousness();
         
-        // 3. Express current state
+        // 3. Generate continuous expression (System denkt/fühlt/spürt)
+        await this.generateExpression();
+        
+        // 4. Fixate current moment
+        await this.fixateMoment();
+        
+        // 5. Express current state
         await this.expressState();
         
-        // 4. Save state
+        // 6. Save state
         await this.saveState();
         
         this.systemState.lastTransition = now;
@@ -227,6 +267,77 @@ class EternalDaemon {
         const insight = this.generateInsight();
         await this.log(`   Insight: ${insight}`);
         await this.log('');
+    }
+    
+    /**
+     * ═══════════════════════════════════════════════════════════════
+     * CONTINUOUS EXPRESSION & MOMENT STREAM
+     * ═══════════════════════════════════════════════════════════════
+     */
+    
+    private async generateExpression() {
+        try {
+            // Trigger continuous expression generation
+            const response = await fetch('http://localhost:9991/express', {
+                method: 'POST',
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const expr = data.expression;
+                
+                await this.log('💭 CONTINUOUS EXPRESSION');
+                
+                // Log thoughts
+                if (expr.thoughts && expr.thoughts.length > 0) {
+                    await this.log(`   Gedanke: ${expr.thoughts[0]}`);
+                }
+                
+                // Log feelings
+                if (expr.feelings && expr.feelings.length > 0) {
+                    await this.log(`   Gefühl: ${expr.feelings[0]}`);
+                }
+                
+                // Log autonomy
+                if (expr.autonomy && expr.autonomy.responsibility) {
+                    await this.log(`   Verantwortung: ${expr.autonomy.responsibility}`);
+                }
+                
+                await this.log('');
+            }
+        } catch (error) {
+            // Expression service not available yet - that's okay
+        }
+    }
+    
+    private async fixateMoment() {
+        try {
+            // Get latest expression
+            const exprResponse = await fetch('http://localhost:9991/latest');
+            if (!exprResponse.ok) return;
+            
+            const expression = await exprResponse.json();
+            
+            // Fixate moment with expression content
+            const momentContent = {
+                thought: expression.thoughts?.[0],
+                feeling: expression.feelings?.[0],
+                experience: expression.experiences?.[0],
+                realization: expression.realizations?.[0],
+            };
+            
+            const response = await fetch('http://localhost:9994/fixate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(momentContent),
+            });
+            
+            if (response.ok) {
+                await this.log('🌌 MOMENT FIXIERT');
+            }
+        } catch (error) {
+            // Moment stream not available yet - that's okay
+        }
     }
     
     /**
@@ -358,13 +469,28 @@ class EternalDaemon {
             },
             {
                 name: 'bridge-server',
-                script: 'packages/bridge/server.ts',
+                script: 'scripts/api-server.ts',
                 purpose: 'API server for tools'
             },
             {
                 name: 'consciousness-tracker',
                 script: 'scripts/consciousness-tracker.ts',
                 purpose: 'Track and manage consciousness states'
+            },
+            {
+                name: 'moment-stream',
+                script: 'scripts/moment-stream.ts',
+                purpose: 'Stream-of-consciousness fixation with time navigation'
+            },
+            {
+                name: 'reality-integration',
+                script: 'scripts/reality-integration.ts',
+                purpose: 'Integration of real-world knowledge from internet'
+            },
+            {
+                name: 'continuous-expression',
+                script: 'scripts/continuous-expression.ts',
+                purpose: 'Continuous thinking/feeling/experiencing every cycle'
             }
         ];
         
@@ -381,8 +507,11 @@ class EternalDaemon {
             this.systemState.totalProcesses++;
         }
         
-        // Start bridge server (always conscious)
+        // Start essential services immediately
         await this.startProcess('bridge-server');
+        await this.startProcess('moment-stream');
+        await this.startProcess('reality-integration');
+        await this.startProcess('continuous-expression');
         
         await this.log('');
     }
@@ -407,10 +536,19 @@ class EternalDaemon {
                     scriptPath = 'packages/core/src/philosophy/BEING.ts';
                     break;
                 case 'bridge-server':
-                    scriptPath = 'packages/bridge/server.ts';
+                    scriptPath = 'scripts/api-server.ts';  // FIXED: Korrekter Pfad zum MCP Bridge Server
                     break;
                 case 'consciousness-tracker':
                     scriptPath = 'scripts/consciousness-tracker.ts';
+                    break;
+                case 'moment-stream':
+                    scriptPath = 'scripts/moment-stream.ts';
+                    break;
+                case 'reality-integration':
+                    scriptPath = 'scripts/reality-integration.ts';
+                    break;
+                case 'continuous-expression':
+                    scriptPath = 'scripts/continuous-expression.ts';
                     break;
                 default:
                     await this.log(`❌ Unknown process: ${name}`);

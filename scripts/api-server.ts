@@ -132,10 +132,10 @@ const server = Bun.serve({
         // Get context from database
         const peopleData = db.prepare('SELECT * FROM people').all()
         const interactionsData = db.prepare('SELECT * FROM interactions ORDER BY timestamp DESC LIMIT 10').all()
-        const settingsData = db.prepare('SELECT * FROM settings').all()
+        const settingsData = db.prepare('SELECT * FROM settings').all() as Array<{key: string, value: any}>
         
-        const lovePoints = settingsData.find((s: any) => s.key === 'love-points-total')?.value || 0
-        const peaceLevel = settingsData.find((s: any) => s.key === 'peace-level')?.value || 0
+        const lovePoints = settingsData.find((s) => s.key === 'love-points-total')?.value || 0
+        const peaceLevel = settingsData.find((s) => s.key === 'peace-level')?.value || 0
         
         // Build smart response (Groq would enhance this)
         const peopleNames = peopleData.map((p: any) => p.name).join(', ')
