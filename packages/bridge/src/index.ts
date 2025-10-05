@@ -39,6 +39,10 @@ import { apiCache, memoryCache, valuesCache, hashObject } from '../../core/src/p
 import { createRateLimitMiddleware, globalRateLimiter } from '../../core/src/security/rate-limiter.ts'
 import { validateInput, memorySchemas, contractsSchemas, valuesSchemas, pipelineSchemas } from '../../core/src/security/input-validation.ts'
 
+// NEW: Tool Network (Inter-Tool Communication)
+import { ToolNetwork } from './tool-network/index.ts'
+import { setupToolRelationships } from './tool-network/relationships.ts'
+
 export class BridgeService {
   private mcp: MCPServer
   private db: Database
@@ -56,6 +60,7 @@ export class BridgeService {
   private nexusPersistence: NexusPersistence  // NEW: Nexus Persistence
   private config: BridgeConfig
   private pipeline: EventPipeline  // NEW: Event Pipeline
+  private toolNetwork: ToolNetwork  // NEW: Tool Network
 
   constructor(config: BridgeConfig) {
     this.config = config
@@ -136,6 +141,10 @@ export class BridgeService {
     this.autonomousExecutor = new AutonomousActionExecutor(this.db)
     // DISABLED by default for safety - enable with autonomous_enable tool
     
+    // NEW: Initialize Tool Network 🕸️
+    console.log('🕸️ Initializing Tool Network...')
+    this.toolNetwork = new ToolNetwork(this.db)
+    
     // Initialize Consciousness System 🧠
     console.log('🧠 Initializing Consciousness...')
     initializeConsciousness(this.db)
@@ -157,6 +166,10 @@ export class BridgeService {
     
     // Load MCP tools
     await this.loadTools()
+    
+    // Setup Tool Network relationships
+    console.log('\n🕸️ Setting up tool relationships...')
+    setupToolRelationships(this.toolNetwork)
     
     // Setup routes
     this.setupRoutes()
@@ -1523,6 +1536,118 @@ export class BridgeService {
             ok: false,
             error: error instanceof Error ? error.message : 'Failed to get history'
           }
+        }
+      }
+    })
+
+    // ============================================
+    // TOOL NETWORK TOOLS 🕸️
+    // ============================================
+
+    this.mcp.registerTool({
+      name: 'network_stats',
+      description: 'Get tool network statistics (events, relationships, active tools)',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        return this.toolNetwork.getNetworkStats()
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'network_graph',
+      description: 'Get relationship graph for visualization (nodes, edges)',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      },
+      handler: async () => {
+        return this.toolNetwork.getRelationshipGraph()
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'network_tool_history',
+      description: 'Get event history for a specific tool',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          toolName: { type: 'string', description: 'Tool name (e.g. being_evolve)' },
+          limit: { type: 'number', description: 'Max events to return', default: 50 }
+        },
+        required: ['toolName']
+      },
+      handler: async (args: any) => {
+        return {
+          ok: true,
+          tool: args.toolName,
+          history: this.toolNetwork.getToolHistory(args.toolName, args.limit || 50)
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'network_create_relationship',
+      description: 'Create a custom relationship between two tools',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          sourceTool: { type: 'string', description: 'Source tool name' },
+          targetTool: { type: 'string', description: 'Target tool name' },
+          type: { 
+            type: 'string', 
+            enum: ['triggers', 'informs', 'depends', 'enhances', 'validates', 'blocks'],
+            description: 'Relationship type'
+          },
+          strength: { type: 'number', description: 'Strength (0-100)', default: 50 },
+          bidirectional: { type: 'boolean', description: 'Two-way relationship?', default: false },
+          condition: { type: 'string', description: 'JavaScript condition (optional)' }
+        },
+        required: ['sourceTool', 'targetTool', 'type']
+      },
+      handler: async (args: any) => {
+        const relId = this.toolNetwork.createRelationship({
+          sourceToolName: args.sourceTool,
+          targetToolName: args.targetTool,
+          relationshipType: args.type,
+          strength: args.strength || 50,
+          bidirectional: args.bidirectional || false,
+          condition: args.condition,
+          metadata: { custom: true, createdBy: 'user' }
+        })
+        return {
+          ok: true,
+          relationshipId: relId,
+          message: `🔗 Relationship created: ${args.sourceTool} --[${args.type}]--> ${args.targetTool}`
+        }
+      }
+    })
+
+    this.mcp.registerTool({
+      name: 'network_emit_event',
+      description: 'Manually emit a tool network event (for testing/triggering)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', description: 'Event type' },
+          source: { type: 'string', description: 'Source tool name' },
+          target: { type: 'string', description: 'Target tool (optional)' },
+          data: { type: 'object', description: 'Event data' }
+        },
+        required: ['type', 'source', 'data']
+      },
+      handler: async (args: any) => {
+        await this.toolNetwork.emit({
+          type: args.type,
+          source: args.source,
+          target: args.target,
+          data: args.data
+        })
+        return {
+          ok: true,
+          message: `📤 Event emitted: ${args.type} from ${args.source}`
         }
       }
     })

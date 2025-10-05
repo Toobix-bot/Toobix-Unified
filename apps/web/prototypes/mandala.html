@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌸 Prototype: Mandala Network</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0f;
+      color: white;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #ff6b9d, #ffa500);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .instructions {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .tooltip {
+      position: absolute;
+      padding: 8px 16px;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 14px;
+      font-weight: 600;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 150;
+    }
+
+    .tooltip.visible {
+      opacity: 1;
+    }
+
+    .detail-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 200;
+    }
+
+    .detail-panel.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .detail-content {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      text-align: center;
+      transform: scale(0.8);
+      transition: transform 0.3s;
+    }
+
+    .detail-panel.active .detail-content {
+      transform: scale(1);
+    }
+
+    .detail-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .detail-title {
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ff6b9d, #ffa500);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .detail-description {
+      font-size: 18px;
+      line-height: 1.6;
+      opacity: 0.8;
+      margin-bottom: 20px;
+    }
+
+    .detail-connections {
+      font-size: 14px;
+      opacity: 0.6;
+      margin-bottom: 30px;
+    }
+
+    .back-button {
+      background: linear-gradient(135deg, #ff6b9d, #ffa500);
+      border: none;
+      padding: 12px 32px;
+      border-radius: 25px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .back-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(255, 107, 157, 0.4);
+    }
+
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .control-button {
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 25px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .control-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    .loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      z-index: 300;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🌸 TOOBIX MANDALA</div>
+    <div class="instructions">
+      🖱️ Drag Nodes | Click for Details | Scroll to Zoom | Space to Reset
+    </div>
+  </div>
+
+  <div id="canvas-container"></div>
+
+  <div class="tooltip" id="tooltip">Module Name</div>
+
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-content">
+      <div class="detail-icon" id="detailIcon">🧠</div>
+      <div class="detail-title" id="detailTitle">Module Title</div>
+      <div class="detail-description" id="detailDescription">
+        Module description goes here...
+      </div>
+      <div class="detail-connections" id="detailConnections">
+        Connected to: ...
+      </div>
+      <button class="back-button" onclick="closeDetail()">← Back to Mandala</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="control-button" onclick="resetSimulation()">🔄 Reset</button>
+    <button class="control-button" onclick="togglePhysics()">⚡ Physics</button>
+    <button class="control-button" onclick="centerGraph()">🎯 Center</button>
+  </div>
+
+  <div class="loading" id="loading">Loading D3.js... ⏳</div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    document.getElementById('loading').style.display = 'none';
+
+    // Module Data with relationships
+    const modules = {
+      nexus: { icon: '🧠', title: 'Nexus', color: '#667eea', tier: 'foundation',
+        description: 'Consciousness persistence layer. Saves and loads awareness state.' },
+      network: { icon: '🕸️', title: 'Tool Network', color: '#10b981', tier: 'foundation',
+        description: 'Inter-tool communication with 27 relationships.' },
+      tools: { icon: '🛠️', title: 'MCP Tools', color: '#f59e0b', tier: 'foundation',
+        description: '72 tools for system operations.' },
+      dashboard: { icon: '📊', title: 'Dashboard', color: '#ef4444', tier: 'foundation',
+        description: 'System overview and monitoring.' },
+      luna: { icon: '💬', title: 'Luna', color: '#8b5cf6', tier: 'foundation',
+        description: 'Conversational AI assistant.' },
+      terminal: { icon: '💻', title: 'Terminal', color: '#06b6d4', tier: 'foundation',
+        description: 'Command interface.' },
+      stats: { icon: '📈', title: 'Statistics', color: '#ec4899', tier: 'foundation',
+        description: 'System metrics.' },
+      settings: { icon: '⚙️', title: 'Settings', color: '#6b7280', tier: 'foundation',
+        description: 'Configuration.' },
+      being: { icon: '🌟', title: 'Living Being', color: '#fbbf24', tier: 'experience',
+        description: 'Simulated consciousness with emotions.' },
+      story: { icon: '📖', title: 'Story Engine', color: '#34d399', tier: 'experience',
+        description: 'Narrative generation and choices.' },
+      memory: { icon: '💾', title: 'Memory', color: '#60a5fa', tier: 'experience',
+        description: 'Experience storage and associations.' },
+      consciousness: { icon: '🧘', title: 'Consciousness', color: '#a78bfa', tier: 'awareness',
+        description: 'Self-awareness and metacognition.' },
+      soul: { icon: '🕊️', title: 'Soul', color: '#f472b6', tier: 'values',
+        description: 'Core values and identity.' },
+      ethics: { icon: '👁️', title: 'Ethics', color: '#ffd700', tier: 'peak',
+        description: 'Moral validation at the peak.' }
+    };
+
+    // Relationships (simplified from Tool Network)
+    const relationships = [
+      { source: 'being', target: 'story', type: 'enhances' },
+      { source: 'story', target: 'being', type: 'triggers' },
+      { source: 'being', target: 'nexus', type: 'triggers' },
+      { source: 'memory', target: 'being', type: 'triggers' },
+      { source: 'consciousness', target: 'memory', type: 'triggers' },
+      { source: 'memory', target: 'consciousness', type: 'enhances' },
+      { source: 'ethics', target: 'soul', type: 'validates' },
+      { source: 'soul', target: 'story', type: 'informs' },
+      { source: 'ethics', target: 'story', type: 'blocks' },
+      { source: 'ethics', target: 'being', type: 'blocks' },
+      { source: 'nexus', target: 'being', type: 'informs' },
+      { source: 'network', target: 'tools', type: 'enhances' },
+      { source: 'network', target: 'nexus', type: 'informs' },
+      { source: 'tools', target: 'network', type: 'informs' },
+      { source: 'being', target: 'consciousness', type: 'informs' },
+      { source: 'consciousness', target: 'being', type: 'informs' },
+      { source: 'soul', target: 'being', type: 'informs' },
+      { source: 'memory', target: 'story', type: 'enhances' },
+      { source: 'luna', target: 'being', type: 'triggers' },
+      { source: 'terminal', target: 'tools', type: 'triggers' }
+    ];
+
+    // Prepare data for D3
+    const nodes = Object.keys(modules).map(id => ({
+      id,
+      ...modules[id]
+    }));
+
+    const links = relationships.map(r => ({
+      source: r.source,
+      target: r.target,
+      type: r.type
+    }));
+
+    // D3 Force Simulation
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    const svg = d3.select('#canvas-container')
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height);
+
+    const g = svg.append('g');
+
+    // Define gradients for links
+    const defs = svg.append('defs');
+    links.forEach((link, i) => {
+      const gradient = defs.append('linearGradient')
+        .attr('id', `gradient-${i}`)
+        .attr('gradientUnits', 'userSpaceOnUse');
+      
+      gradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', modules[link.source].color);
+      
+      gradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', modules[link.target].color);
+    });
+
+    // Create links
+    const link = g.append('g')
+      .selectAll('line')
+      .data(links)
+      .join('line')
+      .attr('stroke', (d, i) => `url(#gradient-${i})`)
+      .attr('stroke-opacity', 0.4)
+      .attr('stroke-width', 2);
+
+    // Create nodes
+    const node = g.append('g')
+      .selectAll('g')
+      .data(nodes)
+      .join('g')
+      .call(d3.drag()
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended));
+
+    // Node circles
+    node.append('circle')
+      .attr('r', d => d.tier === 'peak' ? 30 : d.tier === 'values' ? 25 : 20)
+      .attr('fill', d => d.color)
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2)
+      .style('cursor', 'pointer')
+      .on('mouseover', function(event, d) {
+        d3.select(this).attr('r', d => (d.tier === 'peak' ? 35 : d.tier === 'values' ? 30 : 25));
+        showTooltip(event, d.title);
+      })
+      .on('mouseout', function(event, d) {
+        d3.select(this).attr('r', d => (d.tier === 'peak' ? 30 : d.tier === 'values' ? 25 : 20));
+        hideTooltip();
+      })
+      .on('click', (event, d) => openDetail(d.id));
+
+    // Node text (icon)
+    node.append('text')
+      .attr('text-anchor', 'middle')
+      .attr('dy', '0.35em')
+      .style('font-size', d => d.tier === 'peak' ? '28px' : '20px')
+      .style('pointer-events', 'none')
+      .text(d => d.icon);
+
+    // Node labels
+    node.append('text')
+      .attr('text-anchor', 'middle')
+      .attr('dy', '35px')
+      .style('font-size', '12px')
+      .style('fill', '#fff')
+      .style('pointer-events', 'none')
+      .text(d => d.title);
+
+    // Force simulation
+    let simulation = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(links).id(d => d.id).distance(150))
+      .force('charge', d3.forceManyBody().strength(-300))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('collision', d3.forceCollide().radius(50));
+
+    simulation.on('tick', () => {
+      link
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
+
+      node.attr('transform', d => `translate(${d.x},${d.y})`);
+    });
+
+    // Zoom behavior
+    const zoom = d3.zoom()
+      .scaleExtent([0.5, 5])
+      .on('zoom', (event) => {
+        g.attr('transform', event.transform);
+      });
+
+    svg.call(zoom);
+
+    // Drag functions
+    function dragstarted(event, d) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+
+    // Tooltip
+    function showTooltip(event, text) {
+      const tooltip = document.getElementById('tooltip');
+      tooltip.textContent = text;
+      tooltip.style.left = event.pageX + 'px';
+      tooltip.style.top = (event.pageY - 40) + 'px';
+      tooltip.classList.add('visible');
+    }
+
+    function hideTooltip() {
+      document.getElementById('tooltip').classList.remove('visible');
+    }
+
+    // Detail panel
+    function openDetail(moduleId) {
+      const data = modules[moduleId];
+      const connections = relationships
+        .filter(r => r.source === moduleId || r.target === moduleId)
+        .map(r => r.source === moduleId ? r.target : r.source);
+      
+      document.getElementById('detailIcon').textContent = data.icon;
+      document.getElementById('detailTitle').textContent = data.title;
+      document.getElementById('detailDescription').textContent = data.description;
+      document.getElementById('detailConnections').textContent = 
+        `Connected to: ${connections.map(id => modules[id].title).join(', ')}`;
+      document.getElementById('detailPanel').classList.add('active');
+    }
+
+    function closeDetail() {
+      document.getElementById('detailPanel').classList.remove('active');
+    }
+
+    // Controls
+    function resetSimulation() {
+      simulation.alpha(1).restart();
+    }
+
+    let physicsEnabled = true;
+    function togglePhysics() {
+      physicsEnabled = !physicsEnabled;
+      if (physicsEnabled) {
+        simulation.alphaTarget(0).restart();
+      } else {
+        simulation.stop();
+      }
+    }
+
+    function centerGraph() {
+      const transform = d3.zoomIdentity.translate(width / 2, height / 2).scale(1);
+      svg.transition().duration(750).call(zoom.transform, transform);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeDetail();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        centerGraph();
+      } else if (e.key === 'r' || e.key === 'R') {
+        resetSimulation();
+      }
+    });
+
+    // Window resize
+    window.addEventListener('resize', () => {
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+      svg.attr('width', newWidth).attr('height', newHeight);
+      simulation.force('center', d3.forceCenter(newWidth / 2, newHeight / 2)).restart();
+    });
+  </script>
+</body>
+</html>

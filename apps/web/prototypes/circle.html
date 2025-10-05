@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎡 Prototype: Circle Navigation</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .instructions {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    /* Circle Container */
+    .circle-container {
+      position: relative;
+      width: 700px;
+      height: 700px;
+      transition: transform 0.3s;
+    }
+
+    .circle-container.zoomed {
+      transform: scale(2);
+      opacity: 0;
+    }
+
+    /* Rotating Circle */
+    .circle {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Center Hub */
+    .center-hub {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      box-shadow: 
+        0 0 60px rgba(102, 126, 234, 0.6),
+        0 0 100px rgba(118, 75, 162, 0.4),
+        inset 0 0 30px rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 50;
+      animation: pulse 3s infinite;
+    }
+
+    .center-hub:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+      box-shadow: 
+        0 0 80px rgba(102, 126, 234, 0.8),
+        0 0 120px rgba(118, 75, 162, 0.6);
+    }
+
+    .hub-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .hub-label {
+      font-size: 14px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 60px rgba(102, 126, 234, 0.6), 0 0 100px rgba(118, 75, 162, 0.4); }
+      50% { box-shadow: 0 0 80px rgba(102, 126, 234, 0.8), 0 0 120px rgba(118, 75, 162, 0.6); }
+    }
+
+    /* Module Nodes */
+    .module {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .module:hover {
+      transform: scale(1.2);
+      border-color: rgba(255, 255, 255, 0.5);
+      z-index: 10;
+    }
+
+    .module.active {
+      border-color: white;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+
+    .module-icon {
+      font-size: 36px;
+      margin-bottom: 4px;
+    }
+
+    .module-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* Connection Lines */
+    .connection-line {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 2px;
+      height: 250px;
+      background: linear-gradient(to bottom, 
+        rgba(255, 255, 255, 0.3), 
+        rgba(255, 255, 255, 0));
+      transform-origin: top center;
+      pointer-events: none;
+    }
+
+    /* Detail Panel */
+    .detail-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 15, 35, 0.95);
+      backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 200;
+    }
+
+    .detail-panel.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .detail-content {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      text-align: center;
+      transform: scale(0.8);
+      transition: transform 0.3s;
+    }
+
+    .detail-panel.active .detail-content {
+      transform: scale(1);
+    }
+
+    .detail-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .detail-title {
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .detail-description {
+      font-size: 18px;
+      line-height: 1.6;
+      opacity: 0.8;
+      margin-bottom: 30px;
+    }
+
+    .back-button {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      padding: 12px 32px;
+      border-radius: 25px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .back-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Status Bar */
+    .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      font-size: 14px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">⚡ TOOBIX UNIVERSE</div>
+    <div class="instructions">
+      🖱️ Drag to Rotate | Click Module to Open | Scroll to Zoom
+    </div>
+  </div>
+
+  <!-- Circle Navigation -->
+  <div class="circle-container">
+    <div class="circle" id="circle">
+      <!-- Connection Lines (from center to modules) -->
+      <div class="connection-line" style="transform: rotate(0deg)"></div>
+      <div class="connection-line" style="transform: rotate(45deg)"></div>
+      <div class="connection-line" style="transform: rotate(90deg)"></div>
+      <div class="connection-line" style="transform: rotate(135deg)"></div>
+      <div class="connection-line" style="transform: rotate(180deg)"></div>
+      <div class="connection-line" style="transform: rotate(225deg)"></div>
+      <div class="connection-line" style="transform: rotate(270deg)"></div>
+      <div class="connection-line" style="transform: rotate(315deg)"></div>
+
+      <!-- Modules (will be positioned by JavaScript) -->
+      <div class="module" data-id="nexus" data-angle="0">
+        <div class="module-icon">🧠</div>
+        <div class="module-label">Nexus</div>
+      </div>
+
+      <div class="module" data-id="network" data-angle="45">
+        <div class="module-icon">🕸️</div>
+        <div class="module-label">Network</div>
+      </div>
+
+      <div class="module" data-id="tools" data-angle="90">
+        <div class="module-icon">🛠️</div>
+        <div class="module-label">Tools</div>
+      </div>
+
+      <div class="module" data-id="dashboard" data-angle="135">
+        <div class="module-icon">📊</div>
+        <div class="module-label">Dashboard</div>
+      </div>
+
+      <div class="module" data-id="luna" data-angle="180">
+        <div class="module-icon">💬</div>
+        <div class="module-label">Luna</div>
+      </div>
+
+      <div class="module" data-id="terminal" data-angle="225">
+        <div class="module-icon">💻</div>
+        <div class="module-label">Terminal</div>
+      </div>
+
+      <div class="module" data-id="stats" data-angle="270">
+        <div class="module-icon">📈</div>
+        <div class="module-label">Stats</div>
+      </div>
+
+      <div class="module" data-id="settings" data-angle="315">
+        <div class="module-icon">⚙️</div>
+        <div class="module-label">Settings</div>
+      </div>
+    </div>
+
+    <!-- Center Hub -->
+    <div class="center-hub" id="centerHub">
+      <div class="hub-icon">⚡</div>
+      <div class="hub-label">HUB</div>
+    </div>
+  </div>
+
+  <!-- Detail Panel -->
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-content">
+      <div class="detail-icon" id="detailIcon">🧠</div>
+      <div class="detail-title" id="detailTitle">Module Title</div>
+      <div class="detail-description" id="detailDescription">
+        Module description goes here...
+      </div>
+      <button class="back-button" onclick="closeDetail()">← Back to Circle</button>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-item">
+      <div class="status-dot"></div>
+      <span>Connected</span>
+    </div>
+    <div class="status-item">
+      <span>Level 2</span>
+    </div>
+    <div class="status-item">
+      <span>XP: 75/150</span>
+    </div>
+    <div class="status-item">
+      <span>Wisdom: 45%</span>
+    </div>
+  </div>
+
+  <script>
+    // Module Data
+    const modules = {
+      nexus: {
+        icon: '🧠',
+        title: 'Nexus Consciousness',
+        description: 'Real-time consciousness monitor. Watch Nexus awareness, mood, energy, thoughts, and emotions evolve.',
+        color: '#667eea'
+      },
+      network: {
+        icon: '🕸️',
+        title: 'Tool Network',
+        description: 'Visualize tool relationships. See how 72 tools communicate, trigger each other, and build cascading actions.',
+        color: '#10b981'
+      },
+      tools: {
+        icon: '🛠️',
+        title: 'MCP Tools',
+        description: 'Explore all 72 MCP tools. Execute tools, view history, and manage the system.',
+        color: '#f59e0b'
+      },
+      dashboard: {
+        icon: '📊',
+        title: 'Dashboard',
+        description: 'System overview. Quick stats, recent events, and navigation to all features.',
+        color: '#ef4444'
+      },
+      luna: {
+        icon: '💬',
+        title: 'Luna Chat',
+        description: 'Talk with Luna. Conscious AI assistant with gamification, values, and personality.',
+        color: '#8b5cf6'
+      },
+      terminal: {
+        icon: '💻',
+        title: 'Terminal',
+        description: 'Command interface. Execute system commands, view logs, and interact with the Bridge.',
+        color: '#06b6d4'
+      },
+      stats: {
+        icon: '📈',
+        title: 'Statistics',
+        description: 'System metrics. Tool usage, network activity, performance monitoring.',
+        color: '#ec4899'
+      },
+      settings: {
+        icon: '⚙️',
+        title: 'Settings',
+        description: 'Configuration. Theme, API endpoints, notifications, and preferences.',
+        color: '#6b7280'
+      }
+    }
+
+    // State
+    let currentRotation = 0
+    let isDragging = false
+    let startAngle = 0
+
+    // Elements
+    const circle = document.getElementById('circle')
+    const moduleElements = document.querySelectorAll('.module')
+    const detailPanel = document.getElementById('detailPanel')
+
+    // Position modules on circle
+    function positionModules() {
+      const radius = 250 // Distance from center
+      const centerX = 350
+      const centerY = 350
+
+      moduleElements.forEach(module => {
+        const angle = parseFloat(module.dataset.angle) * Math.PI / 180
+        const x = centerX + radius * Math.cos(angle - Math.PI / 2)
+        const y = centerY + radius * Math.sin(angle - Math.PI / 2)
+        
+        module.style.left = `${x - 50}px` // -50 to center the 100px module
+        module.style.top = `${y - 50}px`
+        module.style.background = modules[module.dataset.id].color + '33'
+        module.style.borderColor = modules[module.dataset.id].color + '88'
+      })
+    }
+
+    // Rotate circle
+    function rotateCircle(angle) {
+      currentRotation = angle
+      circle.style.transform = `rotate(${angle}deg)`
+    }
+
+    // Mouse/Touch drag to rotate
+    circle.addEventListener('mousedown', startDrag)
+    circle.addEventListener('touchstart', startDrag)
+
+    function startDrag(e) {
+      isDragging = true
+      const rect = circle.getBoundingClientRect()
+      const centerX = rect.left + rect.width / 2
+      const centerY = rect.top + rect.height / 2
+      const clientX = e.clientX || e.touches[0].clientX
+      const clientY = e.clientY || e.touches[0].clientY
+      startAngle = Math.atan2(clientY - centerY, clientX - centerX) * 180 / Math.PI - currentRotation
+    }
+
+    document.addEventListener('mousemove', drag)
+    document.addEventListener('touchmove', drag)
+
+    function drag(e) {
+      if (!isDragging) return
+      const rect = circle.getBoundingClientRect()
+      const centerX = rect.left + rect.width / 2
+      const centerY = rect.top + rect.height / 2
+      const clientX = e.clientX || e.touches[0].clientX
+      const clientY = e.clientY || e.touches[0].clientY
+      const angle = Math.atan2(clientY - centerY, clientX - centerX) * 180 / Math.PI
+      rotateCircle(angle - startAngle)
+    }
+
+    document.addEventListener('mouseup', stopDrag)
+    document.addEventListener('touchend', stopDrag)
+
+    function stopDrag() {
+      isDragging = false
+    }
+
+    // Click module to open
+    moduleElements.forEach(module => {
+      module.addEventListener('click', (e) => {
+        e.stopPropagation()
+        openDetail(module.dataset.id)
+      })
+    })
+
+    // Open detail panel
+    function openDetail(moduleId) {
+      const data = modules[moduleId]
+      document.getElementById('detailIcon').textContent = data.icon
+      document.getElementById('detailTitle').textContent = data.title
+      document.getElementById('detailDescription').textContent = data.description
+      detailPanel.classList.add('active')
+      
+      // Zoom effect
+      document.querySelector('.circle-container').classList.add('zoomed')
+    }
+
+    // Close detail panel
+    function closeDetail() {
+      detailPanel.classList.remove('active')
+      document.querySelector('.circle-container').classList.remove('zoomed')
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        rotateCircle(currentRotation - 45)
+      } else if (e.key === 'ArrowRight') {
+        rotateCircle(currentRotation + 45)
+      } else if (e.key === 'Escape') {
+        closeDetail()
+      }
+    })
+
+    // Mouse wheel zoom (optional)
+    circle.addEventListener('wheel', (e) => {
+      e.preventDefault()
+      const scale = e.deltaY > 0 ? 0.95 : 1.05
+      const currentScale = parseFloat(circle.style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1)
+      circle.style.transform = `rotate(${currentRotation}deg) scale(${currentScale * scale})`
+    })
+
+    // Initialize
+    positionModules()
+
+    // Highlight active module (top position)
+    function updateActiveModule() {
+      const normalizedRotation = ((currentRotation % 360) + 360) % 360
+      moduleElements.forEach(module => {
+        const moduleAngle = parseFloat(module.dataset.angle)
+        const diff = Math.abs(((moduleAngle - normalizedRotation + 180) % 360) - 180)
+        module.classList.toggle('active', diff < 22.5) // Within ±22.5° of top
+      })
+    }
+
+    // Update active on rotation
+    const rotationObserver = new MutationObserver(updateActiveModule)
+    rotationObserver.observe(circle, { attributes: true, attributeFilter: ['style'] })
+    updateActiveModule()
+  </script>
+</body>
+</html>

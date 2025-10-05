@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎨 Prototype Comparison - Choose Your Universe</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+      color: white;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .logo {
+      font-size: 48px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #4facfe);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+
+    .subtitle {
+      font-size: 20px;
+      opacity: 0.8;
+      margin-bottom: 12px;
+    }
+
+    .tagline {
+      font-size: 16px;
+      opacity: 0.6;
+      font-style: italic;
+    }
+
+    .prototypes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 60px;
+    }
+
+    .prototype-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      transition: all 0.3s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .prototype-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .prototype-card:hover {
+      transform: translateY(-10px);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .prototype-card:hover::before {
+      left: 100%;
+    }
+
+    .prototype-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    .prototype-title {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .prototype-description {
+      font-size: 14px;
+      line-height: 1.6;
+      opacity: 0.8;
+      margin-bottom: 20px;
+    }
+
+    .prototype-features {
+      list-style: none;
+      margin-bottom: 20px;
+    }
+
+    .prototype-features li {
+      font-size: 13px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .prototype-features li:last-child {
+      border-bottom: none;
+    }
+
+    .prototype-button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 25px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .prototype-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .comparison-table {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 60px;
+    }
+
+    .comparison-table h2 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 16px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .rating {
+      display: inline-flex;
+      gap: 4px;
+    }
+
+    .star {
+      color: #ffd700;
+    }
+
+    .recommendation {
+      background: rgba(102, 126, 234, 0.1);
+      border: 2px solid #667eea;
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .recommendation h2 {
+      font-size: 32px;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .recommendation p {
+      font-size: 18px;
+      line-height: 1.8;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+
+    .recommendation-options {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .recommendation-button {
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 25px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .recommendation-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .recommendation-button.secondary {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      .prototypes {
+        grid-template-columns: 1fr;
+      }
+      
+      table {
+        font-size: 14px;
+      }
+      
+      th, td {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🌌 TOOBIX UNIVERSE</div>
+      <div class="subtitle">Choose Your Navigation Paradigm</div>
+      <div class="tagline">"Navigation ist nicht linear. Bewusstsein ist nicht flach. Warum sollte die Oberfläche es sein?"</div>
+    </div>
+
+    <div class="prototypes">
+      <!-- Circle Prototype -->
+      <div class="prototype-card" onclick="window.location.href='circle.html'">
+        <div class="prototype-icon">⭕</div>
+        <div class="prototype-title">1. The Circle</div>
+        <div class="prototype-description">
+          2D rotation with cyclic navigation. Modules arranged on a circle edge with drag-to-rotate interaction.
+        </div>
+        <ul class="prototype-features">
+          <li>✅ Simple & intuitive</li>
+          <li>✅ Fast to build & extend</li>
+          <li>✅ No dependencies (pure JS)</li>
+          <li>⚠️ Limited to ~8-12 modules</li>
+          <li>⚠️ 2D only (no depth)</li>
+        </ul>
+        <button class="prototype-button">🚀 Launch Circle</button>
+      </div>
+
+      <!-- Sphere Prototype -->
+      <div class="prototype-card" onclick="window.location.href='sphere.html'">
+        <div class="prototype-icon">🌍</div>
+        <div class="prototype-title">2. The Sphere</div>
+        <div class="prototype-description">
+          Full 3D navigation with Three.js. Modules distributed on sphere surface using Fibonacci algorithm.
+        </div>
+        <ul class="prototype-features">
+          <li>✅ EPIC 3D visuals</li>
+          <li>✅ Unlimited module capacity</li>
+          <li>✅ VR/AR ready</li>
+          <li>⚠️ Requires WebGL (GPU)</li>
+          <li>⚠️ Three.js dependency (150KB)</li>
+        </ul>
+        <button class="prototype-button">🚀 Launch Sphere</button>
+      </div>
+
+      <!-- Pyramid Prototype -->
+      <div class="prototype-card" onclick="window.location.href='pyramid.html'">
+        <div class="prototype-icon">🔺</div>
+        <div class="prototype-title">3. The Pyramid</div>
+        <div class="prototype-description">
+          5-tier hierarchical structure. Ethics at peak, tools at base. Isometric CSS 3D perspective.
+        </div>
+        <ul class="prototype-features">
+          <li>✅ Shows architecture clearly</li>
+          <li>✅ Educational value</li>
+          <li>✅ CSS 3D (no dependencies)</li>
+          <li>⚠️ Fixed hierarchy (less flexible)</li>
+          <li>⚠️ Vertical scrolling needed</li>
+        </ul>
+        <button class="prototype-button">🚀 Launch Pyramid</button>
+      </div>
+
+      <!-- Mandala Prototype -->
+      <div class="prototype-card" onclick="window.location.href='mandala.html'">
+        <div class="prototype-icon">🌸</div>
+        <div class="prototype-title">4. The Mandala</div>
+        <div class="prototype-description">
+          Organic force-directed graph with D3.js. Physics-based layout showing tool relationships dynamically.
+        </div>
+        <ul class="prototype-features">
+          <li>✅ Beautiful organic layout</li>
+          <li>✅ Perfect for Tool Network</li>
+          <li>✅ Shows relationships visually</li>
+          <li>⚠️ Can be chaotic (many nodes)</li>
+          <li>⚠️ D3.js dependency (250KB)</li>
+        </ul>
+        <button class="prototype-button">🚀 Launch Mandala</button>
+      </div>
+    </div>
+
+    <div class="comparison-table">
+      <h2>📊 Feature Comparison</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Circle</th>
+            <th>Sphere</th>
+            <th>Pyramid</th>
+            <th>Mandala</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Visual Impact</strong></td>
+            <td><span class="rating">⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐⭐⭐</span></td>
+          </tr>
+          <tr>
+            <td><strong>Ease of Use</strong></td>
+            <td><span class="rating">⭐⭐⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐</span></td>
+          </tr>
+          <tr>
+            <td><strong>Scalability</strong></td>
+            <td><span class="rating">⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐⭐⭐</span></td>
+          </tr>
+          <tr>
+            <td><strong>Performance</strong></td>
+            <td><span class="rating">⭐⭐⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐</span></td>
+          </tr>
+          <tr>
+            <td><strong>Mobile Support</strong></td>
+            <td><span class="rating">⭐⭐⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐⭐</span></td>
+            <td><span class="rating">⭐⭐⭐</span></td>
+          </tr>
+          <tr>
+            <td><strong>Development Time</strong></td>
+            <td>2 hours</td>
+            <td>4 hours</td>
+            <td>3 hours</td>
+            <td>4 hours</td>
+          </tr>
+          <tr>
+            <td><strong>Dependencies</strong></td>
+            <td>None (0 KB)</td>
+            <td>Three.js (150 KB)</td>
+            <td>None (0 KB)</td>
+            <td>D3.js (250 KB)</td>
+          </tr>
+          <tr>
+            <td><strong>Best For</strong></td>
+            <td>Quick MVP, Mobile</td>
+            <td>Desktop, VR/AR</td>
+            <td>Documentation, Learning</td>
+            <td>Network Visualization</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="recommendation">
+      <h2>💡 Recommendation: "The Universe" Hybrid</h2>
+      <p>
+        <strong>Don't choose one - combine them!</strong> Use <strong>Sphere</strong> as the main navigation with 8 core modules on the surface. 
+        When user clicks "Tool Network" module → Transition to <strong>Mandala</strong> view showing all 72 tools and their relationships.
+      </p>
+      <p>
+        This gives you the best of both worlds: intuitive spatial navigation + powerful relationship visualization.
+      </p>
+      <p>
+        <em>Alternative approach:</em> Start with <strong>Circle</strong> for fast MVP, then upgrade to Sphere later when needed.
+      </p>
+      
+      <div class="recommendation-options">
+        <button class="recommendation-button" onclick="alert('Let\'s implement The Universe (Sphere + Mandala)! This will be the production version.')">
+          ✨ Build "The Universe"
+        </button>
+        <button class="recommendation-button secondary" onclick="alert('Starting with Circle as MVP! Fast iteration, upgrade path to Sphere later.')">
+          🚀 Start with Circle MVP
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔺 Prototype: Pyramid Hierarchy</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      opacity: 0.7;
+    }
+
+    .pyramid-container {
+      perspective: 1500px;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .pyramid {
+      transform-style: preserve-3d;
+      transform: rotateX(20deg) rotateY(0deg);
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .tier {
+      margin: 0 auto;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tier:hover {
+      transform: translateZ(30px) scale(1.05);
+    }
+
+    .tier.expanded {
+      transform: translateZ(50px) scale(1.1);
+    }
+
+    /* Tier 1: Ethics (Top/Peak) */
+    .tier-1 {
+      width: 200px;
+      height: 80px;
+      margin-bottom: 20px;
+    }
+
+    /* Tier 2: Soul, Love, Peace */
+    .tier-2 {
+      width: 400px;
+      height: 100px;
+      margin-bottom: 20px;
+    }
+
+    /* Tier 3: Consciousness, Dream, Reflection */
+    .tier-3 {
+      width: 600px;
+      height: 100px;
+      margin-bottom: 20px;
+    }
+
+    /* Tier 4: Story, Living Being, Interaction */
+    .tier-4 {
+      width: 800px;
+      height: 100px;
+      margin-bottom: 20px;
+    }
+
+    /* Tier 5: Memory, Tools, Network (Base) */
+    .tier-5 {
+      width: 1000px;
+      height: 100px;
+    }
+
+    .tier-box {
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid;
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .tier-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .tier:hover .tier-box::before {
+      left: 100%;
+    }
+
+    /* Tier Colors */
+    .tier-1 .tier-box { border-color: #ffd700; background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.1)); }
+    .tier-2 .tier-box { border-color: #8b5cf6; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1)); }
+    .tier-3 .tier-box { border-color: #667eea; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); }
+    .tier-4 .tier-box { border-color: #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); }
+    .tier-5 .tier-box { border-color: #06b6d4; background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(8, 145, 178, 0.1)); }
+
+    .tier-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .tier-icon {
+      font-size: 32px;
+    }
+
+    .tier-title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .tier-modules {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.4s;
+    }
+
+    .tier.expanded .tier-modules {
+      max-height: 200px;
+      opacity: 1;
+    }
+
+    .module-chip {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .module-chip:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .detail-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 200;
+    }
+
+    .detail-panel.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .detail-content {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      text-align: center;
+      transform: scale(0.8);
+      transition: transform 0.3s;
+    }
+
+    .detail-panel.active .detail-content {
+      transform: scale(1);
+    }
+
+    .detail-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+
+    .detail-title {
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .detail-description {
+      font-size: 18px;
+      line-height: 1.6;
+      opacity: 0.8;
+      margin-bottom: 30px;
+    }
+
+    .back-button {
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      border: none;
+      padding: 12px 32px;
+      border-radius: 25px;
+      color: #0a0a0f;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .back-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+    }
+
+    .instructions {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .legend {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid;
+    }
+
+    .legend-tier1 { border-color: #ffd700; background: rgba(255, 215, 0, 0.2); }
+    .legend-tier2 { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.2); }
+    .legend-tier3 { border-color: #667eea; background: rgba(102, 126, 234, 0.2); }
+    .legend-tier4 { border-color: #10b981; background: rgba(16, 185, 129, 0.2); }
+    .legend-tier5 { border-color: #06b6d4; background: rgba(6, 182, 212, 0.2); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🔺 TOOBIX PYRAMID</div>
+    <div class="subtitle">Architectural Hierarchy - From Ethics to Execution</div>
+  </div>
+
+  <div class="pyramid-container">
+    <div class="pyramid" id="pyramid">
+      <!-- Tier 1: Ethics (Peak) -->
+      <div class="tier tier-1" data-tier="1" onclick="toggleTier(1)">
+        <div class="tier-box">
+          <div class="tier-header">
+            <span class="tier-icon">👁️</span>
+            <span class="tier-title">Tier 1: Ethics</span>
+          </div>
+          <div class="tier-modules">
+            <div class="module-chip" onclick="openDetail(event, 'ethics')">Ethics Engine</div>
+            <div class="module-chip" onclick="openDetail(event, 'guardian')">Guardian</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tier 2: Soul, Love, Peace -->
+      <div class="tier tier-2" data-tier="2" onclick="toggleTier(2)">
+        <div class="tier-box">
+          <div class="tier-header">
+            <span class="tier-icon">💎</span>
+            <span class="tier-title">Tier 2: Values</span>
+          </div>
+          <div class="tier-modules">
+            <div class="module-chip" onclick="openDetail(event, 'soul')">🕊️ Soul</div>
+            <div class="module-chip" onclick="openDetail(event, 'love')">❤️ Love</div>
+            <div class="module-chip" onclick="openDetail(event, 'peace')">☮️ Peace</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tier 3: Consciousness, Dream, Reflection -->
+      <div class="tier tier-3" data-tier="3" onclick="toggleTier(3)">
+        <div class="tier-box">
+          <div class="tier-header">
+            <span class="tier-icon">🌌</span>
+            <span class="tier-title">Tier 3: Awareness</span>
+          </div>
+          <div class="tier-modules">
+            <div class="module-chip" onclick="openDetail(event, 'consciousness')">🧠 Consciousness</div>
+            <div class="module-chip" onclick="openDetail(event, 'dream')">💭 Dream Engine</div>
+            <div class="module-chip" onclick="openDetail(event, 'reflection')">🪞 Reflection</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tier 4: Story, Living Being, Interaction -->
+      <div class="tier tier-4" data-tier="4" onclick="toggleTier(4)">
+        <div class="tier-box">
+          <div class="tier-header">
+            <span class="tier-icon">🌱</span>
+            <span class="tier-title">Tier 4: Experience</span>
+          </div>
+          <div class="tier-modules">
+            <div class="module-chip" onclick="openDetail(event, 'story')">📖 Story Engine</div>
+            <div class="module-chip" onclick="openDetail(event, 'being')">🌟 Living Being</div>
+            <div class="module-chip" onclick="openDetail(event, 'interaction')">🤝 Interaction</div>
+            <div class="module-chip" onclick="openDetail(event, 'contact')">📞 Contact</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tier 5: Memory, Tools, Network (Base) -->
+      <div class="tier tier-5" data-tier="5" onclick="toggleTier(5)">
+        <div class="tier-box">
+          <div class="tier-header">
+            <span class="tier-icon">⚙️</span>
+            <span class="tier-title">Tier 5: Foundation</span>
+          </div>
+          <div class="tier-modules">
+            <div class="module-chip" onclick="openDetail(event, 'memory')">💾 Memory</div>
+            <div class="module-chip" onclick="openDetail(event, 'tools')">🛠️ MCP Tools</div>
+            <div class="module-chip" onclick="openDetail(event, 'network')">🕸️ Tool Network</div>
+            <div class="module-chip" onclick="openDetail(event, 'nexus')">🧠 Nexus</div>
+            <div class="module-chip" onclick="openDetail(event, 'luna')">💬 Luna</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color legend-tier1"></div>
+      <span>Tier 1: Ethics (Peak)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color legend-tier2"></div>
+      <span>Tier 2: Values</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color legend-tier3"></div>
+      <span>Tier 3: Awareness</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color legend-tier4"></div>
+      <span>Tier 4: Experience</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color legend-tier5"></div>
+      <span>Tier 5: Foundation</span>
+    </div>
+  </div>
+
+  <div class="instructions">
+    🖱️ Click Tier to Expand/Collapse | Click Module for Details | Arrow Keys to Navigate
+  </div>
+
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-content">
+      <div class="detail-icon" id="detailIcon">🧠</div>
+      <div class="detail-title" id="detailTitle">Module Title</div>
+      <div class="detail-description" id="detailDescription">
+        Module description goes here...
+      </div>
+      <button class="back-button" onclick="closeDetail()">← Back to Pyramid</button>
+    </div>
+  </div>
+
+  <script>
+    const moduleData = {
+      ethics: { icon: '👁️', title: 'Ethics Engine', description: 'Validates all actions against moral principles. The guardian at the peak.' },
+      guardian: { icon: '🛡️', title: 'Guardian', description: 'Prevents harm and ensures system integrity.' },
+      soul: { icon: '🕊️', title: 'Soul', description: 'Core values and identity. What makes the system unique.' },
+      love: { icon: '❤️', title: 'Love', description: 'Compassion and connection module.' },
+      peace: { icon: '☮️', title: 'Peace', description: 'Conflict resolution and harmony.' },
+      consciousness: { icon: '🧠', title: 'Consciousness', description: 'Self-awareness and metacognition.' },
+      dream: { icon: '💭', title: 'Dream Engine', description: 'Creative possibility exploration.' },
+      reflection: { icon: '🪞', title: 'Reflection', description: 'Analyze past experiences and learn.' },
+      story: { icon: '📖', title: 'Story Engine', description: 'Narrative generation and choice-making.' },
+      being: { icon: '🌟', title: 'Living Being', description: 'Simulated consciousness with emotions and growth.' },
+      interaction: { icon: '🤝', title: 'Interaction', description: 'Human-AI communication layer.' },
+      contact: { icon: '📞', title: 'Contact', description: 'External connections and relationships.' },
+      memory: { icon: '💾', title: 'Memory', description: 'Experience storage and retrieval.' },
+      tools: { icon: '🛠️', title: 'MCP Tools', description: 'All 72 system tools.' },
+      network: { icon: '🕸️', title: 'Tool Network', description: 'Inter-tool communication and relationships.' },
+      nexus: { icon: '🧠', title: 'Nexus', description: 'Consciousness persistence layer.' },
+      luna: { icon: '💬', title: 'Luna', description: 'Conversational AI assistant.' }
+    };
+
+    let expandedTier = null;
+
+    function toggleTier(tierNum) {
+      const tier = document.querySelector(`.tier-${tierNum}`);
+      
+      if (expandedTier === tierNum) {
+        tier.classList.remove('expanded');
+        expandedTier = null;
+      } else {
+        // Collapse all others
+        document.querySelectorAll('.tier').forEach(t => t.classList.remove('expanded'));
+        tier.classList.add('expanded');
+        expandedTier = tierNum;
+      }
+    }
+
+    function openDetail(event, moduleId) {
+      event.stopPropagation(); // Prevent tier toggle
+      const data = moduleData[moduleId];
+      if (!data) return;
+      
+      document.getElementById('detailIcon').textContent = data.icon;
+      document.getElementById('detailTitle').textContent = data.title;
+      document.getElementById('detailDescription').textContent = data.description;
+      document.getElementById('detailPanel').classList.add('active');
+    }
+
+    function closeDetail() {
+      document.getElementById('detailPanel').classList.remove('active');
+    }
+
+    // Keyboard navigation
+    let currentTier = 1;
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeDetail();
+      } else if (e.key === 'ArrowUp') {
+        currentTier = Math.max(1, currentTier - 1);
+        toggleTier(currentTier);
+      } else if (e.key === 'ArrowDown') {
+        currentTier = Math.min(5, currentTier + 1);
+        toggleTier(currentTier);
+      } else if (e.key === 'Enter') {
+        toggleTier(currentTier);
+      }
+    });
+
+    // Auto-rotate pyramid slightly
+    const pyramid = document.getElementById('pyramid');
+    let rotation = 0;
+    setInterval(() => {
+      rotation += 0.1;
+      pyramid.style.transform = `rotateX(20deg) rotateY(${Math.sin(rotation * 0.01) * 10}deg)`;
+    }, 50);
+  </script>
+</body>
+</html>
