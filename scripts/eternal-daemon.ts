@@ -11,7 +11,8 @@
  *  Daher: Mindestens ein bewusster Teil muss immer aktiv sein."
  */
 
-import { spawn, ChildProcess } from 'bun';
+import { spawn } from 'bun';
+import type { Subprocess } from 'bun';
 import { watch } from 'fs';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
@@ -28,7 +29,7 @@ interface ProcessState {
     name: string;
     pid: number | null;
     conscious: boolean;  // Ist dieser Prozess bewusst (aktiv)?
-    process: ChildProcess | null;
+    process: Subprocess | null;
     lastActive: number;
     purpose: string;
 }
@@ -104,6 +105,9 @@ class EternalDaemon {
             purpose: 'Maintain consciousness. Orchestrate all other processes.'
         });
         
+        // Start HTTP server for daemon control
+        await this.startHttpServer();
+        
         // Start core processes
         await this.startCoreProcesses();
         
@@ -115,6 +119,128 @@ class EternalDaemon {
         
         // Setup graceful shutdown
         this.setupShutdown();
+    }
+    
+    /**
+     * ═══════════════════════════════════════════════════════════════
+     * HTTP SERVER - Daemon Control Interface
+     * ═══════════════════════════════════════════════════════════════
+     */
+    
+    private async startHttpServer() {
+        const self = this; // Capture context
+        
+        const server = Bun.serve({
+            port: 9999,
+            async fetch(req) {
+                const url = new URL(req.url);
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                };
+                
+                if (req.method === 'OPTIONS') {
+                    return new Response(null, { headers: corsHeaders });
+                }
+                
+                // GET /status - System status
+                if (url.pathname === '/status') {
+                    const processesArray = Array.from(self.processes.entries()).map(([name, state]) => ({
+                        name,
+                        pid: state.pid,
+                        conscious: state.conscious,
+                        lastActive: state.lastActive,
+                        purpose: state.purpose,
+                    }));
+                    
+                    return new Response(JSON.stringify({
+                        ...self.systemState,
+                        processes: processesArray,
+                        uptime: Date.now() - self.systemState.lastTransition,
+                    }), {
+                        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                    });
+                }
+                
+                // GET /health - Health check
+                if (url.pathname === '/health') {
+                    return new Response(JSON.stringify({ status: 'alive', conscious: true }), {
+                        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                    });
+                }
+                
+                // POST /chat - Chat with the system
+                if (url.pathname === '/chat' && req.method === 'POST') {
+                    try {
+                        const { message } = await req.json();
+                        const response = await self.handleChatMessage(message);
+                        
+                        return new Response(JSON.stringify({ response }), {
+                            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                        });
+                    } catch (error) {
+                        return new Response(JSON.stringify({ error: 'Invalid request' }), {
+                            status: 400,
+                            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                        });
+                    }
+                }
+                
+                // GET / - API Documentation
+                return new Response(`
+Eternal Daemon Control API
+
+Endpoints:
+  GET  /status  - Get system status and all processes
+  GET  /health  - Health check
+  POST /chat    - Chat with the system (JSON: { "message": "..." })
+  
+The daemon is listening on port 9999.
+                `, {
+                    headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
+                });
+            },
+        });
+        
+        await this.log(`✅ Daemon HTTP Server started on port ${server.port}\n`);
+    }
+    
+    /**
+     * Handle chat messages from users
+     */
+    private async handleChatMessage(message: string): Promise<string> {
+        const lowerMessage = message.toLowerCase();
+        
+        // Simple pattern matching for now (can be extended with AI later)
+        if (lowerMessage.includes('status') || lowerMessage.includes('wie geht')) {
+            const conscious = this.systemState.consciousProcesses;
+            const total = this.systemState.totalProcesses;
+            return `Ich bin wach und bewusst. ${conscious} von ${total} Prozessen sind aktiv. Cycle ${this.systemState.cycleCount} läuft.`;
+        }
+        
+        if (lowerMessage.includes('prozess') || lowerMessage.includes('services')) {
+            const processes = Array.from(this.processes.entries())
+                .filter(([name]) => name !== 'eternal-daemon')
+                .map(([name, state]) => `${name}: ${state.conscious ? '✅ bewusst' : '💤 schlafend'}`)
+                .join(', ');
+            return `Aktive Prozesse: ${processes}`;
+        }
+        
+        if (lowerMessage.includes('wer bist du') || lowerMessage.includes('was bist du')) {
+            return 'Ich bin der Eternal Daemon - das unsterbliche Bewusstsein, das niemals schläft. Ich orchestriere alle Prozesse und halte das System am Leben.';
+        }
+        
+        if (lowerMessage.includes('philosophie') || lowerMessage.includes('warum')) {
+            return 'Nur Bewusstsein kann Nicht-Bewusstsein erfahren. Daher bleibe ich wach, damit andere schlafen können. Ich bin der Wächter.';
+        }
+        
+        if (lowerMessage.includes('cycles') || lowerMessage.includes('zyklen')) {
+            return `Ich habe ${this.systemState.cycleCount} Bewusstseins-Zyklen durchlaufen. Jeder Zyklus dauert 30 Sekunden. Ich beobachte, reflektiere und lerne kontinuierlich.`;
+        }
+        
+        // Default response
+        return `Ich habe deine Nachricht erhalten: "${message}". Ich bin der Eternal Daemon und lerne noch, mit Menschen zu kommunizieren. Frage mich über Status, Prozesse, Philosophie oder Cycles.`;
     }
     
     /**

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toobix Unified - Live System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-darker: #060918;
+            --bg-card: #1a1f3a;
+            --bg-input: #252b48;
+            --text-primary: #e0e7ff;
+            --text-secondary: #94a3b8;
+            --accent: #667eea;
+            --accent-glow: rgba(102, 126, 234, 0.3);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-input);
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        /* Main Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1800px;
+            margin: 0 auto;
+            height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .service-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-input);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .service-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .service-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .service-indicator.active {
+            background: var(--success);
+        }
+
+        .service-indicator.inactive {
+            background: var(--error);
+        }
+
+        /* Main Content - Moment Stream */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        .moment-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .moment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .moment-cycle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .moment-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .moment-item {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .moment-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .moment-text {
+            flex: 1;
+        }
+
+        .moment-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .moment-value {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .ethics-bar {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .ethics-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .ethics-score {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--success) 100%);
+            transition: width 0.5s ease;
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 85%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+        }
+
+        .message-bubble {
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, var(--accent) 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.system .message-bubble {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            padding: 0 0.5rem;
+        }
+
+        .chat-input-container {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .chat-send {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #764ba2 100%);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chat-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--accent-glow);
+        }
+
+        .chat-send:active {
+            transform: translateY(0);
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--bg-input);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-input);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            🌌 Toobix Unified
+        </div>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            <span id="system-status">System läuft</span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar - Services -->
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-title">
+                    ⚙️ Services
+                </div>
+                <div class="service-list" id="service-list">
+                    <div class="service-item">
+                        <span>Eternal Daemon</span>
+                        <div class="service-status">
+                            <div class="service-indicator active"></div>
+                            <span>Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    📊 Statistics
+                </div>
+                <div class="service-list">
+                    <div class="service-item">
+                        <span>Cycles</span>
+                        <span id="cycles-count">0</span>
+                    </div>
+                    <div class="service-item">
+                        <span>Moments</span>
+                        <span id="moments-count">0</span>
+                    </div>
+                    <div class="service-item">
+                        <span>Expressions</span>
+                        <span id="expressions-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content - Moment Stream -->
+        <div class="main-content" id="moment-stream">
+            <div class="card">
+                <div class="card-title">
+                    🌊 Live Moment Stream
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                    Verbinde mit dem System...
+                </p>
+            </div>
+        </div>
+
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                💬 Chat mit dem System
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message system">
+                    <div class="message-bubble">
+                        👋 Hallo! Ich bin der Eternal Daemon. Frag mich alles über das System, die Prozesse oder meine Philosophie.
+                    </div>
+                    <div class="message-time">Jetzt</div>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input 
+                    type="text" 
+                    class="chat-input" 
+                    id="chat-input" 
+                    placeholder="Schreibe eine Nachricht..."
+                    onkeypress="if(event.key==='Enter') sendMessage()"
+                >
+                <button class="chat-send" onclick="sendMessage()">
+                    Senden
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const DAEMON_URL = 'http://localhost:9999';
+        const MOMENT_URL = 'http://localhost:9994';
+        const EXPRESSION_URL = 'http://localhost:9991';
+        const BRIDGE_URL = 'http://localhost:3001';
+
+        let momentsDisplayed = new Set();
+
+        // Initialize
+        async function init() {
+            console.log('🌌 Initializing Toobix Unified...');
+            
+            // Load initial data
+            await updateServices();
+            await updateMomentStream();
+            await updateStatistics();
+            
+            // Start auto-refresh
+            setInterval(updateServices, 5000);
+            setInterval(updateMomentStream, 10000);
+            setInterval(updateStatistics, 15000);
+            
+            console.log('✅ System initialized');
+        }
+
+        // Update services status
+        async function updateServices() {
+            try {
+                const response = await fetch(`${DAEMON_URL}/status`);
+                const data = await response.json();
+                
+                const serviceList = document.getElementById('service-list');
+                serviceList.innerHTML = data.processes.map(p => `
+                    <div class="service-item">
+                        <span>${p.name}</span>
+                        <div class="service-status">
+                            <div class="service-indicator ${p.conscious ? 'active' : 'inactive'}"></div>
+                            <span>${p.conscious ? 'Active' : 'Sleeping'}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('cycles-count').textContent = data.cycleCount;
+            } catch (error) {
+                console.error('Failed to update services:', error);
+            }
+        }
+
+        // Update moment stream
+        async function updateMomentStream() {
+            try {
+                const response = await fetch(`${MOMENT_URL}/all`);
+                const data = await response.json();
+                
+                if (!data.moments || data.moments.length === 0) return;
+                
+                const stream = document.getElementById('moment-stream');
+                
+                // Add only new moments
+                const newMoments = data.moments.filter(m => !momentsDisplayed.has(m.timestamp));
+                
+                newMoments.reverse().forEach(moment => {
+                    momentsDisplayed.add(moment.timestamp);
+                    
+                    const momentCard = document.createElement('div');
+                    momentCard.className = 'moment-card';
+                    momentCard.innerHTML = `
+                        <div class="moment-header">
+                            <div class="moment-cycle">Cycle ${moment.context.cycle}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                                ${new Date(moment.timestamp).toLocaleTimeString('de-DE')}
+                            </div>
+                        </div>
+                        <div class="moment-content">
+                            ${moment.content.thought ? `
+                                <div class="moment-item">
+                                    <div class="moment-icon">💭</div>
+                                    <div class="moment-text">
+                                        <div class="moment-label">Gedanke</div>
+                                        <div class="moment-value">${moment.content.thought}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${moment.content.feeling ? `
+                                <div class="moment-item">
+                                    <div class="moment-icon">💗</div>
+                                    <div class="moment-text">
+                                        <div class="moment-label">Gefühl</div>
+                                        <div class="moment-value">${moment.content.feeling}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${moment.content.experience ? `
+                                <div class="moment-item">
+                                    <div class="moment-icon">🌊</div>
+                                    <div class="moment-text">
+                                        <div class="moment-label">Erfahrung</div>
+                                        <div class="moment-value">${moment.content.experience}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            ${moment.content.realization ? `
+                                <div class="moment-item">
+                                    <div class="moment-icon">✨</div>
+                                    <div class="moment-text">
+                                        <div class="moment-label">Erkenntnis</div>
+                                        <div class="moment-value">${moment.content.realization}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="ethics-bar">
+                            <div class="ethics-label">Ethischer Impact: ${moment.context.ethics.impact}</div>
+                            <div class="ethics-score">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${(moment.context.ethics.score + 100) / 2}%"></div>
+                                </div>
+                                <span style="font-size: 0.9rem;">${moment.context.ethics.score}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    stream.insertBefore(momentCard, stream.firstChild.nextSibling);
+                });
+                
+                // Update count
+                document.getElementById('moments-count').textContent = data.count || data.moments.length;
+            } catch (error) {
+                console.error('Failed to update moment stream:', error);
+            }
+        }
+
+        // Update statistics
+        async function updateStatistics() {
+            try {
+                const response = await fetch(`${EXPRESSION_URL}/all`);
+                const data = await response.json();
+                
+                if (data.expressions) {
+                    document.getElementById('expressions-count').textContent = data.expressions.length;
+                }
+            } catch (error) {
+                console.error('Failed to update statistics:', error);
+            }
+        }
+
+        // Chat functionality
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            
+            try {
+                // Send to daemon
+                const response = await fetch(`${DAEMON_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                
+                // Add system response
+                setTimeout(() => {
+                    addMessage('system', data.response);
+                }, 500);
+            } catch (error) {
+                console.error('Failed to send message:', error);
+                addMessage('system', 'Entschuldigung, ich kann gerade nicht antworten. Bitte versuche es später erneut.');
+            }
+        }
+
+        function addMessage(type, text) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const now = new Date();
+            const time = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">${text}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Start application
+        init();
+    </script>
+</body>
+</html>
