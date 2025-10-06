@@ -2352,3 +2352,365 @@ async function updateTaskStatus(taskId, newStatus) {
   renderTasks();
 }
 
+// ==================== AI SANDBOX VIEW ====================
+
+async function renderAISandbox() {
+  const content = document.getElementById('content');
+  
+  content.innerHTML = `
+    <div class="page-header">
+      <h1 class="page-title">🎪 AI Sandbox</h1>
+      <p class="page-subtitle">🤖 Groq AI spielt Story-Idle Game autonom</p>
+    </div>
+
+    <!-- Control Panel -->
+    <div class="card">
+      <h3 class="card-title mb-20">🎮 Kontrolle</h3>
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button class="btn btn-primary" onclick="startAISandbox()">▶️ Start AI</button>
+        <button class="btn btn-secondary" onclick="stopAISandbox()">⏸️ Stop AI</button>
+        <button class="btn" onclick="refreshSandboxData()">🔄 Refresh</button>
+      </div>
+      
+      <div id="sandboxStatus" class="alert">
+        <p>Lade Status...</p>
+      </div>
+    </div>
+
+    <!-- Game State -->
+    <div class="card">
+      <h3 class="card-title mb-20">🎮 Game State</h3>
+      <div id="sandboxGameState">
+        <p class="text-dim">Lade Game State...</p>
+      </div>
+    </div>
+
+    <!-- Pending Changes -->
+    <div class="card">
+      <h3 class="card-title mb-20">📋 Pending Changes</h3>
+      <p class="text-dim mb-20">Änderungen die AI machen möchte und deine Genehmigung brauchen</p>
+      <div id="sandboxChanges">
+        <p class="text-dim">Keine pending changes</p>
+      </div>
+    </div>
+
+    <!-- Actions Log -->
+    <div class="card">
+      <h3 class="card-title mb-20">📜 AI Actions Log</h3>
+      <div id="sandboxActions" style="max-height: 400px; overflow-y: auto;">
+        <p class="text-dim">Lade actions...</p>
+      </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid grid-2">
+      <div class="card">
+        <h3 class="card-title mb-20">📊 Statistics</h3>
+        <div id="sandboxStats">
+          <p class="text-dim">Lade stats...</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title mb-20">ℹ️ Info</h3>
+        <p>
+          Das AI Sandbox System ist ein geschützter Bereich wo Groq AI autonom das Story-Idle Game spielen kann.
+        </p>
+        <ul style="margin-top: 15px; padding-left: 20px;">
+          <li><strong>Small Actions:</strong> Auto-approve (explore, talk, rest)</li>
+          <li><strong>Medium Actions:</strong> Require approval (quests, features)</li>
+          <li><strong>Large Actions:</strong> Must review (architecture, database)</li>
+        </ul>
+        <p style="margin-top: 15px; color: var(--text-dim);">
+          <strong>Requirements:</strong> GROQ_API_KEY environment variable
+        </p>
+      </div>
+    </div>
+  `;
+
+  // Load initial data
+  await refreshSandboxData();
+  
+  // Auto-refresh every 5 seconds
+  if (window.sandboxInterval) clearInterval(window.sandboxInterval);
+  window.sandboxInterval = setInterval(() => {
+    if (currentView === 'sandbox') {
+      refreshSandboxData();
+    } else {
+      clearInterval(window.sandboxInterval);
+    }
+  }, 5000);
+}
+
+async function refreshSandboxData() {
+  try {
+    // Load stats
+    const statsResponse = await fetch(`${API.sandbox}/api/sandbox/stats`);
+    if (statsResponse.ok) {
+      const stats = await statsResponse.json();
+      renderSandboxStatus(stats);
+      renderSandboxStats(stats);
+    }
+
+    // Load game state
+    const stateResponse = await fetch(`${API.sandbox}/api/sandbox/state`);
+    if (stateResponse.ok) {
+      const state = await stateResponse.json();
+      renderSandboxGameState(state);
+    }
+
+    // Load pending changes
+    const changesResponse = await fetch(`${API.sandbox}/api/sandbox/changes`);
+    if (changesResponse.ok) {
+      const data = await changesResponse.json();
+      renderSandboxChanges(data.changes || []);
+    }
+
+    // Load actions log
+    const actionsResponse = await fetch(`${API.sandbox}/api/sandbox/actions`);
+    if (actionsResponse.ok) {
+      const data = await actionsResponse.json();
+      renderSandboxActions(data.actions || []);
+    }
+
+  } catch (error) {
+    console.error('Error loading sandbox data:', error);
+    document.getElementById('sandboxStatus').innerHTML = `
+      <p>❌ <strong>Error:</strong> Sandbox Server nicht erreichbar</p>
+      <p class="text-dim">Starte den Server mit: <code>bun run scripts/ai-sandbox.ts</code></p>
+    `;
+  }
+}
+
+function renderSandboxStatus(stats) {
+  const statusDiv = document.getElementById('sandboxStatus');
+  const isPlaying = stats.isPlaying;
+  
+  statusDiv.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <div class="status-indicator ${isPlaying ? 'status-success' : 'status-warning'}"></div>
+      <div>
+        <strong>${isPlaying ? '▶️ AI ist aktiv' : '⏸️ AI ist pausiert'}</strong>
+        <p class="text-dim" style="margin-top: 5px;">
+          ${isPlaying ? 'Groq spielt gerade das Story-Idle Game' : 'Klicke "Start AI" um zu beginnen'}
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+function renderSandboxGameState(state) {
+  const stateDiv = document.getElementById('sandboxGameState');
+  
+  if (!state || !state.player) {
+    stateDiv.innerHTML = '<p class="text-dim">Keine Game State Daten verfügbar</p>';
+    return;
+  }
+
+  const player = state.player;
+  const stats = state.stats;
+  const xpPercent = (player.xp / player.xpToNextLevel) * 100;
+
+  stateDiv.innerHTML = `
+    <div class="mb-20">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+        <span><strong>${player.name}</strong> - Level ${player.level}</span>
+        <span class="text-dim">${player.xp} / ${player.xpToNextLevel} XP</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: ${xpPercent}%"></div>
+      </div>
+    </div>
+
+    <div class="grid grid-3" style="gap: 10px;">
+      <div class="stat-item">
+        <div class="stat-label">❤️ Love</div>
+        <div class="stat-value">${stats.love}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">☮️ Peace</div>
+        <div class="stat-value">${stats.peace}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">🧠 Wisdom</div>
+        <div class="stat-value">${stats.wisdom}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">🎨 Creativity</div>
+        <div class="stat-value">${stats.creativity}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">⚖️ Stability</div>
+        <div class="stat-value">${stats.stability}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">🏆 Achievements</div>
+        <div class="stat-value">${state.achievements?.unlocked?.length || 0}</div>
+      </div>
+    </div>
+
+    ${state.story?.currentQuest ? `
+      <div class="mt-20" style="padding: 15px; background: var(--card-bg); border-radius: 8px;">
+        <strong>🎯 Current Quest:</strong> ${state.story.currentQuest}
+      </div>
+    ` : ''}
+  `;
+}
+
+function renderSandboxChanges(changes) {
+  const changesDiv = document.getElementById('sandboxChanges');
+  
+  if (!changes || changes.length === 0) {
+    changesDiv.innerHTML = '<p class="text-dim">Keine pending changes</p>';
+    return;
+  }
+
+  changesDiv.innerHTML = changes.map(change => `
+    <div class="sandbox-change" style="padding: 15px; background: var(--card-bg); border-radius: 8px; margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+        <div>
+          <strong>${change.description}</strong>
+          <span class="badge badge-${change.type === 'large' ? 'danger' : 'warning'}" style="margin-left: 10px;">
+            ${change.type.toUpperCase()}
+          </span>
+        </div>
+        <div style="display: flex; gap: 5px;">
+          <button class="btn btn-sm btn-primary" onclick="approveSandboxChange('${change.id}')">✅ Approve</button>
+          <button class="btn btn-sm btn-secondary" onclick="rejectSandboxChange('${change.id}')">❌ Reject</button>
+        </div>
+      </div>
+      
+      <p class="text-dim" style="margin-bottom: 10px;">
+        <strong>AI Reasoning:</strong> ${change.aiReasoning}
+      </p>
+      
+      <details style="margin-top: 10px;">
+        <summary style="cursor: pointer; color: var(--accent);">Show Diff</summary>
+        <pre style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 4px; overflow-x: auto;"><code>${change.diff}</code></pre>
+      </details>
+      
+      <div class="text-dim" style="font-size: 0.85em; margin-top: 10px;">
+        Created: ${new Date(change.createdAt).toLocaleString()}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSandboxActions(actions) {
+  const actionsDiv = document.getElementById('sandboxActions');
+  
+  if (!actions || actions.length === 0) {
+    actionsDiv.innerHTML = '<p class="text-dim">Noch keine actions</p>';
+    return;
+  }
+
+  actionsDiv.innerHTML = actions.reverse().map(action => `
+    <div style="padding: 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+      <div style="flex: 1;">
+        <strong style="color: ${action.success ? 'var(--success)' : 'var(--danger)'};">
+          ${action.success ? '✅' : '❌'} ${action.action}
+        </strong>
+        <div class="text-dim" style="font-size: 0.9em; margin-top: 3px;">
+          ${action.reasoning}
+        </div>
+      </div>
+      <div class="text-dim" style="font-size: 0.85em; white-space: nowrap; margin-left: 15px;">
+        ${new Date(action.timestamp).toLocaleTimeString()}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSandboxStats(stats) {
+  const statsDiv = document.getElementById('sandboxStats');
+  
+  statsDiv.innerHTML = `
+    <div class="stats-grid mb-20">
+      <div class="stat-item">
+        <div class="stat-label">Total Actions</div>
+        <div class="stat-value">${stats.totalActions || 0}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Success Rate</div>
+        <div class="stat-value">${stats.successRate?.toFixed(1) || 0}%</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Pending Changes</div>
+        <div class="stat-value">${stats.pendingChanges || 0}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Approved Changes</div>
+        <div class="stat-value">${stats.approvedChanges || 0}</div>
+      </div>
+    </div>
+  `;
+}
+
+async function startAISandbox() {
+  try {
+    const response = await fetch(`${API.sandbox}/api/sandbox/start`, {
+      method: 'POST'
+    });
+    
+    if (response.ok) {
+      showToast('▶️ AI Sandbox gestartet!', 'success');
+      await refreshSandboxData();
+    } else {
+      showToast('❌ Fehler beim Starten', 'error');
+    }
+  } catch (error) {
+    showToast('❌ Sandbox Server nicht erreichbar', 'error');
+  }
+}
+
+async function stopAISandbox() {
+  try {
+    const response = await fetch(`${API.sandbox}/api/sandbox/stop`, {
+      method: 'POST'
+    });
+    
+    if (response.ok) {
+      showToast('⏸️ AI Sandbox gestoppt', 'info');
+      await refreshSandboxData();
+    } else {
+      showToast('❌ Fehler beim Stoppen', 'error');
+    }
+  } catch (error) {
+    showToast('❌ Sandbox Server nicht erreichbar', 'error');
+  }
+}
+
+async function approveSandboxChange(changeId) {
+  try {
+    const response = await fetch(`${API.sandbox}/api/sandbox/changes/${changeId}/approve`, {
+      method: 'POST'
+    });
+    
+    if (response.ok) {
+      showToast('✅ Change approved!', 'success');
+      await refreshSandboxData();
+    } else {
+      showToast('❌ Fehler beim Approve', 'error');
+    }
+  } catch (error) {
+    showToast('❌ Fehler', 'error');
+  }
+}
+
+async function rejectSandboxChange(changeId) {
+  try {
+    const response = await fetch(`${API.sandbox}/api/sandbox/changes/${changeId}/reject`, {
+      method: 'POST'
+    });
+    
+    if (response.ok) {
+      showToast('❌ Change rejected', 'info');
+      await refreshSandboxData();
+    } else {
+      showToast('❌ Fehler beim Reject', 'error');
+    }
+  } catch (error) {
+    showToast('❌ Fehler', 'error');
+  }
+}
+
