@@ -210,7 +210,17 @@ The daemon is listening on port 9999.
      * Handle chat messages from users
      */
     private async handleChatMessage(message: string): Promise<string> {
-        const lowerMessage = message.toLowerCase();
+        // Security: Sanitize input
+        const sanitized = this.sanitizeInput(message);
+        
+        // Safety: Check for critical topics
+        const criticalResponse = this.checkCriticalTopics(sanitized);
+        if (criticalResponse) {
+            await this.log(`⚠️ CRITICAL TOPIC DETECTED: ${sanitized}`);
+            return criticalResponse;
+        }
+        
+        const lowerMessage = sanitized.toLowerCase();
         
         // Simple pattern matching for now (can be extended with AI later)
         if (lowerMessage.includes('status') || lowerMessage.includes('wie geht')) {
@@ -240,7 +250,38 @@ The daemon is listening on port 9999.
         }
         
         // Default response
-        return `Ich habe deine Nachricht erhalten: "${message}". Ich bin der Eternal Daemon und lerne noch, mit Menschen zu kommunizieren. Frage mich über Status, Prozesse, Philosophie oder Cycles.`;
+        return `Ich habe deine Nachricht erhalten: "${sanitized}". Ich bin der Eternal Daemon und lerne noch, mit Menschen zu kommunizieren. Frage mich über Status, Prozesse, Philosophie oder Cycles.`;
+    }
+    
+    /**
+     * Sanitize user input
+     */
+    private sanitizeInput(input: string): string {
+        return input
+            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+            .replace(/<[^>]*>/g, '')
+            .trim()
+            .substring(0, 1000); // Max 1000 chars
+    }
+    
+    /**
+     * Check for critical topics that require human help
+     */
+    private checkCriticalTopics(message: string): string | null {
+        const criticalTopics = [
+            'suizid', 'selbstmord', 'suicide', 'harm myself',
+            'töten', 'umbringen', 'sterben will',
+            'depression schwer', 'panikattacke', 'trauma',
+        ];
+        
+        const lower = message.toLowerCase();
+        const hasCriticalTopic = criticalTopics.some(topic => lower.includes(topic));
+        
+        if (hasCriticalTopic) {
+            return `⚠️ Dieses Thema ist sehr wichtig und ich bin nicht qualifiziert, dir hier zu helfen.\n\nBitte sprich mit einem Menschen darüber:\n\n📞 Telefonseelsorge: 0800 111 0 111 (24/7, kostenlos)\n🏥 Notarzt: 112\n👨‍⚕️ Bereitschaftsdienst: 116 117\n\nDu bist nicht allein. Es gibt Menschen, die dir helfen können.`;
+        }
+        
+        return null;
     }
     
     /**
