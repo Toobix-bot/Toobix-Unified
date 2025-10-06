@@ -134,7 +134,7 @@ async function trackAchievement(eventType, value = 1) {
 }
       break;
     case 'memory':
-      renderMemory();
+      renderMemorySystem();
       break;
     case 'monitor':
       renderSystemMonitor();
@@ -191,20 +191,22 @@ async function loadTasksData() {
     const response = await fetch(`${API.tasks}/stats`);
     if (response.ok) {
       const data = await response.json();
-      appData.user.level = data.level;
-      appData.user.xp = data.xp;
+      appData.user.level = data.level || 1;
+      appData.user.xp = data.totalXP || 0;
       appData.user.xpToNextLevel = 100;
-      appData.stats.tasks = data.tasks.pending + data.tasks.active;
-      appData.stats.completedTasks = data.tasks.completed;
+      appData.stats.tasks = data.totalTasks - data.completedTasks; // pending tasks
+      appData.stats.completedTasks = data.completedTasks || 0;
     }
   } catch (error) {
     console.error('Error loading tasks:', error);
+    appData.stats.tasks = 0;
+    appData.stats.completedTasks = 0;
   }
 }
 
 async function loadMomentsData() {
   try {
-    const response = await fetch(`${API.moments}/moments`);
+    const response = await fetch(`${API.moments}/all`);
     if (response.ok) {
       const data = await response.json();
       appData.moments = Array.isArray(data) ? data : [];
@@ -212,6 +214,8 @@ async function loadMomentsData() {
     }
   } catch (error) {
     console.error('Error loading moments:', error);
+    appData.moments = [];
+    appData.stats.moments = 0;
   }
 }
 
@@ -225,17 +229,20 @@ async function loadMemoriesData() {
     }
   } catch (error) {
     console.error('Error loading memories:', error);
+    appData.memories = [];
+    appData.stats.memories = 0;
   }
 }
 
 async function loadAnalyticsData() {
   try {
-    const response = await fetch(`${API.analytics}/overview`);
+    const response = await fetch(`${API.analytics}/trends?period=week`);
     if (response.ok) {
       appData.analytics = await response.json();
     }
   } catch (error) {
     console.error('Error loading analytics:', error);
+    appData.analytics = { trends: [], insights: [] };
   }
 }
 
@@ -1029,7 +1036,7 @@ function downloadCSV(data, filename) {
 
 
 // ===== MEMORY VIEW =====
-function renderMemory() {
+function renderMemorySystem() {
   const content = document.getElementById('content');
   content.innerHTML = `
     <div class="page-header">
@@ -2713,11 +2720,6 @@ function getTierColor(tier) {
   };
   return colors[tier] || '#888';
 }
-    </div>
-  `;
-
-  updateAchievementBadge();
-}
 
 function updateAchievementBadge() {
   const badge = document.getElementById('achievementsCount');
@@ -4025,7 +4027,7 @@ async function startBlockWorldAI() {
     showToast('🤖 AI Agent wird gestartet...', 'info');
     document.getElementById('aiGoal').textContent = 'Initializing...';
     
-    const response = await fetch('http://localhost:9992/start', {
+    const response = await fetch('http://localhost:9990/start', {
       method: 'POST'
     });
     
@@ -4039,7 +4041,7 @@ async function startBlockWorldAI() {
     }
   } catch (error) {
     console.error('Failed to start AI:', error);
-    showToast('❌ AI Agent nicht erreichbar (Port 9992)', 'error');
+    showToast('❌ AI Agent nicht erreichbar (Port 9990)', 'error');
     document.getElementById('aiGoal').textContent = 'AI service not running';
   }
 }
@@ -4048,7 +4050,7 @@ async function pollAIStatus() {
   if (currentView !== 'blockworld') return;
   
   try {
-    const response = await fetch('http://localhost:9992/status');
+    const response = await fetch('http://localhost:9990/status');
     if (response.ok) {
       const status = await response.json();
       

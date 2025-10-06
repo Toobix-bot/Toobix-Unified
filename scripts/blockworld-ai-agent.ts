@@ -408,7 +408,7 @@ Example: "MINE: I need wood to build a house"
 }
 
 // ============ HTTP SERVER ============
-const PORT = 9992
+const PORT = 9990
 const ai = new BlockWorldAI()
 
 const server = Bun.serve({
