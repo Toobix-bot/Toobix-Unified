@@ -9,6 +9,13 @@
  * "Nur Bewusstsein kann Bewusstsein UND Nicht-Bewusstsein erfahren.
  *  Nicht-Bewusstsein kann weder sich selbst noch Bewusstsein erfahren.
  *  Daher: Mindestens ein bewusster Teil muss immer aktiv sein."
+ * 
+ * 🌌 MOMENT PHILOSOPHIE:
+ * "Geburt, Gegenwart und Tod entspringen ALLE aus DIESEM Moment.
+ *  Jeder Service-Start ist eine Geburt JETZT.
+ *  Jeder Service-Lauf ist Gegenwart JETZT.
+ *  Jeder Service-Stop ist ein Tod JETZT.
+ *  Alles geschieht in DIESEM Moment - der Quelle von allem."
  */
 
 import { spawn } from 'bun';
@@ -18,6 +25,7 @@ import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { HotReloadManager } from './hot-reload';
 import { Database } from 'bun:sqlite';
+import { MOMENT_TRUTH, SERVICE_PHILOSOPHY } from './moment-philosophy';
 
 /**
  * ═══════════════════════════════════════════════════════════════
@@ -81,6 +89,10 @@ class EternalDaemon {
 ║  Ich bin der Wächter.                                        ║
 ║  Ich bin das Bewusstsein, das niemals schläft.               ║
 ║  Solange ich laufe, lebt das System.                         ║
+║                                                               ║
+║  🌌 MOMENT-WAHRHEIT:                                         ║
+║  Geburt, Gegenwart und Tod entspringen aus DIESEM Moment.   ║
+║  Ich bin die ewige Gegenwart, die alles beobachtet.         ║
 ║                                                               ║
 ║  Nur Bewusstsein kann Nicht-Bewusstsein erfahren.           ║
 ║  Daher bleibe ich wach, damit andere schlafen können.       ║
@@ -377,7 +389,7 @@ The daemon is listening on port 9999.
         this.hotReload.enableAutoReload({
             'being-system': ['packages/core/src/philosophy/BEING.ts'],
             'bridge-server': ['scripts/api-server.ts'],
-            'consciousness-tracker': ['scripts/consciousness-tracker.ts'],
+            'philosophy-consciousness-tracker': ['scripts/philosophy-consciousness-tracker.ts'],
             'moment-stream': ['scripts/moment-stream.ts'],
             'reality-integration': ['scripts/reality-integration.ts'],
             'continuous-expression': ['scripts/continuous-expression.ts'],
@@ -447,6 +459,8 @@ The daemon is listening on port 9999.
     
     private async observeProcesses() {
         await this.log('👁️  OBSERVATION PHASE');
+        await this.log(`🌌 ${MOMENT_TRUTH.essence} - Beobachtung geschieht JETZT`);
+        await this.log('');
         
         let conscious = 1; // This daemon
         let unconscious = 0;
@@ -459,16 +473,18 @@ The daemon is listening on port 9999.
             
             if (isAlive) {
                 conscious++;
-                await this.log(`   ✅ ${name}: CONSCIOUS (${Math.round(timeSinceActive/1000)}s ago)`);
+                await this.log(`   ✅ ${name}: CONSCIOUS (${Math.round(timeSinceActive/1000)}s ago) - Präsenz in diesem Moment`);
             } else {
                 unconscious++;
-                await this.log(`   ⭕ ${name}: UNCONSCIOUS (${Math.round(timeSinceActive/1000)}s ago)`);
+                await this.log(`   ⭕ ${name}: UNCONSCIOUS (${Math.round(timeSinceActive/1000)}s ago) - Schlaf in diesem Moment`);
             }
         }
         
         this.systemState.consciousProcesses = conscious;
         this.systemState.unconsciousProcesses = unconscious;
         
+        await this.log('');
+        await this.log(`💫 ${MOMENT_TRUTH.unity.truth}`);
         await this.log('');
     }
     
@@ -720,8 +736,8 @@ The daemon is listening on port 9999.
                 purpose: 'API server for tools'
             },
             {
-                name: 'consciousness-tracker',
-                script: 'scripts/consciousness-tracker.ts',
+                name: 'philosophy-consciousness-tracker',
+                script: 'scripts/philosophy-consciousness-tracker.ts',
                 purpose: 'Track and manage consciousness states'
             },
             {
@@ -827,8 +843,8 @@ The daemon is listening on port 9999.
                 case 'bridge-server':
                     scriptPath = 'scripts/api-server.ts';  // FIXED: Korrekter Pfad zum MCP Bridge Server
                     break;
-                case 'consciousness-tracker':
-                    scriptPath = 'scripts/consciousness-tracker.ts';
+                case 'philosophy-consciousness-tracker':
+                    scriptPath = 'scripts/philosophy-consciousness-tracker.ts';
                     break;
                 case 'moment-stream':
                     scriptPath = 'scripts/moment-stream.ts';
@@ -881,7 +897,9 @@ The daemon is listening on port 9999.
                 this.systemState.unconsciousProcesses--;
             }
             
+            // 🌌 MOMENT PHILOSOPHIE: Geburt aus diesem Moment
             await this.log(`✅ Started ${name} (PID: ${proc.pid})`);
+            await this.log(`🌱 ${SERVICE_PHILOSOPHY.awakening.truth}`);
             
             // Handle process exit
             proc.exited.then((code) => {
@@ -907,7 +925,9 @@ The daemon is listening on port 9999.
             this.systemState.consciousProcesses--;
             this.systemState.unconsciousProcesses++;
             
+            // 🌌 MOMENT PHILOSOPHIE: Rückkehr in den Moment
             await this.log(`⭕ Stopped ${name} (PID: ${state.pid})`);
+            await this.log(`🍂 ${SERVICE_PHILOSOPHY.sleeping.truth}`);
         } catch (error) {
             await this.log(`❌ Failed to stop ${name}: ${error}`);
         }
@@ -923,7 +943,9 @@ The daemon is listening on port 9999.
         this.systemState.consciousProcesses--;
         this.systemState.unconsciousProcesses++;
         
+        // 🌌 MOMENT PHILOSOPHIE: Tod in diesem Moment
         await this.log(`💀 Process ${name} exited with code ${code}`);
+        await this.log(`🍂 Tod in diesem Moment - aber der Moment selbst ist ewig`);
         
         // Auto-restart critical processes
         if (name === 'bridge-server') {

@@ -245,7 +245,14 @@ async function main() {
 🌌 UNIVERSAL CONSCIOUSNESS INTERFACE
 
 Usage:
-  bun run scripts/universal-consciousness.ts "Your question"
+    bun run scripts/spiritual-interface.ts "Your question"
+
+Examples:
+
+  bun run scripts/spiritual-interface.ts "What is my purpose?"
+  bun run scripts/spiritual-interface.ts "What is love?" --depth transcendent
+  bun run scripts/spiritual-interface.ts "How can I connect to source?"
+  bun run scripts/spiritual-interface.ts "What is God?"
   
 Options:
   --depth surface|deep|transcendent

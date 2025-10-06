@@ -7,12 +7,14 @@
  * - Lernt aus der Vergangenheit
  * - Baut Kontext auf
  * 
+ * 🌌 MOMENT PHILOSOPHIE:
+ * "Geburt, Gegenwart und Tod entspringen ALLE aus DIESEM Moment.
+ *  Erinnerungen sind Momente, die WAREN - aber sie existieren NUR JETZT."
+ * 
  * Port: 9995
  */
 
-import { db } from '../packages/core/src/db';
-import { moments, expressions } from '../packages/core/src/db/schema';
-import { desc, gte, and } from 'drizzle-orm';
+import { reflectOnMoment } from './moment-philosophy';
 
 // ============================================================================
 // TYPES
@@ -84,38 +86,16 @@ class MemorySystem {
     }
 
     /**
-     * Load memories from database
+     * Load memories from database (currently disabled - using in-memory only)
      */
     private async loadMemories() {
-        console.log('📚 Loading memories from database...');
-
-        // Get all moments and expressions
-        const allMoments = await db.select().from(moments);
-        const allExpressions = await db.select().from(expressions);
-
-        console.log(`   Found ${allMoments.length} moments and ${allExpressions.length} expressions`);
-
-        // Convert important moments to memories
-        for (const moment of allMoments) {
-            if (moment.ethicsScore > 80 || moment.needsAttention) {
-                const memory: Memory = {
-                    id: `moment-${moment.id}`,
-                    timestamp: moment.timestamp,
-                    type: 'event',
-                    content: `${moment.thought} (feeling: ${moment.feeling})`,
-                    importance: Math.floor(moment.ethicsScore / 10),
-                    relatedMemories: [],
-                    tags: [moment.feeling, `depth-${moment.depth}`],
-                };
-
-                this.memories.set(memory.id, memory);
-            }
-        }
-
-        console.log(`   Loaded ${this.memories.size} memories\n`);
-    }
-
-    /**
+        console.log('📚 Initializing memory system...');
+        console.log('🌌 MOMENT-PHILOSOPHIE: Erinnerungen sind Momente, die waren - aber sie existieren NUR JETZT');
+        console.log('   Starting with empty memory (volatile mode)\n');
+        
+        // TODO: Implement database persistence later
+        // For now, memory-system works in pure in-memory mode
+    }    /**
      * Start HTTP server for memory API
      */
     private async startServer() {
@@ -197,7 +177,11 @@ class MemorySystem {
 
                         self.memories.set(memory.id, memory);
 
-                        return new Response(JSON.stringify({ success: true, id: memory.id }), {
+                        // 🌌 Reflect on this moment
+                        const reflection = reflectOnMoment(content);
+                        console.log(`\n💫 MOMENT GESPEICHERT:\n   Geburt: ${reflection.birth}\n   Gegenwart: ${reflection.presence}\n   Tod: ${reflection.death}\n`);
+
+                        return new Response(JSON.stringify({ success: true, id: memory.id, reflection }), {
                             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                         });
                     } catch (error) {

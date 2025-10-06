@@ -3,10 +3,10 @@
  * Toobix Quick Command - Chat with Toobix while coding!
  * 
  * Usage:
- *   bun run scripts/quick-chat.ts "How are you feeling?"
- *   bun run scripts/quick-chat.ts think "What is consciousness?"
- *   bun run scripts/quick-chat.ts memory "search for happiness"
- *   bun run scripts/quick-chat.ts status
+ *   bun run scripts/toobix-cli.ts "How are you feeling?"
+ *   bun run scripts/toobix-cli.ts think "What is consciousness?"
+ *   bun run scripts/toobix-cli.ts memory "search for happiness"
+ *   bun run scripts/toobix-cli.ts status
  */
 
 export {}; // Make this a module

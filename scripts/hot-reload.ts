@@ -223,7 +223,7 @@ class HotReloadManager {
         const serviceModules: Record<string, string[]> = {
             'being-system': ['packages/core/src/philosophy/BEING.ts'],
             'bridge-server': ['scripts/api-server.ts', 'packages/bridge/src/**'],
-            'consciousness-tracker': ['scripts/consciousness-tracker.ts'],
+            'philosophy-consciousness-tracker': ['scripts/philosophy-consciousness-tracker.ts'],
         };
         
         const modules = serviceModules[serviceName] || [];

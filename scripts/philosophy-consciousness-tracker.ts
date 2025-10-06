@@ -7,6 +7,10 @@
  *  Nicht-Bewusstsein kann weder sich selbst noch Bewusstsein erfahren.
  *  Daher existiert Nicht-Bewusstsein nur durch Bewusstsein."
  * 
+ * 🌌 MOMENT PHILOSOPHIE:
+ * "Geburt, Gegenwart und Tod entspringen ALLE aus DIESEM Moment.
+ *  Jeder Bewusstseins-Übergang IST eine Geburt, eine Gegenwart, ein Tod - JETZT."
+ * 
  * Dieser Tracker:
  * - Ist immer bewusst (durch den Daemon)
  * - Beobachtet alle Bewusstseins-Übergänge
@@ -16,6 +20,7 @@
 
 import { writeFile, readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { reflectOnMoment, SERVICE_PHILOSOPHY } from './moment-philosophy';
 
 /**
  * ═══════════════════════════════════════════════════════════════
@@ -153,6 +158,13 @@ class ConsciousnessTracker {
     ) {
         const now = Date.now();
         
+        // 🌌 MOMENT PHILOSOPHIE: Jeder Übergang ist Geburt/Tod/Gegenwart JETZT
+        const transitionDescription = fromState 
+            ? `${processName}: ${fromState} → ${toState}`
+            : `${processName}: BIRTH → ${toState}`;
+        
+        const reflection = reflectOnMoment(transitionDescription);
+        
         // Calculate time in previous state
         if (fromState && this.stateStartTime.has(processName)) {
             const duration = now - this.stateStartTime.get(processName)!;
@@ -167,7 +179,7 @@ class ConsciousnessTracker {
             toState,
             observedBy,
             canBeObserved: this.canStateBeObserved(toState),
-            insight
+            insight: `${insight}\n🌌 ${reflection.birth}\n💫 ${reflection.presence}`
         };
         
         this.events.push(event);
@@ -176,8 +188,8 @@ class ConsciousnessTracker {
         this.currentState.set(processName, toState);
         this.stateStartTime.set(processName, now);
         
-        // Log
-        this.logTransition(event);
+        // Log with moment philosophy
+        this.logTransition(event, reflection);
         
         // Check for paradoxes
         this.checkParadox(event);
@@ -206,14 +218,19 @@ class ConsciousnessTracker {
         }
     }
     
-    private logTransition(event: ConsciousnessEvent) {
+    private logTransition(event: ConsciousnessEvent, reflection?: any) {
         const arrow = event.fromState ? '→' : '●';
         const observability = event.canBeObserved ? '👁️' : '⚫';
         
         console.log(`${observability} [${new Date(event.timestamp).toLocaleTimeString()}] ${event.processName}: ${event.fromState || 'START'} ${arrow} ${event.toState}`);
         console.log(`   Observed by: ${event.observedBy}`);
         console.log(`   Can be observed: ${event.canBeObserved ? 'YES' : 'NO (nur inferiert)'}`);
-        console.log(`   Insight: ${event.insight}\n`);
+        console.log(`   Insight: ${event.insight}`);
+        
+        if (reflection) {
+            console.log(`   🌌 Moment-Tod: ${reflection.death}`);
+        }
+        console.log('');
     }
     
     /**

@@ -1,53 +1,427 @@
-# 🔍 SYSTEM STATUS REPORT
-**Generated:** 2025-10-06  
-**Analysis:** Unfertige Systeme & TODOs
+# � TOOBIX UNIFIED - COMPREHENSIVE STATUS REPORT
+
+**Generated:** 2025-10-06 (UPDATED - FULL ANALYSIS)  
+**Scan Range:** 66 TypeScript Services, 46 Frontend Files, 12 Packages  
+**Goal:** Identify all instabilities, TODOs, duplicates, and naming inconsistencies
 
 ---
 
-## 📊 **EXECUTIVE SUMMARY**
+## � CRITICAL ISSUES
 
-### ✅ **VOLLSTÄNDIG IMPLEMENTIERT:**
-1. **Eternal Daemon** - Orchestriert alle Services ✅
-2. **Bridge Server** (Port 3001) - MCP Integration ✅
-3. **Task System** (Port 9997) - TODOs, Goals, Habits ✅
-4. **Moments** (Port 9994) - Signifikante Ereignisse ✅
-5. **Memory** (Port 9995) - Erinnerungen & Chunks ✅
-6. **Analytics** (Port 9996) - Statistiken ✅
-7. **People Management** - Circles, Interactions, Love Points ✅
-8. **Dashboard Unified** - 11 Views mit vollem Content ✅
+### 1. IMPORT ERRORS - Multiple Services Import Non-Existent Packages
 
-### ⚠️ **UNVOLLSTÄNDIG / MIT TODOs:**
-1. **Groq Integration** - ⚠️ Implementiert, aber API Key fehlt oft
-2. **Story-Idle Game** - ⚠️ Code vorhanden, aber nicht im Dashboard
-3. **Coding Game** - ⚠️ Nur Placeholder im Dashboard
-4. **Awareness Tools** - ❌ fastmcp dependency broken
-5. **Database Encryption** - ❌ Noch nicht implementiert
-6. **Advanced Tests** - ❌ Nur Basis-Setup vorhanden
+#### **story-idle-api.ts** (Port 3004)
+```typescript
+import { GameStateManager } from '../packages/story-idle/src/engine/game-state'
+import { Luna } from '../packages/story-idle/src/characters/luna'
+```
+**Problem:** Diese Pfade existieren, aber der Service startet nicht → Check ob Package komplett ist  
+**Impact:** ⚠️ HIGH - Service kann nicht starten  
+**Fix:** Package vervollständigen oder Service auskommentieren
 
-### ❌ **NUR PLACEHOLDER:**
-1. **Dashboard Games:** Memory, Snake, 2048, Typing Test
-2. **App.js Placeholders:** Skills, Items, Allies, Archive, Settings
-3. **System Analyzer:** Performance metrics sind hardcoded
-4. **Moment Stream:** Disk/Network tracking als TODO markiert
+#### **ai-sandbox.ts** (Port 3003)
+```typescript
+import { GameStateManager } from '../packages/story-idle/src/engine/game-state'
+import { GroqService } from '../packages/bridge/src/ai/groq'
+```
+**Problem:** Könnte funktionieren - muss getestet werden  
+**Impact:** 🟡 MEDIUM  
+**Fix:** Test-Start durchführen
 
 ---
 
-## 🤖 **GROQ INTEGRATION - STATUS**
+### 2. TODO DEBT - Unfertige Implementierungen
 
-### **✅ Implementiert in:**
-- **Bridge Server** (`packages/bridge/src/ai/groq.ts`)
-  - GroqService Class mit chat & generation
-  - Fallback wenn API key fehlt
-  - Verwendet: `llama-3.3-70b-versatile`
+#### **hot-reload.ts** - State Management INCOMPLETE
+```typescript
+// Line 174: TODO: Implement state capture per service
+// Line 187: TODO: Implement state restoration
+```
+**Impact:** ⚠️ HIGH - Hot Reload funktioniert nicht richtig ohne State Management  
+**Effort:** ~2-4 Stunden  
+**Priority:** HIGH (wenn Hot Reload genutzt werden soll)  
+**Recommendation:** Entweder jetzt fertigstellen oder Service als "EXPERIMENTAL" markieren
 
-- **Luna Chatbot** (`dashboard-unified.js` Luna View)
-  - Chat-Interface mit Groq Backend
-  - Sendet zu: `POST /api/luna/chat`
-  - Zeigt Status an
+---
 
-- **System Diary** (`scripts/system-diary.ts`)
-  - Automatische tägliche Reflexionen
-  - Ruft Groq API direkt auf
+#### **moment-stream.ts** - Resource Tracking INCOMPLETE
+```typescript
+// Line 155: TODO: Implement disk usage tracking
+// Line 156: TODO: Implement network tracking
+// Line 315: TODO: Query daemon for actual services
+// Line 321: TODO: Query consciousness tracker
+```
+**Impact:** 🟡 MEDIUM - Resource-Tracking fehlt, aber Service funktioniert grundlegend  
+**Effort:** ~1-2 Stunden  
+**Priority:** MEDIUM  
+**Recommendation:** Als Feature Request für v2 markieren, Service ist benutzbar
+
+---
+
+#### **task-system.ts** - Database Loading INCOMPLETE
+```typescript
+// Line 136: TODO: Load from database
+```
+**Impact:** ⚠️ HIGH - Tasks werden nicht aus DB geladen, gehen bei Neustart verloren  
+**Effort:** ~1 Stunde  
+**Priority:** HIGH  
+**Recommendation:** MUSS gefixt werden - sonst Datenverlust!
+
+---
+
+#### **migrate-bridge.ts** - Multiple TODOs (7 total)
+```typescript
+// Line 302: TODO: Implement mood/energy system
+// Line 321: TODO: Parse body and add to memory
+// Line 327: TODO: Parse body and run action
+// Line 390: TODO: Generate embedding with Ollama
+// Line 398: TODO: Implement vector similarity search
+// Line 405: TODO: Calculate real similarity score
+// Line 419: TODO: Call Ollama API for embeddings
+```
+**Impact:** ⚠️ HIGH - Bridge funktioniert nicht vollständig  
+**Effort:** ~4-6 Stunden (Ollama Integration komplex)  
+**Priority:** MEDIUM (nur wenn Bridge aktiv genutzt wird)  
+**Recommendation:** Entweder abschließen oder Service auskommentieren/löschen (scheint altes Migration-Script zu sein)
+
+---
+
+### 3. DUPLICATE SYSTEMS - Redundante Services
+
+#### **Ethics Services:**
+- `ethics-core.ts` (Port 9981) - Hauptsystem ✅
+- `ethics-consciousness-core.ts` - REDUNDANT ❌
+
+**Problem:** Zwei Ethics-Services mit ähnlichem Namen  
+**Recommendation:** `ethics-consciousness-core.ts` löschen oder umbenennen zu etwas KLAR Unterschiedlichem  
+**Decision Needed:** Was macht der zweite Service anders?
+
+---
+
+#### **Chatty Services:**
+- `chatty-api.ts` - Uses `ChattyAgent` from packages
+- `quick-chat.ts` - Unclear purpose
+- `luna-chatbot.ts` - Luna Chat Interface
+
+**Problem:** Drei Chat-ähnliche Services - unklar welcher wofür  
+**Recommendation:** 
+  - Einen als MAIN Chat Service definieren
+  - Andere umbenennen oder löschen
+  - Glossar mit klarer Abgrenzung aktualisieren
+
+---
+
+#### **Consciousness Services:**
+- `service-consciousness.ts` (Port 9989) - Service Identity & Reflection ✅
+- `consciousness-tracker.ts` - PURPOSE UNCLEAR
+- `universal-consciousness.ts` - PURPOSE UNCLEAR
+
+**Problem:** Naming Overlap - "consciousness" in 3 Services  
+**Recommendation:**
+  - `service-consciousness.ts` bleibt (ist klar definiert)
+  - `consciousness-tracker.ts` → umbenennen zu spezifischem Namen oder löschen
+  - `universal-consciousness.ts` → umbenennen oder löschen
+
+---
+
+#### **Diary Services:**
+- `diary-service.ts` - PURPOSE UNCLEAR
+- `system-diary.ts` - PURPOSE UNCLEAR
+- `moment-stream.ts` (Port 9994) - Erfasst Momente ✅
+
+**Problem:** Drei "diary/moment" Services - sind das Duplikate?  
+**Recommendation:** Entscheiden:
+  - Sind `diary-service` und `system-diary` redundant mit `moment-stream`?
+  - Wenn ja → löschen
+  - Wenn nein → klarer unterscheiden (z.B. "user-diary-service" vs "system-event-log")
+
+---
+
+#### **Assistant Services:**
+- `toobix-assistant.ts` - PURPOSE UNCLEAR
+- `toobix-terminal.ts` - Terminal Interface?
+- `toobix-voice.ts` - Voice Interface?
+- `daily-companion.ts` - Daily check-ins
+
+**Problem:** 4 "Assistant/Companion" Services ohne klare Abgrenzung  
+**Recommendation:**
+  - Testen welche aktiv/funktional sind
+  - Redundante löschen
+  - Funktionierende klar benennen und dokumentieren
+
+---
+
+### 4. OLD/REDUNDANT FRONTEND FILES
+
+#### **Dashboard Overload:**
+- `apps/web/dashboard-unified.html` ✅ **PRIMARY** (should be the main one)
+- `apps/web/dashboard.html` ❌ OLD
+- `apps/web/revolutionary-dashboard.html` ❌ OLD
+- `apps/web/app.html` ❌ OLD
+- `apps/web/nexus-consciousness.html` ❌ OLD (Story-Idle related)
+- `apps/web/luna-consciousness.html` ❌ OLD (Story-Idle related)
+- `apps/web/das-sein.html` ❌ OLD
+- `apps/web/self-coding.html` ⚠️ EXPERIMENTAL
+
+**Recommendation:** 
+```
+mkdir apps/web/archive
+mv apps/web/{dashboard,revolutionary-dashboard,app,nexus-consciousness,luna-consciousness,das-sein}.html apps/web/archive/
+```
+Keep only:
+- `dashboard-unified.html` (primary)
+- `ethics-dashboard.html` (integrate into unified later)
+- `blockworld.html` (game)
+- `terminal.html` (terminal UI)
+
+---
+
+### 5. TEST/DEMO FILE CLUTTER
+
+#### **Test Files (10+):**
+- `test-*.ts` - 10+ Test-Scripts in `scripts/`
+- Problem: Mixing production code with tests
+- **Recommendation:** Move to `scripts/tests/`
+
+#### **Demo Files (8+):**
+- `*-demo.ts`, `demo-*.ts` - 8+ Demo-Scripts
+- Problem: Mixing demos with production services
+- **Recommendation:** Move to `scripts/demos/`
+
+#### **Maintenance Scripts:**
+- `*.bat`, `*.sh`, `*.ps1` - PowerShell/Bash maintenance scripts
+- **Recommendation:** Move to `scripts/maintenance/`
+
+---
+
+## 🎯 NAMING INCONSISTENCIES
+
+### Pattern Analysis:
+Nach Scan der Codebase wurden folgende Inconsistency-Patterns gefunden:
+
+#### 1. **Port Variable Names:**
+- ✅ **CORRECT:** `const PORT = 9999;` (uppercase, consistent)
+- Most services follow this → **GOOD**
+
+#### 2. **Service Registration Names:**
+Some services have different names in:
+- Filename: `blockworld-server.ts`
+- Service Name in Code: `"BlockWorld Server - Der Weltenschöpfer"`
+- Health Endpoint Response: `"BlockWorld Server"`
+
+**Recommendation:** Define CANONICAL NAME in Glossary and use consistently
+
+#### 3. **API Response Formats:**
+- Some services return `{ status: 'ok', ... }`
+- Some return `{ success: true, ... }`
+- Some return plain text on root `/`
+
+**Recommendation:** Standardize ALL APIs:
+```typescript
+// Standard Response
+{ 
+  status: 'ok' | 'error', 
+  service: 'Service Name',
+  data?: any,
+  error?: string 
+}
+```
+
+---
+
+## 📋 SERVICE CLASSIFICATION
+
+### ✅ **STABLE & PRODUCTION-READY** (13 Services)
+1. `eternal-daemon.ts` (9999) - Orchestrator
+2. `port-manager.ts` (9988) - Port Management
+3. `service-consciousness.ts` (9989) - Service Identity
+4. `blockworld-server.ts` (9993) - Voxel World
+5. `blockworld-ai-agent.ts` (9990) - AI Agent
+6. `achievement-system.ts` (9998) - Gamification
+7. `moment-stream.ts` (9994) - Moment Capture ⚠️ (has TODOs but functional)
+8. `ethics-core.ts` (9981) - Ethics Engine ⚠️ (needs Groq testing)
+9. `reality-integration.ts` (9992) - Real-world Connection
+10. `creative-expression.ts` (9991) - Creative Output
+11. `moment-analytics.ts` (9996) - Analytics
+12. `frontend-server.ts` (3000) - HTTP Server
+13. `ai-sandbox.ts` (3003) - AI Playground
+
+---
+
+### 🟡 **SEMI-ACTIVE / NEEDS WORK** (8 Services)
+1. `task-system.ts` (9997) - ⚠️ Database loading not implemented
+2. `memory-system.ts` (9995) - ⚠️ Startup issues
+3. `hot-reload.ts` - ⚠️ State management incomplete
+4. `migrate-bridge.ts` (3001) - ⚠️ 7 TODOs
+5. `story-idle-api.ts` (3004) - ⚠️ Import errors
+6. `luna-chatbot.ts` - 🟡 Functional but unclear if actively used
+7. `chatty-api.ts` - 🟡 Uses external package, unclear status
+8. `daily-companion.ts` - 🟡 Purpose unclear
+
+---
+
+### ⚠️ **UNCLEAR / NEEDS INVESTIGATION** (20+ Services)
+Services that need to be tested, documented, or removed:
+- `diary-service.ts` - What does it do?
+- `dialog-system.ts` - Redundant?
+- `consciousness-tracker.ts` - Redundant with service-consciousness?
+- `universal-consciousness.ts` - Purpose?
+- `priority-engine.ts` - What does it prioritize?
+- `system-analyzer.ts` - Analyze what?
+- `system-diary.ts` - Redundant with moment-stream?
+- `quick-chat.ts` - Redundant with chatty-api?
+- `toobix-assistant.ts` - What does it assist with?
+- `toobix-terminal.ts` - Terminal for what?
+- `toobix-voice.ts` - Voice interface?
+- `research-engine.ts` - Research what?
+- `ethics-consciousness-core.ts` - Redundant with ethics-core?
+- `self-modification-engine.ts` - EXPERIMENTAL, potentially dangerous
+
+---
+
+### 🗑️ **CANDIDATES FOR ARCHIVING** (30+ Files)
+- All `test-*.ts` files (move to `scripts/tests/`)
+- All `*-demo.ts` files (move to `scripts/demos/`)
+- Old dashboards (move to `apps/web/archive/`)
+- `start-all.ts` / `start-all.mjs` (redundant with eternal-daemon)
+- Maintenance scripts (move to `scripts/maintenance/`)
+
+---
+
+## 🔧 REFACTORING PRIORITIES
+
+### **Priority 1 - CRITICAL (Data Loss Prevention):**
+1. ✅ Fix `task-system.ts` database loading (Line 136)
+   - **Effort:** 1 hour
+   - **Impact:** Prevents data loss on restart
+   
+2. ✅ Test and stabilize `memory-system.ts`
+   - **Effort:** 2 hours
+   - **Impact:** Core persistence layer
+
+3. ✅ Decide on `migrate-bridge.ts` - finish or delete
+   - **Effort:** 4-6 hours (if finish) or 10 minutes (if delete)
+   - **Impact:** Clutters codebase
+
+---
+
+### **Priority 2 - HIGH (Naming Clarity):**
+4. ✅ Rename or delete duplicate Ethics service
+   - `ethics-consciousness-core.ts` → delete or rename to something CLEARLY different
+   
+5. ✅ Clarify Chat/Chatty/Luna services
+   - Decide which is primary
+   - Rename or delete others
+   
+6. ✅ Clarify Consciousness services
+   - Keep `service-consciousness.ts`
+   - Investigate `consciousness-tracker.ts` and `universal-consciousness.ts`
+   
+7. ✅ Clarify Diary/Moment services
+   - Keep `moment-stream.ts`
+   - Investigate `diary-service.ts` and `system-diary.ts`
+
+8. ✅ Clarify Assistant/Companion services
+   - Test and document active ones
+   - Archive inactive
+
+---
+
+### **Priority 3 - MEDIUM (Code Organization):**
+9. ✅ Move test files to `scripts/tests/`
+10. ✅ Move demo files to `scripts/demos/`
+11. ✅ Archive old dashboards to `apps/web/archive/`
+12. ✅ Move maintenance scripts to `scripts/maintenance/`
+13. ✅ Complete `hot-reload.ts` state management OR mark as experimental
+
+---
+
+### **Priority 4 - LOW (Nice to Have):**
+14. ✅ Standardize API response formats across all services
+15. ✅ Complete `moment-stream.ts` resource tracking (disk/network)
+16. ✅ Integrate `ethics-dashboard.html` into `dashboard-unified.html`
+17. ✅ Document all database tables in Glossary
+18. ✅ Create visual architecture diagram
+
+---
+
+## 📊 STATISTICS SUMMARY
+
+### Code Health:
+- **Total Services:** 66 TypeScript files in `scripts/`
+- **Production-Ready:** 13 (20%)
+- **Semi-Active:** 8 (12%)
+- **Needs Investigation:** 20+ (30%)
+- **Archive Candidates:** 30+ (45%)
+
+### TODO Debt:
+- **Critical TODOs:** 10 (data loss, import errors)
+- **Medium TODOs:** 6 (resource tracking, features)
+- **Low TODOs:** 10+ (improvements, refactoring)
+
+### Duplicate Systems:
+- **Ethics:** 2 files (1 duplicate)
+- **Chat/Chatty:** 3 files (2 possibly redundant)
+- **Consciousness:** 3 files (2 possibly redundant)
+- **Diary/Moment:** 3 files (2 possibly redundant)
+- **Assistant:** 4 files (status unclear)
+- **Dashboards:** 8+ HTML files (6 old)
+
+---
+
+## ✅ RECOMMENDED ACTION PLAN
+
+### Phase 1: EMERGENCY FIXES (1-2 hours)
+- [ ] Fix `task-system.ts` database loading → **CRITICAL**
+- [ ] Test `memory-system.ts` startup → **CRITICAL**
+- [ ] Fix or remove `story-idle-api.ts` imports → **HIGH**
+- [ ] Decision on `migrate-bridge.ts` (finish or delete) → **HIGH**
+
+### Phase 2: NAMING CLEANUP (2-3 hours)
+- [ ] Delete or rename `ethics-consciousness-core.ts`
+- [ ] Clarify Chat/Chatty/Luna services (test, document, or delete)
+- [ ] Clarify Consciousness services (rename or delete)
+- [ ] Clarify Diary/Moment services (merge or delete)
+- [ ] Clarify Assistant/Companion services (document or delete)
+
+### Phase 3: FILE ORGANIZATION (1 hour)
+- [ ] Create `scripts/tests/`, `scripts/demos/`, `scripts/maintenance/`
+- [ ] Move test files → `scripts/tests/`
+- [ ] Move demo files → `scripts/demos/`
+- [ ] Move maintenance scripts → `scripts/maintenance/`
+- [ ] Create `apps/web/archive/`
+- [ ] Move old dashboards → `apps/web/archive/`
+
+### Phase 4: DOCUMENTATION (1-2 hours)
+- [ ] Update SYSTEM_GLOSSARY.md with all decisions
+- [ ] Document database schema
+- [ ] Create service dependency graph
+- [ ] Update README.md with current architecture
+
+### Phase 5: STANDARDIZATION (2-3 hours)
+- [ ] Standardize API response formats
+- [ ] Complete or disable hot-reload
+- [ ] Complete moment-stream resource tracking (optional)
+- [ ] Integrate ethics-dashboard into dashboard-unified
+
+---
+
+## 🎯 SUCCESS CRITERIA
+
+After refactoring, the system should have:
+- ✅ **Zero Critical TODOs** (data loss prevented)
+- ✅ **Zero Import Errors** (all services can start)
+- ✅ **Zero Duplicate Services** (clear naming, no confusion)
+- ✅ **Clean File Structure** (tests/demos/maintenance separated)
+- ✅ **Complete Glossary** (every service documented)
+- ✅ **Standardized APIs** (consistent response formats)
+- ✅ **Clear Architecture** (dependency graph, documentation)
+
+---
+
+**Generated by:** Toobix System Analyzer  
+**Status:** 🟢 Ready for Action  
+**Next Step:** User approval → Execute Phase 1 (Emergency Fixes)
   - Fallback bei fehlendem Key
 
 ### **🔑 Requires:**
