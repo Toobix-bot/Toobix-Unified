@@ -6,12 +6,36 @@
   <title>Toobix Unified - Dashboard</title>
   <meta name="description" content="Dein persönliches Lebens-Ökosystem">
   <link rel="stylesheet" href="dashboard-unified.css">
+  <!-- External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 </head>
 <body>
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
   <div class="app-container">
+    <!-- Pomodoro Timer Widget (Floating) -->
+    <div class="pomodoro-widget" id="pomodoroWidget">
+      <div class="pomodoro-header">
+        <span class="pomodoro-icon">🍅</span>
+        <button class="pomodoro-minimize" onclick="togglePomodoro()">−</button>
+      </div>
+      <div class="pomodoro-content" id="pomodoroContent">
+        <div class="pomodoro-timer" id="pomodoroTimer">25:00</div>
+        <div class="pomodoro-label" id="pomodoroLabel">Focus Time</div>
+        <div class="pomodoro-controls">
+          <button class="btn-icon" onclick="startPomodoro()" id="pomodoroStart">▶️</button>
+          <button class="btn-icon" onclick="pausePomodoro()" id="pomodoroPause" style="display:none;">⏸️</button>
+          <button class="btn-icon" onclick="resetPomodoro()">🔄</button>
+        </div>
+        <div class="pomodoro-stats">
+          <span id="pomodoroCount">0</span> 🍅 today
+        </div>
+      </div>
+    </div>
+
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header" onclick="navigateTo('dashboard')">
@@ -63,6 +87,26 @@
             <span class="nav-icon">🧠</span>
             <span>Memory System</span>
           </div>
+          <div class="nav-item" data-view="monitor" onclick="navigateTo('monitor')">
+            <span class="nav-icon">🖥️</span>
+            <span>System Monitor</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">KI & Beziehungen</div>
+          <div class="nav-item" data-view="luna" onclick="navigateTo('luna')">
+            <span class="nav-icon">🤖</span>
+            <span>Luna Chatbot</span>
+          </div>
+          <div class="nav-item" data-view="people" onclick="navigateTo('people')">
+            <span class="nav-icon">👥</span>
+            <span>People & Circles</span>
+          </div>
+          <div class="nav-item" data-view="diary" onclick="navigateTo('diary')">
+            <span class="nav-icon">📔</span>
+            <span>System Diary</span>
+          </div>
         </div>
 
         <div class="nav-section">
@@ -70,6 +114,11 @@
           <div class="nav-item" data-view="games" onclick="navigateTo('games')">
             <span class="nav-icon">🎮</span>
             <span>Spielebibliothek</span>
+          </div>
+          <div class="nav-item" data-view="achievements" onclick="navigateTo('achievements')">
+            <span class="nav-icon">🏆</span>
+            <span>Achievements</span>
+            <span class="nav-badge badge-pulse" id="achievementsCount">0</span>
           </div>
         </div>
 
