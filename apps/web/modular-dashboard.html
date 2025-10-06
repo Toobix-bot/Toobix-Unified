@@ -1034,8 +1034,10 @@
       document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
       });
-      if (event && event.target) {
-        const navItem = event.target.closest('.nav-item');
+      // Fix: Use event from arguments if available, otherwise skip
+      let evt = (typeof event !== 'undefined') ? event : undefined;
+      if (evt && evt.target && typeof evt.target.closest === 'function') {
+        const navItem = evt.target.closest('.nav-item');
         if (navItem) navItem.classList.add('active');
       }
 
@@ -1390,7 +1392,7 @@
   <script>
     console.log('✅ All systems loaded');
     console.log(`📦 ${Object.keys(TOOBIX_MODULES).length} modules registered`);
-    console.log(`🌉 Service Bridge connected to ${Object.keys(window.ServiceBridge.getServiceRegistry()).length} backend services`);
+  console.log(`🌉 Service Bridge connected to ${Object.keys(window.ServiceBridge.getServiceRegistry()).length} backend services`);
     
     // Check initial health
     setTimeout(() => {
