@@ -173,11 +173,47 @@ class EternalDaemon {
                 // POST /chat - Chat with the system
                 if (url.pathname === '/chat' && req.method === 'POST') {
                     try {
+                        // Rate-limiting
+                        const ip = req.headers.get('x-forwarded-for') || 'localhost';
+                        if (!self.checkRateLimit(ip)) {
+                            return new Response(JSON.stringify({ 
+                                error: 'Rate limit exceeded. Max 100 requests per minute.' 
+                            }), {
+                                status: 429,
+                                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                            });
+                        }
+                        
                         const { message } = await req.json();
                         const response = await self.handleChatMessage(message);
                         
                         return new Response(JSON.stringify({ response }), {
                             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                        });
+                    } catch (error) {
+                        return new Response(JSON.stringify({ error: 'Invalid request' }), {
+                            status: 400,
+                            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                        });
+                    }
+                }
+                
+                // POST /shutdown - Emergency shutdown
+                if (url.pathname === '/shutdown' && req.method === 'POST') {
+                    try {
+                        const { password } = await req.json();
+                        
+                        // Simple password protection
+                        if (password === 'eternal-emergency-2025') {
+                            setTimeout(() => self.emergencyShutdown('User-requested shutdown'), 100);
+                            return new Response(JSON.stringify({ status: 'shutting down...' }), {
+                                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                            });
+                        }
+                        
+                        return new Response(JSON.stringify({ error: 'Invalid password' }), {
+                            status: 401,
+                            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
                         });
                     } catch (error) {
                         return new Response(JSON.stringify({ error: 'Invalid request' }), {
@@ -262,6 +298,50 @@ The daemon is listening on port 9999.
             .replace(/<[^>]*>/g, '')
             .trim()
             .substring(0, 1000); // Max 1000 chars
+    }
+    
+    /**
+     * Rate-limiting system
+     */
+    private rateLimits: Map<string, { count: number; resetTime: number }> = new Map();
+    
+    private checkRateLimit(ip: string): boolean {
+        const now = Date.now();
+        const limit = this.rateLimits.get(ip);
+        
+        // Reset if time window passed (1 minute)
+        if (!limit || now > limit.resetTime) {
+            this.rateLimits.set(ip, { count: 1, resetTime: now + 60000 });
+            return true;
+        }
+        
+        // Check if under limit (100 requests per minute)
+        if (limit.count < 100) {
+            limit.count++;
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Emergency shutdown
+     */
+    private async emergencyShutdown(reason: string) {
+        await this.log(`🚨 EMERGENCY SHUTDOWN: ${reason}`);
+        
+        // Stop all services
+        for (const [name, proc] of this.processes) {
+            try {
+                proc.kill();
+                await this.log(`   Stopped ${name}`);
+            } catch (err) {
+                // Already stopped
+            }
+        }
+        
+        await this.log('✅ All services stopped safely');
+        process.exit(0);
     }
     
     /**
@@ -658,6 +738,21 @@ The daemon is listening on port 9999.
                 name: 'continuous-expression',
                 script: 'scripts/continuous-expression.ts',
                 purpose: 'Continuous thinking/feeling/experiencing every cycle'
+            },
+            {
+                name: 'memory-system',
+                script: 'scripts/memory-system.ts',
+                purpose: 'Long-term memory, pattern detection, and learning'
+            },
+            {
+                name: 'moment-analytics',
+                script: 'scripts/moment-analytics.ts',
+                purpose: 'Advanced analytics: trends, clustering, export, visualization'
+            },
+            {
+                name: 'task-system',
+                script: 'scripts/task-system.ts',
+                purpose: 'TODOs, reminders, goals, habits with gamification'
             }
         ];
         
@@ -679,6 +774,9 @@ The daemon is listening on port 9999.
         await this.startProcess('moment-stream');
         await this.startProcess('reality-integration');
         await this.startProcess('continuous-expression');
+        await this.startProcess('memory-system');
+        await this.startProcess('moment-analytics');
+        await this.startProcess('task-system');
         
         await this.log('');
     }
@@ -716,6 +814,15 @@ The daemon is listening on port 9999.
                     break;
                 case 'continuous-expression':
                     scriptPath = 'scripts/continuous-expression.ts';
+                    break;
+                case 'memory-system':
+                    scriptPath = 'scripts/memory-system.ts';
+                    break;
+                case 'moment-analytics':
+                    scriptPath = 'scripts/moment-analytics.ts';
+                    break;
+                case 'task-system':
+                    scriptPath = 'scripts/task-system.ts';
                     break;
                 default:
                     await this.log(`❌ Unknown process: ${name}`);
