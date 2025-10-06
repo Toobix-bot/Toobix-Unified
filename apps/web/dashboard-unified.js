@@ -9,7 +9,8 @@ const API = {
   memory: 'http://localhost:9995',
   analytics: 'http://localhost:9996',
   tasks: 'http://localhost:9997',
-  sandbox: 'http://localhost:3003'
+  sandbox: 'http://localhost:3003',
+  storyIdle: 'http://localhost:3004'
 };
 
 // Global State
@@ -117,6 +118,20 @@ function navigateTo(view) {
       break;
     case 'analytics':
       renderAnalytics();
+
+// Achievement Tracking Helper
+async function trackAchievement(eventType, value = 1) {
+  try {
+    await fetch('http://localhost:9998/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: eventType, value })
+    });
+    console.log(`✅ Tracked: ${eventType} +${value}`);
+  } catch (error) {
+    console.error('Failed to track achievement:', error);
+  }
+}
       break;
     case 'memory':
       renderMemory();
@@ -129,6 +144,12 @@ function navigateTo(view) {
       break;
     case 'sandbox':
       renderAISandbox();
+      break;
+    case 'story-idle':
+      renderStoryIdle();
+      break;
+    case 'blockworld':
+      renderBlockWorld();
       break;
     case 'games':
       renderGames();
@@ -1189,19 +1210,23 @@ function startGame(gameId, title) {
       gameContent.innerHTML = renderTicTacToe();
       break;
     case 'memory':
-      gameContent.innerHTML = '<p style="text-align: center; padding: 40px;">Memory-Spiel wird implementiert...</p>';
+      gameContent.innerHTML = renderMemory();
+      initMemory();
       break;
     case 'snake':
-      gameContent.innerHTML = '<p style="text-align: center; padding: 40px;">Snake-Spiel wird implementiert...</p>';
+      gameContent.innerHTML = renderSnake();
+      initSnake();
       break;
     case '2048':
-      gameContent.innerHTML = '<p style="text-align: center; padding: 40px;">2048-Spiel wird implementiert...</p>';
+      gameContent.innerHTML = render2048();
+      init2048();
       break;
     case 'quiz':
       gameContent.innerHTML = renderQuiz();
       break;
     case 'typing':
-      gameContent.innerHTML = '<p style="text-align: center; padding: 40px;">Typing-Test wird implementiert...</p>';
+      gameContent.innerHTML = renderTypingTest();
+      initTypingTest();
       break;
   }
   
@@ -1240,6 +1265,12 @@ function tttMove(index) {
   if (tttCheckWin()) {
     document.getElementById('tttStatus').textContent = `${tttCurrentPlayer} hat gewonnen! 🎉`;
     tttGameOver = true;
+    
+    // Track achievement
+    if (tttCurrentPlayer === 'X') {
+      trackAchievement('tictactoe_wins', 1);
+      trackAchievement('games_won', 1);
+    }
     return;
   }
   
@@ -1321,12 +1352,484 @@ function renderQuiz() {
         }
         quizQ++;
         document.getElementById('quizScore').textContent = 'Score: ' + quizScore + ' / ' + quizData.length;
+        
+        // Check if quiz finished
+        if (quizQ >= quizData.length) {
+          trackAchievement('quiz_completed', 1);
+          if (quizScore === quizData.length) {
+            trackAchievement('quiz_perfect', 1);
+          }
+          trackAchievement('games_won', 1);
+        }
+        
         setTimeout(loadQuizQuestion, 1000);
       }
       
       loadQuizQuestion();
     </script>
   `;
+}
+
+// ===== MEMORY GAME =====
+let memoryCards = [];
+let memoryFlipped = [];
+let memoryMatched = [];
+let memoryMoves = 0;
+
+function renderMemory() {
+  return `
+    <div style="text-align: center; padding: 20px;">
+      <p id="memoryStatus" style="font-size: 1.2em; margin-bottom: 20px;">Finde alle Paare! 🃏</p>
+      <p id="memoryMoves" style="margin-bottom: 20px;">Züge: 0</p>
+      <div id="memoryBoard" style="display: inline-grid; grid-template-columns: repeat(4, 80px); gap: 10px; margin: 20px auto;">
+      </div>
+      <button class="btn btn-primary mt-20" onclick="initMemory()">🔄 Neues Spiel</button>
+    </div>
+  `;
+}
+
+function initMemory() {
+  const symbols = ['🍎', '🍊', '🍋', '🍇', '🍓', '🍒', '🍑', '🥝'];
+  memoryCards = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
+  memoryFlipped = [];
+  memoryMatched = [];
+  memoryMoves = 0;
+  
+  const board = document.getElementById('memoryBoard');
+  board.innerHTML = memoryCards.map((card, i) => `
+    <button class="btn btn-secondary" onclick="flipMemoryCard(${i})" id="memory${i}" 
+            style="width: 80px; height: 80px; font-size: 2em;">?</button>
+  `).join('');
+  
+  document.getElementById('memoryStatus').textContent = 'Finde alle Paare! 🃏';
+  document.getElementById('memoryMoves').textContent = 'Züge: 0';
+}
+
+function flipMemoryCard(index) {
+  if (memoryFlipped.length >= 2 || memoryFlipped.includes(index) || memoryMatched.includes(index)) return;
+  
+  document.getElementById(`memory${index}`).textContent = memoryCards[index];
+  memoryFlipped.push(index);
+  
+  if (memoryFlipped.length === 2) {
+    memoryMoves++;
+    document.getElementById('memoryMoves').textContent = `Züge: ${memoryMoves}`;
+    
+    const [first, second] = memoryFlipped;
+    if (memoryCards[first] === memoryCards[second]) {
+      memoryMatched.push(first, second);
+      memoryFlipped = [];
+      
+      if (memoryMatched.length === memoryCards.length) {
+        setTimeout(() => {
+          document.getElementById('memoryStatus').textContent = `🎉 Gewonnen in ${memoryMoves} Zügen!`;
+          showToast(`Memory gewonnen! +50 XP`, 'success');
+          trackAchievement('memory_wins', 1);
+          trackAchievement('games_won', 1);
+        }, 300);
+      }
+    } else {
+      setTimeout(() => {
+        document.getElementById(`memory${first}`).textContent = '?';
+        document.getElementById(`memory${second}`).textContent = '?';
+        memoryFlipped = [];
+      }, 800);
+    }
+  }
+}
+
+// ===== SNAKE GAME =====
+let snakeCanvas, snakeCtx;
+let snake, snakeDir, food, snakeScore, snakeGameOver, snakeInterval;
+
+function renderSnake() {
+  return `
+    <div style="text-align: center; padding: 20px;">
+      <p id="snakeScore" style="font-size: 1.2em; margin-bottom: 10px;">Score: 0</p>
+      <canvas id="snakeCanvas" width="400" height="400" 
+              style="border: 2px solid var(--border); background: var(--bg-secondary); border-radius: 8px;">
+      </canvas>
+      <div style="margin-top: 20px;">
+        <p style="color: var(--text-secondary);">Steuerung: Pfeiltasten ⬆️⬇️⬅️➡️</p>
+        <button class="btn btn-primary mt-10" onclick="initSnake()">🔄 Neues Spiel</button>
+      </div>
+    </div>
+  `;
+}
+
+function initSnake() {
+  snakeCanvas = document.getElementById('snakeCanvas');
+  snakeCtx = snakeCanvas.getContext('2d');
+  
+  snake = [{ x: 200, y: 200 }];
+  snakeDir = { x: 20, y: 0 };
+  food = { x: Math.floor(Math.random() * 20) * 20, y: Math.floor(Math.random() * 20) * 20 };
+  snakeScore = 0;
+  snakeGameOver = false;
+  
+  document.getElementById('snakeScore').textContent = 'Score: 0';
+  
+  if (snakeInterval) clearInterval(snakeInterval);
+  snakeInterval = setInterval(updateSnake, 150);
+  
+  document.onkeydown = handleSnakeKey;
+}
+
+function handleSnakeKey(e) {
+  if (snakeGameOver) return;
+  
+  switch(e.key) {
+    case 'ArrowUp': if (snakeDir.y === 0) snakeDir = { x: 0, y: -20 }; break;
+    case 'ArrowDown': if (snakeDir.y === 0) snakeDir = { x: 0, y: 20 }; break;
+    case 'ArrowLeft': if (snakeDir.x === 0) snakeDir = { x: -20, y: 0 }; break;
+    case 'ArrowRight': if (snakeDir.x === 0) snakeDir = { x: 20, y: 0 }; break;
+  }
+}
+
+function updateSnake() {
+  if (snakeGameOver) return;
+  
+  const head = { x: snake[0].x + snakeDir.x, y: snake[0].y + snakeDir.y };
+  
+  // Check collision with walls
+  if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400) {
+    endSnake();
+    return;
+  }
+  
+  // Check collision with self
+  if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+    endSnake();
+    return;
+  }
+  
+  snake.unshift(head);
+  
+  // Check if food eaten
+  if (head.x === food.x && head.y === food.y) {
+    snakeScore += 10;
+    document.getElementById('snakeScore').textContent = `Score: ${snakeScore}`;
+    food = { x: Math.floor(Math.random() * 20) * 20, y: Math.floor(Math.random() * 20) * 20 };
+  } else {
+    snake.pop();
+  }
+  
+  drawSnake();
+}
+
+function drawSnake() {
+  snakeCtx.fillStyle = '#1a1a1a';
+  snakeCtx.fillRect(0, 0, 400, 400);
+  
+  // Draw snake
+  snakeCtx.fillStyle = '#4CAF50';
+  snake.forEach(segment => {
+    snakeCtx.fillRect(segment.x, segment.y, 18, 18);
+  });
+  
+  // Draw food
+  snakeCtx.fillStyle = '#FF5252';
+  snakeCtx.fillRect(food.x, food.y, 18, 18);
+}
+
+function endSnake() {
+  snakeGameOver = true;
+  clearInterval(snakeInterval);
+  snakeCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  snakeCtx.fillRect(0, 0, 400, 400);
+  snakeCtx.fillStyle = '#fff';
+  snakeCtx.font = '24px Arial';
+  snakeCtx.textAlign = 'center';
+  snakeCtx.fillText('Game Over!', 200, 180);
+  snakeCtx.fillText(`Score: ${snakeScore}`, 200, 220);
+  showToast(`Snake Game Over! Score: ${snakeScore}`, 'info');
+  
+  // Track achievement
+  trackAchievement('snake_games', 1);
+  if (snakeScore >= 10) trackAchievement('snake_score', snakeScore);
+}
+
+// ===== 2048 GAME =====
+let grid2048 = [];
+let score2048 = 0;
+let gameOver2048 = false;
+
+function render2048() {
+  return `
+    <div style="text-align: center; padding: 20px;">
+      <p id="score2048" style="font-size: 1.2em; margin-bottom: 10px;">Score: 0</p>
+      <div id="grid2048" style="display: inline-grid; grid-template-columns: repeat(4, 100px); gap: 10px; margin: 20px auto;">
+      </div>
+      <div style="margin-top: 20px;">
+        <p style="color: var(--text-secondary);">Steuerung: Pfeiltasten ⬆️⬇️⬅️➡️</p>
+        <button class="btn btn-primary mt-10" onclick="init2048()">🔄 Neues Spiel</button>
+      </div>
+    </div>
+  `;
+}
+
+function init2048() {
+  grid2048 = Array(4).fill(null).map(() => Array(4).fill(0));
+  score2048 = 0;
+  gameOver2048 = false;
+  
+  addRandom2048();
+  addRandom2048();
+  
+  document.getElementById('score2048').textContent = 'Score: 0';
+  render2048Grid();
+  
+  document.onkeydown = handle2048Key;
+}
+
+function addRandom2048() {
+  const empty = [];
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      if (grid2048[i][j] === 0) empty.push({ i, j });
+    }
+  }
+  if (empty.length > 0) {
+    const { i, j } = empty[Math.floor(Math.random() * empty.length)];
+    grid2048[i][j] = Math.random() < 0.9 ? 2 : 4;
+  }
+}
+
+function render2048Grid() {
+  const gridEl = document.getElementById('grid2048');
+  gridEl.innerHTML = '';
+  
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      const value = grid2048[i][j];
+      const tile = document.createElement('div');
+      tile.style.cssText = `
+        width: 100px; height: 100px; 
+        background: ${value ? getTileColor2048(value) : '#ccc'}; 
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: ${value > 999 ? '1.5em' : '2em'}; font-weight: bold;
+        color: ${value > 4 ? '#fff' : '#776e65'};
+      `;
+      tile.textContent = value || '';
+      gridEl.appendChild(tile);
+    }
+  }
+}
+
+function getTileColor2048(value) {
+  const colors = {
+    2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563',
+    32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72', 256: '#edcc61',
+    512: '#edc850', 1024: '#edc53f', 2048: '#edc22e'
+  };
+  return colors[value] || '#3c3a32';
+}
+
+function handle2048Key(e) {
+  if (gameOver2048) return;
+  
+  let moved = false;
+  const oldGrid = JSON.stringify(grid2048);
+  
+  switch(e.key) {
+    case 'ArrowUp': moved = move2048Up(); break;
+    case 'ArrowDown': moved = move2048Down(); break;
+    case 'ArrowLeft': moved = move2048Left(); break;
+    case 'ArrowRight': moved = move2048Right(); break;
+    default: return;
+  }
+  
+  if (JSON.stringify(grid2048) !== oldGrid) {
+    addRandom2048();
+    render2048Grid();
+    document.getElementById('score2048').textContent = `Score: ${score2048}`;
+    
+    if (check2048Win()) {
+      showToast('🎉 Du hast 2048 erreicht!', 'success');
+      gameOver2048 = true;
+      trackAchievement('game_2048_wins', 1);
+      trackAchievement('games_won', 1);
+    } else if (check2048GameOver()) {
+      showToast('Game Over! Keine Züge mehr möglich.', 'error');
+      gameOver2048 = true;
+      trackAchievement('game_2048_played', 1);
+    }
+  }
+}
+
+function move2048Left() {
+  for (let i = 0; i < 4; i++) {
+    let row = grid2048[i].filter(x => x !== 0);
+    for (let j = 0; j < row.length - 1; j++) {
+      if (row[j] === row[j + 1]) {
+        row[j] *= 2;
+        score2048 += row[j];
+        row.splice(j + 1, 1);
+      }
+    }
+    grid2048[i] = [...row, ...Array(4 - row.length).fill(0)];
+  }
+}
+
+function move2048Right() {
+  for (let i = 0; i < 4; i++) {
+    let row = grid2048[i].filter(x => x !== 0);
+    for (let j = row.length - 1; j > 0; j--) {
+      if (row[j] === row[j - 1]) {
+        row[j] *= 2;
+        score2048 += row[j];
+        row.splice(j - 1, 1);
+        j--;
+      }
+    }
+    grid2048[i] = [...Array(4 - row.length).fill(0), ...row];
+  }
+}
+
+function move2048Up() {
+  for (let j = 0; j < 4; j++) {
+    let col = [];
+    for (let i = 0; i < 4; i++) if (grid2048[i][j] !== 0) col.push(grid2048[i][j]);
+    for (let i = 0; i < col.length - 1; i++) {
+      if (col[i] === col[i + 1]) {
+        col[i] *= 2;
+        score2048 += col[i];
+        col.splice(i + 1, 1);
+      }
+    }
+    for (let i = 0; i < 4; i++) grid2048[i][j] = col[i] || 0;
+  }
+}
+
+function move2048Down() {
+  for (let j = 0; j < 4; j++) {
+    let col = [];
+    for (let i = 0; i < 4; i++) if (grid2048[i][j] !== 0) col.push(grid2048[i][j]);
+    for (let i = col.length - 1; i > 0; i--) {
+      if (col[i] === col[i - 1]) {
+        col[i] *= 2;
+        score2048 += col[i];
+        col.splice(i - 1, 1);
+        i--;
+      }
+    }
+    while (col.length < 4) col.unshift(0);
+    for (let i = 0; i < 4; i++) grid2048[i][j] = col[i];
+  }
+}
+
+function check2048Win() {
+  return grid2048.some(row => row.some(cell => cell === 2048));
+}
+
+function check2048GameOver() {
+  // Check if any empty cells
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      if (grid2048[i][j] === 0) return false;
+      if (j < 3 && grid2048[i][j] === grid2048[i][j + 1]) return false;
+      if (i < 3 && grid2048[i][j] === grid2048[i + 1][j]) return false;
+    }
+  }
+  return true;
+}
+
+// ===== TYPING TEST =====
+let typingText = '';
+let typingStartTime = 0;
+let typingActive = false;
+
+function renderTypingTest() {
+  return `
+    <div style="text-align: center; padding: 20px; max-width: 800px; margin: 0 auto;">
+      <p style="font-size: 1.2em; margin-bottom: 20px;">Tippe den folgenden Text so schnell und genau wie möglich!</p>
+      
+      <div style="background: var(--bg-secondary); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <p id="typingSource" style="font-size: 1.1em; line-height: 1.6; color: var(--text-secondary);"></p>
+      </div>
+      
+      <textarea id="typingInput" 
+                style="width: 100%; height: 120px; padding: 15px; font-size: 1.1em; 
+                       border: 2px solid var(--border); border-radius: 8px; 
+                       background: var(--bg-card); color: var(--text-primary);"
+                placeholder="Beginne zu tippen..."
+                oninput="checkTyping()"></textarea>
+      
+      <div class="grid-3" style="margin-top: 20px;">
+        <div class="stat-card">
+          <div class="stat-label">WPM</div>
+          <div class="stat-value" id="typingWPM">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Genauigkeit</div>
+          <div class="stat-value" id="typingAccuracy">100%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Zeit</div>
+          <div class="stat-value" id="typingTime">0s</div>
+        </div>
+      </div>
+      
+      <button class="btn btn-primary mt-20" onclick="initTypingTest()">🔄 Neuer Test</button>
+    </div>
+  `;
+}
+
+function initTypingTest() {
+  const texts = [
+    'Die Sonne scheint hell am Himmel und die Vögel zwitschern fröhlich in den Bäumen.',
+    'Technologie verändert unsere Welt jeden Tag auf neue und aufregende Weise.',
+    'Das Leben ist eine Reise voller Abenteuer, Herausforderungen und wunderbarer Momente.',
+    'Lernen ist ein lebenslanger Prozess, der uns hilft zu wachsen und uns weiterzuentwickeln.',
+    'Freundschaft und Familie sind die wahren Schätze, die das Leben lebenswert machen.'
+  ];
+  
+  typingText = texts[Math.floor(Math.random() * texts.length)];
+  typingStartTime = 0;
+  typingActive = false;
+  
+  document.getElementById('typingSource').textContent = typingText;
+  document.getElementById('typingInput').value = '';
+  document.getElementById('typingWPM').textContent = '0';
+  document.getElementById('typingAccuracy').textContent = '100%';
+  document.getElementById('typingTime').textContent = '0s';
+}
+
+function checkTyping() {
+  const input = document.getElementById('typingInput').value;
+  
+  if (!typingActive && input.length > 0) {
+    typingActive = true;
+    typingStartTime = Date.now();
+  }
+  
+  if (!typingActive) return;
+  
+  // Calculate time
+  const elapsed = (Date.now() - typingStartTime) / 1000;
+  document.getElementById('typingTime').textContent = `${elapsed.toFixed(1)}s`;
+  
+  // Calculate WPM
+  const words = input.trim().split(/\s+/).length;
+  const wpm = Math.round((words / elapsed) * 60) || 0;
+  document.getElementById('typingWPM').textContent = wpm;
+  
+  // Calculate accuracy
+  let correct = 0;
+  for (let i = 0; i < input.length; i++) {
+    if (input[i] === typingText[i]) correct++;
+  }
+  const accuracy = input.length > 0 ? Math.round((correct / input.length) * 100) : 100;
+  document.getElementById('typingAccuracy').textContent = `${accuracy}%`;
+  
+  // Check completion
+  if (input === typingText) {
+    typingActive = false;
+    showToast(`🎉 Fertig! ${wpm} WPM bei ${accuracy}% Genauigkeit! +30 XP`, 'success');
+    trackAchievement('typing_tests', 1);
+    if (wpm >= 60) trackAchievement('typing_speed', wpm);
+  }
 }
 
 // ===== LUNA CHATBOT VIEW =====
@@ -2074,31 +2577,56 @@ function initMetricsChart() {
 }
 
 // ===== ACHIEVEMENTS VIEW =====
-function renderAchievements() {
+async function renderAchievements() {
   const content = document.getElementById('content');
   
-  const achievements = [
-    { id: 1, icon: '🎯', title: 'First Steps', description: 'Erstelle deine erste Task', progress: 100, unlocked: true },
-    { id: 2, icon: '🔥', title: 'Week Warrior', description: 'Halte einen 7-Tage Streak', progress: 85, unlocked: false },
-    { id: 3, icon: '💪', title: 'Task Master', description: 'Schließe 100 Tasks ab', progress: 45, unlocked: false },
-    { id: 4, icon: '❤️', title: 'Love Guru', description: 'Erreiche 1000 Love Points', progress: 67, unlocked: false },
-    { id: 5, icon: '🧠', title: 'Memory Keeper', description: 'Speichere 50 Memories', progress: 20, unlocked: false },
-    { id: 6, icon: '✨', title: 'Moment Collector', description: 'Erfasse 100 Moments', progress: 30, unlocked: false },
-    { id: 7, icon: '🌟', title: 'Level 10', description: 'Erreiche Level 10', progress: 10, unlocked: false },
-    { id: 8, icon: '🎮', title: 'Game Champion', description: 'Gewinne 10 Spiele', progress: 0, unlocked: false },
-    { id: 9, icon: '🤖', title: 'Luna Best Friend', description: 'Führe 50 Luna Gespräche', progress: 15, unlocked: false },
-    { id: 10, icon: '👥', title: 'Social Butterfly', description: 'Füge 20 Personen hinzu', progress: 25, unlocked: false },
-    { id: 11, icon: '📊', title: 'Data Analyst', description: 'Nutze Analytics 30 Tage', progress: 10, unlocked: false },
-    { id: 12, icon: '🍅', title: 'Pomodoro Pro', description: 'Schließe 100 Pomodoros ab', progress: 5, unlocked: false }
-  ];
+  // Fetch achievements from backend
+  let achievements = [];
+  let userStats = { level: 1, xp: 0 };
+  
+  try {
+    const [achResponse, statsResponse] = await Promise.all([
+      fetch('http://localhost:9998/achievements'),
+      fetch('http://localhost:9998/stats')
+    ]);
+    
+    if (achResponse.ok) {
+      achievements = await achResponse.json();
+    } else {
+      throw new Error('Failed to fetch achievements');
+    }
+    
+    if (statsResponse.ok) {
+      userStats = await statsResponse.json();
+    }
+  } catch (error) {
+    console.error('Error loading achievements:', error);
+    // Fallback to dummy data
+    achievements = [
+      { id: 'first_task', icon: '�', name: 'First Steps', description: 'Erstelle deine erste Task', current: 1, requirement: 1, unlocked: true, tier: 'bronze', category: 'tasks' },
+      { id: 'week_warrior', icon: '🔥', name: 'Week Warrior', description: 'Halte einen 7-Tage Streak', current: 6, requirement: 7, unlocked: false, tier: 'silver', category: 'tasks' },
+      { id: 'task_master', icon: '💪', name: 'Task Master', description: 'Schließe 100 Tasks ab', current: 45, requirement: 100, unlocked: false, tier: 'gold', category: 'tasks' }
+    ];
+  }
 
   appData.achievements = achievements;
   const unlockedCount = achievements.filter(a => a.unlocked).length;
+  const progress = achievements.map(a => a.current / a.requirement * 100);
+  const avgProgress = progress.reduce((sum, p) => sum + p, 0) / achievements.length;
+
+  // Group by category
+  const categories = {
+    tasks: achievements.filter(a => a.category === 'tasks'),
+    games: achievements.filter(a => a.category === 'games'),
+    social: achievements.filter(a => a.category === 'social'),
+    system: achievements.filter(a => a.category === 'system'),
+    special: achievements.filter(a => a.category === 'special')
+  };
 
   content.innerHTML = `
     <div class="view-header">
       <h1 class="view-title">🏆 Achievements</h1>
-      <p class="view-subtitle">${unlockedCount}/${achievements.length} freigeschaltet</p>
+      <p class="view-subtitle">${unlockedCount}/${achievements.length} freigeschaltet · Level ${userStats.level} · ${userStats.xp} XP</p>
     </div>
 
     <div class="stats-grid" style="margin-bottom: 30px;">
@@ -2114,31 +2642,77 @@ function renderAchievements() {
       </div>
       <div class="stat-card">
         <div class="stat-icon">📈</div>
-        <div class="stat-value">${Math.round((unlockedCount / achievements.length) * 100)}%</div>
-        <div class="stat-label">Completion</div>
+        <div class="stat-value">${Math.round(avgProgress)}%</div>
+        <div class="stat-label">Avg Progress</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">💎</div>
-        <div class="stat-value">${unlockedCount * 100}</div>
-        <div class="stat-label">XP Earned</div>
+        <div class="stat-value">${userStats.xp}</div>
+        <div class="stat-label">Total XP</div>
       </div>
     </div>
 
-    <div class="achievements-grid">
-      ${achievements.map(achievement => `
-        <div class="achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}">
-          ${achievement.unlocked ? '<div class="achievement-unlocked-badge">✓</div>' : ''}
-          <div class="achievement-icon">${achievement.icon}</div>
-          <div class="achievement-title">${achievement.title}</div>
-          <div class="achievement-description">${achievement.description}</div>
-          <div class="achievement-progress">
-            <div class="achievement-progress-bar" style="width: ${achievement.progress}%"></div>
-          </div>
-          <div class="achievement-status">
-            ${achievement.unlocked ? 'Unlocked!' : `${achievement.progress}% Complete`}
+    <div class="achievement-categories">
+      ${Object.entries(categories).map(([category, items]) => `
+        <div class="achievement-category" style="margin-bottom: 30px;">
+          <h2 style="font-size: 18px; margin-bottom: 15px; text-transform: capitalize;">
+            ${getCategoryIcon(category)} ${category}
+          </h2>
+          <div class="achievements-grid">
+            ${items.map(achievement => `
+              <div class="achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}" 
+                   data-tier="${achievement.tier}"
+                   style="border-color: ${getTierColor(achievement.tier)};">
+                ${achievement.unlocked ? '<div class="achievement-unlocked-badge">✓</div>' : ''}
+                <div class="achievement-tier-badge" style="background: ${getTierColor(achievement.tier)}">
+                  ${achievement.tier}
+                </div>
+                <div class="achievement-icon">${achievement.icon}</div>
+                <div class="achievement-title">${achievement.name}</div>
+                <div class="achievement-description">${achievement.description}</div>
+                <div class="achievement-progress">
+                  <div class="achievement-progress-bar" 
+                       style="width: ${Math.min(100, (achievement.current / achievement.requirement) * 100)}%; 
+                              background: ${getTierColor(achievement.tier)};"></div>
+                </div>
+                <div class="achievement-status">
+                  ${achievement.unlocked ? 
+                    `<span style="color: ${getTierColor(achievement.tier)};">✓ Unlocked!</span>` : 
+                    `${achievement.current}/${achievement.requirement} · ${Math.round((achievement.current / achievement.requirement) * 100)}%`
+                  }
+                </div>
+              </div>
+            `).join('')}
           </div>
         </div>
       `).join('')}
+    </div>
+  `;
+
+  updateAchievementBadge();
+}
+
+function getCategoryIcon(category) {
+  const icons = {
+    tasks: '✅',
+    games: '🎮',
+    social: '👥',
+    system: '⚙️',
+    special: '✨'
+  };
+  return icons[category] || '📦';
+}
+
+function getTierColor(tier) {
+  const colors = {
+    bronze: '#CD7F32',
+    silver: '#C0C0C0',
+    gold: '#FFD700',
+    platinum: '#E5E4E2',
+    legendary: '#FF6B6B'
+  };
+  return colors[tier] || '#888';
+}
     </div>
   `;
 
@@ -2346,6 +2920,9 @@ async function updateTaskStatus(taskId, newStatus) {
     task.wasCompleted = true;
     addXP(task.xp || 10);
     showToast(`✅ Task abgeschlossen! +${task.xp || 10} XP`, 'success');
+    
+    // Track achievement
+    trackAchievement('tasks_completed', 1);
   }
 
   // Update UI
@@ -2711,6 +3288,806 @@ async function rejectSandboxChange(changeId) {
     }
   } catch (error) {
     showToast('❌ Fehler', 'error');
+  }
+}
+
+// ==================== STORY-IDLE GAME VIEW ====================
+
+async function renderStoryIdle() {
+  const content = document.getElementById('content');
+  
+  content.innerHTML = `
+    <div class="page-header">
+      <h1 class="page-title">🎮 Story-Idle Game</h1>
+      <p class="page-subtitle">📖 Interactive story-driven development companion</p>
+    </div>
+
+    <!-- Player Card -->
+    <div class="card">
+      <h3 class="card-title mb-20">👤 Your Journey</h3>
+      <div id="storyIdlePlayer">
+        <p class="text-dim">Loading player data...</p>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-3">
+      <div class="card">
+        <h3 class="card-title mb-20">📊 Stats</h3>
+        <div id="storyIdleStats">
+          <p class="text-dim">Loading...</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title mb-20">📖 Story</h3>
+        <div id="storyIdleStory">
+          <p class="text-dim">Loading...</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title mb-20">🏆 Achievements</h3>
+        <div id="storyIdleAchievements">
+          <p class="text-dim">Loading...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+      <h3 class="card-title mb-20">🎯 Actions</h3>
+      <p class="mb-20">Führe Aktionen aus um XP und Stats zu verbessern:</p>
+      <div class="grid grid-5" style="gap: 10px;">
+        <button class="btn btn-primary" onclick="performStoryAction('explore')">
+          🔍 Explore<br><small>+25 XP, +2 Wisdom</small>
+        </button>
+        <button class="btn btn-primary" onclick="performStoryAction('meditate')">
+          🧘 Meditate<br><small>+20 XP, +3 Peace</small>
+        </button>
+        <button class="btn btn-primary" onclick="performStoryAction('code')">
+          💻 Code<br><small>+30 XP, +2 Creativity</small>
+        </button>
+        <button class="btn btn-primary" onclick="performStoryAction('socialize')">
+          👥 Socialize<br><small>+25 XP, +3 Love</small>
+        </button>
+        <button class="btn btn-primary" onclick="performStoryAction('rest')">
+          😴 Rest<br><small>+15 XP, +4 Stability</small>
+        </button>
+      </div>
+    </div>
+
+    <!-- Luna Companion -->
+    <div class="card">
+      <h3 class="card-title mb-20">🤖 Luna Companion</h3>
+      <div id="storyIdleLuna">
+        <p class="text-dim">Loading Luna...</p>
+      </div>
+      <button class="btn mt-10" onclick="talkToLuna()">💬 Talk to Luna</button>
+    </div>
+  `;
+
+  // Load game data
+  await loadStoryIdleData();
+  
+  // Auto-refresh
+  if (window.storyIdleInterval) clearInterval(window.storyIdleInterval);
+  window.storyIdleInterval = setInterval(() => {
+    if (currentView === 'story-idle') {
+      loadStoryIdleData();
+    } else {
+      clearInterval(window.storyIdleInterval);
+    }
+  }, 5000);
+}
+
+async function loadStoryIdleData() {
+  try {
+    // Load full state
+    const response = await fetch(`${API.storyIdle}/state`);
+    if (!response.ok) throw new Error('Story-Idle API not available');
+    
+    const state = await response.json();
+    
+    // Render player
+    renderStoryIdlePlayer(state.player);
+    
+    // Render stats
+    renderStoryIdleStats(state.stats);
+    
+    // Render story
+    renderStoryIdleStory(state.story);
+    
+    // Render achievements
+    renderStoryIdleAchievements(state.achievements);
+    
+  } catch (error) {
+    console.error('Error loading Story-Idle:', error);
+    document.getElementById('storyIdlePlayer').innerHTML = `
+      <p>❌ <strong>Error:</strong> Story-Idle API nicht erreichbar</p>
+      <p class="text-dim">Starte den Server mit: <code>bun run scripts/story-idle-api.ts</code></p>
+    `;
+  }
+}
+
+function renderStoryIdlePlayer(player) {
+  const xpPercent = (player.xp / player.xpToNextLevel) * 100;
+  
+  document.getElementById('storyIdlePlayer').innerHTML = `
+    <div class="mb-15">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div>
+          <strong style="font-size: 1.2em;">${player.name || 'Player'}</strong>
+          <span class="badge" style="margin-left: 10px;">Level ${player.level}</span>
+        </div>
+        <div class="text-dim">
+          ${player.xp} / ${player.xpToNextLevel} XP
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: ${xpPercent}%"></div>
+      </div>
+    </div>
+    <div class="text-dim">
+      Total XP: ${player.totalXp || player.xp}
+    </div>
+  `;
+}
+
+function renderStoryIdleStats(stats) {
+  document.getElementById('storyIdleStats').innerHTML = `
+    <div class="stats-grid" style="gap: 10px;">
+      <div class="stat-item">
+        <div class="stat-label">❤️ Love</div>
+        <div class="stat-value">${stats.love}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">☮️ Peace</div>
+        <div class="stat-value">${stats.peace}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">🧠 Wisdom</div>
+        <div class="stat-value">${stats.wisdom}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">🎨 Creativity</div>
+        <div class="stat-value">${stats.creativity}</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">⚖️ Stability</div>
+        <div class="stat-value">${stats.stability}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderStoryIdleStory(story) {
+  const currentQuest = story.currentQuest || story.activeQuest || 'No active quest';
+  const chapter = story.chapter || story.currentChapter || 1;
+  
+  document.getElementById('storyIdleStory').innerHTML = `
+    <div class="mb-15">
+      <strong>Chapter ${chapter}</strong>
+    </div>
+    <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; border-left: 4px solid var(--accent);">
+      <strong>🎯 Current Quest:</strong><br>
+      <span style="font-size: 1.1em;">${currentQuest}</span>
+    </div>
+  `;
+}
+
+function renderStoryIdleAchievements(achievements) {
+  const unlocked = achievements.unlocked || achievements.list || [];
+  
+  document.getElementById('storyIdleAchievements').innerHTML = `
+    <div class="mb-10">
+      <strong>${unlocked.length} Achievements Unlocked</strong>
+    </div>
+    ${unlocked.length > 0 ? `
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        ${unlocked.slice(0, 5).map(ach => `
+          <div style="padding: 8px; background: var(--card-bg); border-radius: 4px;">
+            🏆 ${ach}
+          </div>
+        `).join('')}
+        ${unlocked.length > 5 ? `<div class="text-dim">+${unlocked.length - 5} more...</div>` : ''}
+      </div>
+    ` : `
+      <p class="text-dim">No achievements yet. Complete quests to unlock!</p>
+    `}
+  `;
+}
+
+async function performStoryAction(action) {
+  try {
+    const response = await fetch(`${API.storyIdle}/action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action })
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      showToast(`✅ ${action}: +${result.reward.xp} XP, +${result.reward.amount} ${result.reward.stat}!`, 'success');
+      await loadStoryIdleData();
+      
+      // Trigger confetti for level up
+      if (result.newState.player.level > appData.user.level) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        showToast(`🎉 LEVEL UP! Jetzt Level ${result.newState.player.level}!`, 'success');
+      }
+    } else {
+      showToast('❌ Fehler beim Ausführen der Aktion', 'error');
+    }
+  } catch (error) {
+    showToast('❌ Story-Idle API nicht erreichbar', 'error');
+  }
+}
+
+async function talkToLuna() {
+  try {
+    const response = await fetch(`${API.storyIdle}/luna`);
+    if (response.ok) {
+      const data = await response.json();
+      document.getElementById('storyIdleLuna').innerHTML = `
+        <div style="padding: 15px; background: var(--card-bg); border-radius: 8px; border-left: 4px solid var(--accent);">
+          <strong>🤖 Luna says:</strong><br>
+          <p style="margin-top: 10px;">${data.message || 'Hello, traveler!'}</p>
+        </div>
+      `;
+    }
+  } catch (error) {
+    showToast('❌ Luna nicht erreichbar', 'error');
+  }
+}
+
+// ==================== BLOCKWORLD VIEW ====================
+
+let blockWorldCanvas = null;
+let blockWorldCtx = null;
+let blockWorldData = null;
+let blockWorldPlayer = { x: 32, y: 40, z: 32 };
+let blockWorldCamera = { x: 0, y: 30, zoom: 1.5 };
+let blockWorldMode = 'spectator'; // 'spectator' or 'player'
+let blockWorldSelectedBlock = 1; // Grass
+
+const BLOCK_TYPES = {
+  0: { name: 'Air', color: 'transparent' },
+  1: { name: 'Grass', color: '#7cbd56' },
+  2: { name: 'Dirt', color: '#9b7653' },
+  3: { name: 'Stone', color: '#888888' },
+  4: { name: 'Wood', color: '#8b6f47' },
+  5: { name: 'Leaves', color: '#4a7c3a' },
+  6: { name: 'Sand', color: '#edd9a3' },
+  7: { name: 'Water', color: '#4a90e2' },
+  8: { name: 'Cobblestone', color: '#666666' },
+  9: { name: 'Planks', color: '#b8956a' }
+};
+
+async function renderBlockWorld() {
+  const content = document.getElementById('content');
+  
+  content.innerHTML = `
+    <div class="page-header">
+      <h1 class="page-title">⛏️ BlockWorld</h1>
+      <p class="page-subtitle">Minecraft-inspiriertes Voxel Game mit KI Agent</p>
+    </div>
+
+    <div class="grid-2" style="gap: 20px; align-items: start;">
+      <!-- Game Canvas -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h3 class="card-title">🌍 World View</h3>
+          <div>
+            <button class="btn btn-sm ${blockWorldMode === 'spectator' ? 'btn-primary' : 'btn-secondary'}" 
+                    onclick="switchBlockWorldMode('spectator')">
+              👁️ Spectator
+            </button>
+            <button class="btn btn-sm ${blockWorldMode === 'player' ? 'btn-primary' : 'btn-secondary'}" 
+                    onclick="switchBlockWorldMode('player')">
+              🎮 Player
+            </button>
+          </div>
+        </div>
+        
+        <canvas id="blockWorldCanvas" width="800" height="600" 
+                style="border: 2px solid var(--border-color); border-radius: 8px; background: #87CEEB; cursor: crosshair;">
+        </canvas>
+        
+        <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center;">
+          <span style="font-size: 12px; color: var(--text-dim);">
+            Camera: X:${blockWorldCamera.x.toFixed(0)} Y:${blockWorldCamera.y.toFixed(0)} | Zoom: ${blockWorldCamera.zoom.toFixed(1)}x
+          </span>
+          <button class="btn btn-sm" onclick="blockWorldCamera.zoom = Math.min(3, blockWorldCamera.zoom + 0.5); renderBlockWorldFrame()">🔍 +</button>
+          <button class="btn btn-sm" onclick="blockWorldCamera.zoom = Math.max(0.5, blockWorldCamera.zoom - 0.5); renderBlockWorldFrame()">🔍 −</button>
+        </div>
+      </div>
+
+      <!-- Controls & Info -->
+      <div>
+        <!-- AI Agent Status -->
+        <div class="card mb-20">
+          <h3 class="card-title mb-15">🤖 AI Agent: BlockBot</h3>
+          <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="stat-card">
+              <div class="stat-icon">📍</div>
+              <div class="stat-value" id="aiPosition">32, 40, 32</div>
+              <div class="stat-label">Position</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">❤️</div>
+              <div class="stat-value" id="aiHealth">100</div>
+              <div class="stat-label">Health</div>
+            </div>
+          </div>
+          <div style="margin-top: 15px;">
+            <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 5px;">Current Goal:</div>
+            <div id="aiGoal" style="padding: 8px; background: var(--bg-elevated); border-radius: 4px; font-size: 13px;">
+              Exploring world...
+            </div>
+          </div>
+          <div style="margin-top: 15px;">
+            <button class="btn btn-primary" style="width: 100%;" onclick="startBlockWorldAI()">
+              ▶️ Start AI
+            </button>
+          </div>
+        </div>
+
+        <!-- Block Palette -->
+        <div class="card mb-20">
+          <h3 class="card-title mb-15">🎨 Block Palette</h3>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            ${Object.entries(BLOCK_TYPES).filter(([id]) => id !== '0' && id !== '7').map(([id, info]) => `
+              <button class="btn ${blockWorldSelectedBlock == id ? 'btn-primary' : 'btn-secondary'}" 
+                      onclick="blockWorldSelectedBlock = ${id}"
+                      style="padding: 8px; font-size: 11px; display: flex; align-items: center; gap: 5px;">
+                <div style="width: 16px; height: 16px; background: ${info.color}; border: 1px solid #000;"></div>
+                ${info.name}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Controls Info -->
+        <div class="card">
+          <h3 class="card-title mb-15">🎮 Controls</h3>
+          <div style="font-size: 12px; line-height: 1.8;">
+            <div><strong>Mouse Drag:</strong> Pan camera</div>
+            <div><strong>Mouse Wheel:</strong> Zoom</div>
+            <div><strong>Left Click:</strong> Break block</div>
+            <div><strong>Right Click:</strong> Place block</div>
+            <div><strong>WASD:</strong> Move player (Player Mode)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Updates Log -->
+    <div class="card mt-20">
+      <h3 class="card-title mb-15">📜 Recent Block Updates</h3>
+      <div id="blockUpdatesLog" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 11px;">
+        <div style="color: var(--text-dim);">Loading updates...</div>
+      </div>
+    </div>
+  `;
+
+  // Initialize canvas
+  blockWorldCanvas = document.getElementById('blockWorldCanvas');
+  blockWorldCtx = blockWorldCanvas.getContext('2d');
+  
+  // Load world data
+  await loadBlockWorld();
+  
+  // Setup event listeners
+  setupBlockWorldControls();
+  
+  // Start render loop
+  renderBlockWorldFrame();
+  
+  // Load updates log
+  loadBlockUpdatesLog();
+  setInterval(loadBlockUpdatesLog, 5000);
+}
+
+async function loadBlockWorld() {
+  try {
+    const response = await fetch('http://localhost:9993/world');
+    if (!response.ok) throw new Error('Failed to load world');
+    
+    blockWorldData = await response.json();
+    console.log('✅ BlockWorld loaded:', blockWorldData.size);
+    
+    // Load AI player
+    const playerResponse = await fetch('http://localhost:9993/player/ai-agent');
+    if (playerResponse.ok) {
+      const player = await playerResponse.json();
+      document.getElementById('aiPosition').textContent = `${Math.floor(player.x)}, ${Math.floor(player.y)}, ${Math.floor(player.z)}`;
+      document.getElementById('aiHealth').textContent = player.health;
+    }
+  } catch (error) {
+    console.error('❌ Failed to load BlockWorld:', error);
+    showToast('❌ BlockWorld Server nicht erreichbar', 'error');
+  }
+}
+
+function renderBlockWorldFrame() {
+  if (!blockWorldCanvas || !blockWorldCtx || !blockWorldData) return;
+  
+  const ctx = blockWorldCtx;
+  const width = blockWorldCanvas.width;
+  const height = blockWorldCanvas.height;
+  
+  // Clear canvas
+  ctx.fillStyle = '#87CEEB'; // Sky blue
+  ctx.fillRect(0, 0, width, height);
+  
+  // Isometric projection settings
+  const tileWidth = 16 * blockWorldCamera.zoom;
+  const tileHeight = 8 * blockWorldCamera.zoom;
+  const centerX = width / 2 + blockWorldCamera.x;
+  const centerY = height / 2 + blockWorldCamera.y;
+  
+  // Render blocks (simplified - render only surface blocks)
+  const renderDistance = 32;
+  const startX = Math.max(0, Math.floor(blockWorldPlayer.x - renderDistance));
+  const endX = Math.min(blockWorldData.size.x, Math.ceil(blockWorldPlayer.x + renderDistance));
+  const startZ = Math.max(0, Math.floor(blockWorldPlayer.z - renderDistance));
+  const endZ = Math.min(blockWorldData.size.z, Math.ceil(blockWorldPlayer.z + renderDistance));
+  
+  // Collect visible blocks
+  const visibleBlocks = [];
+  
+  for (let x = startX; x < endX; x++) {
+    for (let z = startZ; z < endZ; z++) {
+      // Find highest non-air block
+      for (let y = blockWorldData.size.y - 1; y >= 0; y--) {
+        const block = getBlockAt(x, y, z);
+        if (block && block !== 0 && block !== 7) { // Not air or water
+          visibleBlocks.push({ x, y, z, type: block });
+          break;
+        }
+      }
+    }
+  }
+  
+  // Sort blocks by isometric depth (back to front)
+  visibleBlocks.sort((a, b) => {
+    const depthA = a.x + a.z - a.y;
+    const depthB = b.x + b.z - b.y;
+    return depthA - depthB;
+  });
+  
+  // Render blocks
+  for (const block of visibleBlocks) {
+    const isoX = (block.x - block.z) * (tileWidth / 2);
+    const isoY = (block.x + block.z) * (tileHeight / 2) - block.y * tileHeight;
+    
+    const screenX = centerX + isoX;
+    const screenY = centerY + isoY;
+    
+    const blockInfo = BLOCK_TYPES[block.type];
+    if (!blockInfo) continue;
+    
+    // Draw block (simple diamond shape for isometric)
+    drawIsoBlock(ctx, screenX, screenY, tileWidth, tileHeight, blockInfo.color);
+  }
+  
+  // Draw player marker
+  const playerIsoX = (blockWorldPlayer.x - blockWorldPlayer.z) * (tileWidth / 2);
+  const playerIsoY = (blockWorldPlayer.x + blockWorldPlayer.z) * (tileHeight / 2) - blockWorldPlayer.y * tileHeight;
+  const playerScreenX = centerX + playerIsoX;
+  const playerScreenY = centerY + playerIsoY;
+  
+  ctx.fillStyle = '#FF0000';
+  ctx.beginPath();
+  ctx.arc(playerScreenX, playerScreenY, 4 * blockWorldCamera.zoom, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawIsoBlock(ctx, x, y, width, height, color) {
+  // Top face
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + width / 2, y + height / 2);
+  ctx.lineTo(x, y + height);
+  ctx.lineTo(x - width / 2, y + height / 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+  
+  // Right face (darker)
+  ctx.fillStyle = shadeColor(color, -20);
+  ctx.beginPath();
+  ctx.moveTo(x, y + height);
+  ctx.lineTo(x + width / 2, y + height / 2);
+  ctx.lineTo(x + width / 2, y + height * 1.5);
+  ctx.lineTo(x, y + height * 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  
+  // Left face (even darker)
+  ctx.fillStyle = shadeColor(color, -40);
+  ctx.beginPath();
+  ctx.moveTo(x, y + height);
+  ctx.lineTo(x - width / 2, y + height / 2);
+  ctx.lineTo(x - width / 2, y + height * 1.5);
+  ctx.lineTo(x, y + height * 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+}
+
+function shadeColor(color, percent) {
+  const num = parseInt(color.replace('#', ''), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = Math.max(0, Math.min(255, (num >> 16) + amt));
+  const G = Math.max(0, Math.min(255, (num >> 8 & 0x00FF) + amt));
+  const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt));
+  return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1)}`;
+}
+
+function getBlockAt(x, y, z) {
+  if (!blockWorldData) return 0;
+  
+  const chunkX = Math.floor(x / 16);
+  const chunkZ = Math.floor(z / 16);
+  const localX = ((x % 16) + 16) % 16;
+  const localZ = ((z % 16) + 16) % 16;
+  
+  const chunk = blockWorldData.chunks.find(c => c.x === chunkX && c.z === chunkZ);
+  if (!chunk) return 0;
+  
+  const index = localX + localZ * 16 + y * 16 * 16;
+  return chunk.data[index] || 0;
+}
+
+function setupBlockWorldControls() {
+  let isDragging = false;
+  let lastX = 0;
+  let lastY = 0;
+  
+  blockWorldCanvas.addEventListener('mousedown', (e) => {
+    if (e.button === 0) { // Left click
+      isDragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+    }
+  });
+  
+  blockWorldCanvas.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      const deltaX = e.clientX - lastX;
+      const deltaY = e.clientY - lastY;
+      
+      blockWorldCamera.x += deltaX;
+      blockWorldCamera.y += deltaY;
+      
+      lastX = e.clientX;
+      lastY = e.clientY;
+      
+      renderBlockWorldFrame();
+    }
+  });
+  
+  blockWorldCanvas.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+  
+  blockWorldCanvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    blockWorldCamera.zoom = Math.max(0.5, Math.min(3, blockWorldCamera.zoom + delta));
+    renderBlockWorldFrame();
+  });
+  
+  // Click to break/place blocks
+  blockWorldCanvas.addEventListener('click', async (e) => {
+    if (blockWorldMode !== 'player') return;
+    
+    const rect = blockWorldCanvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Simple block selection (nearest block to player)
+    const targetX = Math.floor(blockWorldPlayer.x + (e.button === 0 ? 1 : -1));
+    const targetY = Math.floor(blockWorldPlayer.y);
+    const targetZ = Math.floor(blockWorldPlayer.z);
+    
+    if (e.button === 0 || e.shiftKey) {
+      // Left click or Shift+Click: Break block
+      await breakBlockAt(targetX, targetY, targetZ);
+    } else {
+      // Right click: Place block
+      await placeBlockAt(targetX, targetY, targetZ, blockWorldSelectedBlock);
+    }
+  });
+  
+  blockWorldCanvas.addEventListener('contextmenu', async (e) => {
+    e.preventDefault();
+    if (blockWorldMode !== 'player') return;
+    
+    // Right click: Place block
+    const targetX = Math.floor(blockWorldPlayer.x + 1);
+    const targetY = Math.floor(blockWorldPlayer.y);
+    const targetZ = Math.floor(blockWorldPlayer.z);
+    
+    await placeBlockAt(targetX, targetY, targetZ, blockWorldSelectedBlock);
+  });
+  
+  // WASD Movement
+  document.addEventListener('keydown', (e) => {
+    if (blockWorldMode !== 'player' || currentView !== 'blockworld') return;
+    
+    const speed = 1;
+    
+    switch(e.key.toLowerCase()) {
+      case 'w':
+        blockWorldPlayer.z -= speed;
+        break;
+      case 's':
+        blockWorldPlayer.z += speed;
+        break;
+      case 'a':
+        blockWorldPlayer.x -= speed;
+        break;
+      case 'd':
+        blockWorldPlayer.x += speed;
+        break;
+      case ' ':
+        blockWorldPlayer.y += speed;
+        e.preventDefault();
+        break;
+      case 'shift':
+        blockWorldPlayer.y -= speed;
+        break;
+    }
+    
+    renderBlockWorldFrame();
+  });
+}
+
+async function breakBlockAt(x, y, z) {
+  try {
+    const response = await fetch(`http://localhost:9993/block/${x}/${y}/${z}`);
+    if (!response.ok) return;
+    
+    const data = await response.json();
+    if (data.type === 0) {
+      showToast('Cannot break air!', 'info');
+      return;
+    }
+    
+    // Break block
+    await fetch('http://localhost:9993/block', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ x, y, z, type: 0, playerId: 'human-player' })
+    });
+    
+    showToast(`⛏️ Broke ${data.info.name}!`, 'success');
+    
+    // Reload world
+    await loadBlockWorld();
+    renderBlockWorldFrame();
+    
+  } catch (error) {
+    console.error('Failed to break block:', error);
+    showToast('❌ Failed to break block', 'error');
+  }
+}
+
+async function placeBlockAt(x, y, z, type) {
+  try {
+    const response = await fetch(`http://localhost:9993/block/${x}/${y}/${z}`);
+    if (!response.ok) return;
+    
+    const data = await response.json();
+    if (data.type !== 0) {
+      showToast('Space occupied!', 'info');
+      return;
+    }
+    
+    // Place block
+    await fetch('http://localhost:9993/block', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ x, y, z, type, playerId: 'human-player' })
+    });
+    
+    const blockName = BLOCK_TYPES[type]?.name || 'Block';
+    showToast(`🧱 Placed ${blockName}!`, 'success');
+    
+    // Reload world
+    await loadBlockWorld();
+    renderBlockWorldFrame();
+    
+  } catch (error) {
+    console.error('Failed to place block:', error);
+    showToast('❌ Failed to place block', 'error');
+  }
+}
+
+function switchBlockWorldMode(mode) {
+  blockWorldMode = mode;
+  renderBlockWorld();
+}
+
+async function startBlockWorldAI() {
+  try {
+    showToast('🤖 AI Agent wird gestartet...', 'info');
+    document.getElementById('aiGoal').textContent = 'Initializing...';
+    
+    const response = await fetch('http://localhost:9992/start', {
+      method: 'POST'
+    });
+    
+    if (response.ok) {
+      showToast('✅ AI Agent aktiv!', 'success');
+      
+      // Poll AI status
+      pollAIStatus();
+    } else {
+      throw new Error('Failed to start AI');
+    }
+  } catch (error) {
+    console.error('Failed to start AI:', error);
+    showToast('❌ AI Agent nicht erreichbar (Port 9992)', 'error');
+    document.getElementById('aiGoal').textContent = 'AI service not running';
+  }
+}
+
+async function pollAIStatus() {
+  if (currentView !== 'blockworld') return;
+  
+  try {
+    const response = await fetch('http://localhost:9992/status');
+    if (response.ok) {
+      const status = await response.json();
+      
+      document.getElementById('aiPosition').textContent = `${Math.floor(status.position.x)}, ${Math.floor(status.position.y)}, ${Math.floor(status.position.z)}`;
+      document.getElementById('aiHealth').textContent = status.health;
+      document.getElementById('aiGoal').textContent = status.goal;
+      
+      // Update AI position on map
+      blockWorldPlayer = status.position;
+      renderBlockWorldFrame();
+    }
+  } catch (error) {
+    // AI not running
+  }
+  
+  setTimeout(pollAIStatus, 2000);
+}
+
+async function loadBlockUpdatesLog() {
+  try {
+    const response = await fetch('http://localhost:9993/updates?limit=20');
+    if (!response.ok) return;
+    
+    const updates = await response.json();
+    const log = document.getElementById('blockUpdatesLog');
+    if (!log) return;
+    
+    log.innerHTML = updates.map(u => {
+      const oldBlock = BLOCK_TYPES[u.old_type]?.name || 'Unknown';
+      const newBlock = BLOCK_TYPES[u.new_type]?.name || 'Unknown';
+      const action = u.new_type === 0 ? '⛏️ broke' : '🧱 placed';
+      const player = u.player_id || 'Unknown';
+      
+      return `<div style="padding: 4px 0; border-bottom: 1px solid var(--border-color);">
+        [${new Date(u.timestamp * 1000).toLocaleTimeString()}] ${player} ${action} ${oldBlock} → ${newBlock} at (${u.x}, ${u.y}, ${u.z})
+      </div>`;
+    }).join('');
+  } catch (error) {
+    console.error('Failed to load updates:', error);
   }
 }
 

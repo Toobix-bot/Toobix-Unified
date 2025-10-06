@@ -753,6 +753,26 @@ The daemon is listening on port 9999.
                 name: 'task-system',
                 script: 'scripts/task-system.ts',
                 purpose: 'TODOs, reminders, goals, habits with gamification'
+            },
+            {
+                name: 'ai-sandbox',
+                script: 'scripts/ai-sandbox.ts',
+                purpose: 'AI plays Story-Idle Game autonomously in sandbox'
+            },
+            {
+                name: 'story-idle-api',
+                script: 'scripts/story-idle-api.ts',
+                purpose: 'Story-Idle Game API for dashboard integration'
+            },
+            {
+                name: 'achievement-system',
+                script: 'scripts/achievement-system.ts',
+                purpose: 'Track achievements, badges, and gamification'
+            },
+            {
+                name: 'blockworld-server',
+                script: 'scripts/blockworld-server.ts',
+                purpose: 'Minecraft-inspired voxel game with AI agent'
             }
         ];
         
@@ -777,6 +797,10 @@ The daemon is listening on port 9999.
         await this.startProcess('memory-system');
         await this.startProcess('moment-analytics');
         await this.startProcess('task-system');
+        await this.startProcess('ai-sandbox');
+        await this.startProcess('story-idle-api');
+        await this.startProcess('achievement-system');
+        await this.startProcess('blockworld-server');
         
         await this.log('');
     }
@@ -823,6 +847,18 @@ The daemon is listening on port 9999.
                     break;
                 case 'task-system':
                     scriptPath = 'scripts/task-system.ts';
+                    break;
+                case 'ai-sandbox':
+                    scriptPath = 'scripts/ai-sandbox.ts';
+                    break;
+                case 'story-idle-api':
+                    scriptPath = 'scripts/story-idle-api.ts';
+                    break;
+                case 'achievement-system':
+                    scriptPath = 'scripts/achievement-system.ts';
+                    break;
+                case 'blockworld-server':
+                    scriptPath = 'scripts/blockworld-server.ts';
                     break;
                 default:
                     await this.log(`❌ Unknown process: ${name}`);
