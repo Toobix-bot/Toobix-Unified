@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toobix Unified - Dashboard</title>
+  <meta name="description" content="Dein persönliches Lebens-Ökosystem">
+  <link rel="stylesheet" href="dashboard-unified.css">
+</head>
+<body>
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header" onclick="navigateTo('dashboard')">
+        <div class="sidebar-logo">🌌</div>
+        <div class="sidebar-title">
+          <h1>Toobix</h1>
+          <p>Dein Ökosystem</p>
+        </div>
+      </div>
+
+      <nav>
+        <div class="nav-section">
+          <div class="nav-section-title">Hauptbereich</div>
+          <div class="nav-item active" data-view="dashboard" onclick="navigateTo('dashboard')">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+          </div>
+          <div class="nav-item" data-view="moments" onclick="navigateTo('moments')">
+            <span class="nav-icon">✨</span>
+            <span>Moments</span>
+            <span class="nav-badge" id="momentsCount">0</span>
+          </div>
+          <div class="nav-item" data-view="daily" onclick="navigateTo('daily')">
+            <span class="nav-icon">📝</span>
+            <span>Daily Companion</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Produktivität</div>
+          <div class="nav-item" data-view="tasks" onclick="navigateTo('tasks')">
+            <span class="nav-icon">✅</span>
+            <span>Tasks & Goals</span>
+            <span class="nav-badge" id="tasksCount">0</span>
+          </div>
+          <div class="nav-item" data-view="habits" onclick="navigateTo('habits')">
+            <span class="nav-icon">🔥</span>
+            <span>Habits & Streaks</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Insights</div>
+          <div class="nav-item" data-view="analytics" onclick="navigateTo('analytics')">
+            <span class="nav-icon">📈</span>
+            <span>Analytics</span>
+          </div>
+          <div class="nav-item" data-view="memory" onclick="navigateTo('memory')">
+            <span class="nav-icon">🧠</span>
+            <span>Memory System</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">Unterhaltung</div>
+          <div class="nav-item" data-view="games" onclick="navigateTo('games')">
+            <span class="nav-icon">🎮</span>
+            <span>Spielebibliothek</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <div class="nav-item" data-view="settings" onclick="navigateTo('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span>Einstellungen</span>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="top-bar-left">
+          <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="Suche in Toobix..." id="searchInput">
+          </div>
+        </div>
+        <div class="top-bar-right">
+          <button class="icon-button" onclick="toggleTheme()" title="Theme wechseln">
+            <span id="themeIcon">🌙</span>
+          </button>
+          <button class="icon-button" onclick="showNotifications()" title="Benachrichtigungen">
+            🔔
+            <span class="badge" id="notificationBadge">3</span>
+          </button>
+          <button class="icon-button" onclick="navigateTo('settings')" title="Profil">
+            👤
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content" id="content">
+        <!-- Views will be loaded here dynamically -->
+      </div>
+    </main>
+  </div>
+
+  <script src="dashboard-unified.js"></script>
+</body>
+</html>
