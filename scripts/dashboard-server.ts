@@ -4,7 +4,7 @@
  * Simple static file server for the modular dashboard
  */
 
-const PORT = 8080;
+const PORT = 8888;
 
 const server = Bun.serve({
   port: PORT,
