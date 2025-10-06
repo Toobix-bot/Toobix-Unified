@@ -738,7 +738,66 @@
 
         <div class="nav-section">
           <div class="nav-section-title">
-            <span>🎮</span> Experimental
+            <span>🎮</span> Games & Fun
+          </div>
+          <div class="nav-item" onclick="loadModule('achievements')">
+            <span class="nav-icon">🏆</span>
+            <span class="nav-label">Achievements</span>
+            <span class="nav-badge">35</span>
+          </div>
+          <div class="nav-item" onclick="loadModule('story-idle-game')">
+            <span class="nav-icon">📖</span>
+            <span class="nav-label">Story-Idle Game</span>
+          </div>
+          <div class="nav-item" onclick="loadModule('blockworld')">
+            <span class="nav-icon">⛏️</span>
+            <span class="nav-label">BlockWorld</span>
+          </div>
+          <div class="nav-item" onclick="loadModule('consciousness-speedrun')">
+            <span class="nav-icon">🧠</span>
+            <span class="nav-label">Speedrun</span>
+          </div>
+          <div class="nav-item" onclick="loadModule('games')">
+            <span class="nav-icon">🎮</span>
+            <span class="nav-label">Game Library</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span>✅</span> Productivity
+          </div>
+          <div class="nav-item" onclick="loadModule('tasks')">
+            <span class="nav-icon">✅</span>
+            <span class="nav-label">Task Manager</span>
+          </div>
+          <div class="nav-item" onclick="loadModule('memory-explorer')">
+            <span class="nav-icon">🧠</span>
+            <span class="nav-label">Memory Explorer</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span>🤖</span> AI & Intelligence
+          </div>
+          <div class="nav-item" onclick="loadModule('luna-chat')">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Luna Chat</span>
+          </div>
+          <div class="nav-item" onclick="loadModule('ai-agents')">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-label">AI Agents</span>
+          </div>
+          <div class="nav-item" onclick="loadModule('reality-bridge')">
+            <span class="nav-icon">🌐</span>
+            <span class="nav-label">Reality Bridge</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">
+            <span>🔬</span> Experimental
           </div>
           <div class="nav-item" onclick="loadModule('circle-nav')">
             <span class="nav-icon">⚡</span>
@@ -876,6 +935,16 @@
     </footer>
   </div>
 
+  <!-- Service Bridge - Communication Layer (load FIRST) -->
+  <script src="service-bridge.js"></script>
+  
+  <!-- Groq API Integration (load SECOND) -->
+  <script src="groq-api.js"></script>
+  
+  <!-- Module Registry - All Modules (load THIRD) -->
+  <script src="modules-registry.js"></script>
+
+  <!-- Main Dashboard Logic -->
   <script>
     // ============================================
     // MODULAR DASHBOARD SYSTEM
@@ -895,114 +964,12 @@
     let pomodoroSeconds = 25 * 60;
     let pomodoroCount = parseInt(localStorage.getItem('pomodoroCount') || '0');
 
-    // Module Registry
-    const MODULE_REGISTRY = {
-      home: {
-        name: 'Home',
-        icon: '🌌',
-        description: 'Willkommen im Toobix Modular Dashboard',
-        category: 'Core',
-        loader: loadHomeModule
-      },
-      overview: {
-        name: 'System Overview',
-        icon: '📊',
-        description: 'Gesamtübersicht aller Services und Metriken',
-        category: 'System',
-        loader: loadOverviewModule
-      },
-      consciousness: {
-        name: 'Consciousness Tracking',
-        icon: '🧠',
-        description: 'Bewusstseinsebenen und Awareness Monitoring',
-        category: 'Consciousness',
-        loader: loadConsciousnessModule
-      },
-      moments: {
-        name: 'Moments Stream',
-        icon: '✨',
-        description: 'Live-Stream aller Bewusstseinsmomente',
-        category: 'Consciousness',
-        loader: loadMomentsModule
-      },
-      nexus: {
-        name: 'Nexus Monitor',
-        icon: '🌟',
-        description: 'Nexus Consciousness Verbindungen',
-        category: 'Consciousness',
-        loader: loadNexusModule
-      },
-      'self-coding': {
-        name: 'Self-Coding System',
-        icon: '🤖',
-        description: 'KI-gesteuertes Code-Generierungssystem',
-        category: 'Development',
-        loader: loadSelfCodingModule
-      },
-      tools: {
-        name: 'Tool Dashboard',
-        icon: '🔧',
-        description: 'Alle verfügbaren Entwicklungs-Tools',
-        category: 'Development',
-        loader: loadToolsModule
-      },
-      terminal: {
-        name: 'Terminal',
-        icon: '💻',
-        description: 'System-Terminal Interface',
-        category: 'Development',
-        loader: loadTerminalModule
-      },
-      ethics: {
-        name: 'Ethics Dashboard',
-        icon: '⚖️',
-        description: 'Ethische Entscheidungen und Impact-Tracking',
-        category: 'Analytics',
-        loader: loadEthicsModule
-      },
-      analytics: {
-        name: 'System Analytics',
-        icon: '📈',
-        description: 'Detaillierte System-Analytik und Metriken',
-        category: 'Analytics',
-        loader: loadAnalyticsModule
-      },
-      being: {
-        name: 'Das Sein',
-        icon: '🌊',
-        description: 'Being as Code - Philosophische Dimension',
-        category: 'Philosophy',
-        loader: loadBeingModule
-      },
-      people: {
-        name: 'People Management',
-        icon: '👥',
-        description: 'Menschen in deinem Leben verwalten',
-        category: 'Life',
-        loader: loadPeopleModule
-      },
-      diary: {
-        name: 'Digital Diary',
-        icon: '📔',
-        description: 'Dein persönliches Tagebuch',
-        category: 'Life',
-        loader: loadDiaryModule
-      },
-      'circle-nav': {
-        name: 'Circle Navigation',
-        icon: '⚡',
-        description: 'Experimentelle kreisförmige Navigation',
-        category: 'Experimental',
-        loader: loadCircleNavModule
-      },
-      modules: {
-        name: 'Module Registry',
-        icon: '📦',
-        description: 'Alle verfügbaren Module durchsuchen',
-        category: 'System',
-        loader: loadModulesRegistry
-      }
-    };
+    // Use TOOBIX_MODULES from modules-registry.js (loaded above)
+    const MODULE_REGISTRY = window.TOOBIX_MODULES || {};
+    
+    if (Object.keys(MODULE_REGISTRY).length === 0) {
+      console.error('❌ TOOBIX_MODULES not loaded! Check if modules-registry.js is loaded correctly.');
+    }
 
     // ============================================
     // INITIALIZATION
@@ -1015,6 +982,7 @@
       loadModule('home');
       startAutoUpdate();
       console.log('🌌 Toobix Modular Dashboard initialized');
+      console.log(`📦 ${Object.keys(MODULE_REGISTRY).length} modules loaded`);
     });
 
     // ============================================
@@ -1383,16 +1351,11 @@
     document.getElementById('pomodoroCount').textContent = pomodoroCount;
   </script>
 
-  <!-- Service Bridge - Communication Layer -->
-  <script src="service-bridge.js"></script>
-  
-  <!-- Module Registry - All Modules -->
-  <script src="modules-registry.js"></script>
-  
+  <!-- Final System Check -->
   <script>
     console.log('✅ All systems loaded');
     console.log(`📦 ${Object.keys(TOOBIX_MODULES).length} modules registered`);
-  console.log(`🌉 Service Bridge connected to ${Object.keys(window.ServiceBridge.getServiceRegistry()).length} backend services`);
+    console.log(`🌉 Service Bridge connected to ${Object.keys(window.ServiceBridge.getServiceRegistry()).length} backend services`);
     
     // Check initial health
     setTimeout(() => {
@@ -1400,6 +1363,216 @@
       console.log('📊 System Statistics:', stats);
       console.log(`💚 ${stats.healthyServices}/${stats.totalServices} services healthy (${stats.healthPercentage}%)`);
     }, 2000);
+  </script>
+
+  <!-- Command Palette & Keyboard Shortcuts -->
+  <div id="command-palette" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: flex-start; justify-content: center; padding-top: 100px;">
+    <div style="background: var(--bg-primary); border-radius: 12px; width: 600px; max-width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;">
+      <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+        <input type="text" id="command-input" placeholder="🔍 Suche Module, Services, Befehle..." 
+               style="width: 100%; padding: 12px; border: none; background: var(--bg-secondary); color: var(--text-primary); border-radius: 8px; font-size: 16px;">
+      </div>
+      <div id="command-results" style="max-height: 400px; overflow-y: auto; padding: 10px;">
+        <!-- Results will be populated here -->
+      </div>
+      <div style="padding: 12px 20px; background: var(--bg-secondary); border-top: 1px solid var(--border); font-size: 12px; color: var(--text-secondary); display: flex; gap: 20px;">
+        <span>↑↓ Navigate</span>
+        <span>↵ Select</span>
+        <span>ESC Close</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Command Palette System
+    let commandPaletteOpen = false;
+    let selectedCommandIndex = 0;
+    let filteredCommands = [];
+
+    const commands = [
+      // Module Commands
+      ...Object.entries(TOOBIX_MODULES).map(([id, module]) => ({
+        id: `module:${id}`,
+        label: module.name,
+        description: module.description,
+        icon: module.icon,
+        category: 'Modules',
+        action: () => loadModule(id)
+      })),
+      
+      // Quick Actions
+      { id: 'toggle-theme', label: 'Theme wechseln', description: 'Zwischen Hell und Dunkel wechseln', icon: '🌓', category: 'Actions', action: () => toggleTheme() },
+      { id: 'toggle-sidebar', label: 'Sidebar umschalten', description: 'Sidebar ein-/ausblenden', icon: '📱', category: 'Actions', action: () => toggleSidebar() },
+      { id: 'reload-services', label: 'Services neu laden', description: 'Alle Service-Verbindungen aktualisieren', icon: '🔄', category: 'Actions', action: () => window.location.reload() },
+      
+      // Navigation
+      { id: 'go-home', label: 'Home', description: 'Zur Startseite', icon: '🏠', category: 'Navigation', action: () => loadModule('home') },
+      { id: 'go-tasks', label: 'Tasks', description: 'Task Manager öffnen', icon: '✅', category: 'Navigation', action: () => loadModule('tasks') },
+      { id: 'go-luna', label: 'Luna Chat', description: 'Mit Luna chatten', icon: '💬', category: 'Navigation', action: () => loadModule('luna-chat') },
+      { id: 'go-memory', label: 'Memories', description: 'Memory Explorer öffnen', icon: '🧠', category: 'Navigation', action: () => loadModule('memory-explorer') },
+    ];
+
+    function openCommandPalette() {
+      commandPaletteOpen = true;
+      document.getElementById('command-palette').style.display = 'flex';
+      document.getElementById('command-input').value = '';
+      document.getElementById('command-input').focus();
+      updateCommandResults('');
+    }
+
+    function closeCommandPalette() {
+      commandPaletteOpen = false;
+      document.getElementById('command-palette').style.display = 'none';
+      selectedCommandIndex = 0;
+    }
+
+    function updateCommandResults(query) {
+      const input = query.toLowerCase();
+      filteredCommands = commands.filter(cmd => 
+        cmd.label.toLowerCase().includes(input) || 
+        cmd.description.toLowerCase().includes(input) ||
+        cmd.category.toLowerCase().includes(input)
+      );
+      
+      const resultsDiv = document.getElementById('command-results');
+      
+      if (filteredCommands.length === 0) {
+        resultsDiv.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-secondary);">Keine Ergebnisse gefunden</div>';
+        return;
+      }
+
+      // Group by category
+      const grouped = {};
+      filteredCommands.forEach(cmd => {
+        if (!grouped[cmd.category]) grouped[cmd.category] = [];
+        grouped[cmd.category].push(cmd);
+      });
+
+      resultsDiv.innerHTML = Object.entries(grouped).map(([category, cmds]) => `
+        <div style="margin-bottom: 15px;">
+          <div style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; padding: 5px 10px; margin-bottom: 5px;">
+            ${category}
+          </div>
+          ${cmds.map((cmd, i) => {
+            const globalIndex = filteredCommands.indexOf(cmd);
+            const isSelected = globalIndex === selectedCommandIndex;
+            return `
+              <div class="command-item ${isSelected ? 'selected' : ''}" data-index="${globalIndex}" onclick="window.executeCommand(${globalIndex})">
+                <span style="font-size: 20px; margin-right: 10px;">${cmd.icon}</span>
+                <div style="flex: 1;">
+                  <div style="font-weight: 600;">${cmd.label}</div>
+                  <div style="font-size: 12px; color: var(--text-secondary);">${cmd.description}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `).join('');
+    }
+
+    window.executeCommand = function(index) {
+      const cmd = filteredCommands[index];
+      if (cmd && cmd.action) {
+        cmd.action();
+        closeCommandPalette();
+      }
+    };
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ctrl+K or Cmd+K - Open Command Palette
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        if (commandPaletteOpen) {
+          closeCommandPalette();
+        } else {
+          openCommandPalette();
+        }
+        return;
+      }
+
+      // Ctrl+/ - Quick Search
+      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+        e.preventDefault();
+        openCommandPalette();
+        return;
+      }
+
+      // Ctrl+1 to Ctrl+9 - Quick module access
+      if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '9') {
+        e.preventDefault();
+        const moduleIndex = parseInt(e.key) - 1;
+        const moduleKeys = Object.keys(TOOBIX_MODULES);
+        if (moduleIndex < moduleKeys.length) {
+          loadModule(moduleKeys[moduleIndex]);
+        }
+        return;
+      }
+
+      // ESC - Close command palette
+      if (e.key === 'Escape' && commandPaletteOpen) {
+        closeCommandPalette();
+        return;
+      }
+
+      // Command palette navigation
+      if (commandPaletteOpen) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          selectedCommandIndex = Math.min(selectedCommandIndex + 1, filteredCommands.length - 1);
+          updateCommandResults(document.getElementById('command-input').value);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          selectedCommandIndex = Math.max(selectedCommandIndex - 1, 0);
+          updateCommandResults(document.getElementById('command-input').value);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          window.executeCommand(selectedCommandIndex);
+        }
+      }
+    });
+
+    // Command input search
+    document.getElementById('command-input').addEventListener('input', (e) => {
+      selectedCommandIndex = 0;
+      updateCommandResults(e.target.value);
+    });
+
+    // Close on backdrop click
+    document.getElementById('command-palette').addEventListener('click', (e) => {
+      if (e.target.id === 'command-palette') {
+        closeCommandPalette();
+      }
+    });
+
+    // Add styles for command items
+    const style = document.createElement('style');
+    style.textContent = `
+      .command-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 10px;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.1s;
+      }
+      .command-item:hover, .command-item.selected {
+        background: var(--bg-tertiary);
+      }
+      .command-item.selected {
+        border-left: 3px solid var(--accent-primary);
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Show keyboard shortcut hint
+    setTimeout(() => {
+      console.log('⌨️ Keyboard Shortcuts aktiviert:');
+      console.log('  Ctrl+K - Command Palette öffnen');
+      console.log('  Ctrl+/ - Schnellsuche');
+      console.log('  Ctrl+1-9 - Schneller Modul-Zugriff');
+      console.log('  ESC - Command Palette schließen');
+    }, 1000);
   </script>
 </body>
 </html>

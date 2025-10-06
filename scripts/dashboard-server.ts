@@ -4,13 +4,25 @@
  * Simple static file server for the modular dashboard
  */
 
-const PORT = 8888;
+const PORT = 8080;
 
 const server = Bun.serve({
   port: PORT,
   async fetch(req) {
     const url = new URL(req.url);
     let path = url.pathname;
+    
+    // Health check endpoint
+    if (path === '/health') {
+      return new Response(JSON.stringify({
+        status: 'healthy',
+        service: 'dashboard-server',
+        port: PORT,
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
     
     // Default to index
     if (path === '/') {
