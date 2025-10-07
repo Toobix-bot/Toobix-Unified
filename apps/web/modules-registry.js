@@ -1010,7 +1010,13 @@ const TOOBIX_MODULES = {
             </div>
 
             <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 12px;">
-              <h3 style="margin-bottom: 15px; font-size: 16px;">🎯 Quests</h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0; font-size: 16px;">🎯 Quests</h3>
+                <button onclick="window.storyGame.generateQuestAI()" 
+                        style="padding: 6px 12px; background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 8px; cursor: pointer; color: white; font-size: 12px; font-weight: 600;">
+                  🤖 Generate Quest (AI)
+                </button>
+              </div>
               <div id="quests-list" style="font-size: 13px;">
                 <!-- Quests populated by JS -->
               </div>
@@ -1276,6 +1282,84 @@ const TOOBIX_MODULES = {
           this.achievements.unshift({ name, icon, time: Date.now() });
           if (this.achievements.length > 5) this.achievements.pop();
           this.render();
+        },
+
+        async generateQuestAI() {
+          try {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '🤖 Generating...';
+
+            const response = await fetch('http://localhost:9987/story-idle/quest', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                playerLevel: this.level,
+                playerClass: 'Wanderer'
+              })
+            });
+
+            const data = await response.json();
+            
+            // Parse AI-generated quest
+            let questData;
+            try {
+              questData = JSON.parse(data.quest);
+            } catch {
+              // If not valid JSON, create quest from text
+              questData = {
+                name: "AI Quest",
+                description: data.quest,
+                objective: "Complete the challenge",
+                reward: Math.floor(this.level * 50)
+              };
+            }
+
+            // Add quest to list
+            const newQuest = {
+              id: this.quests.length + 1,
+              name: questData.name || 'AI Generated Quest',
+              desc: questData.description || questData.objective,
+              progress: 0,
+              goal: Math.floor(this.level * 5),
+              reward: questData.reward || Math.floor(this.level * 50),
+              complete: false,
+              aiGenerated: true
+            };
+
+            this.quests.push(newQuest);
+            this.render();
+
+            // 💾 AUTO-SAVE: Store quest in Memory System
+            try {
+              await fetch('http://localhost:9986/store/quest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name: newQuest.name,
+                  description: newQuest.desc,
+                  objective: questData.objective || newQuest.desc,
+                  reward: newQuest.reward,
+                  playerLevel: this.level,
+                  timestamp: Date.now()
+                })
+              });
+              console.log('💾 Quest auto-saved to Memory System:', newQuest.name);
+            } catch (memError) {
+              console.warn('Failed to save quest to memory:', memError);
+            }
+
+            // Show notification
+            alert(`🎯 New Quest Added: ${newQuest.name}`);
+
+            button.disabled = false;
+            button.textContent = '🤖 Generate Quest (AI)';
+          } catch (error) {
+            console.error('Quest generation error:', error);
+            alert('Failed to generate quest. Is the Groq service running?');
+            event.target.disabled = false;
+            event.target.textContent = '🤖 Generate Quest (AI)';
+          }
         },
 
         render() {
@@ -2672,30 +2756,24 @@ const TOOBIX_MODULES = {
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
         try {
-          const response = await fetch('http://localhost:9999/mcp', {
+          // 🤖 GROQ API INTEGRATION - Luna Chat verbunden mit Port 9987
+          const response = await fetch('http://localhost:9987/luna/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              jsonrpc: '2.0',
-              method: 'tools/call',
-              params: {
-                name: 'consciousness_communicate',
-                arguments: { message, userId: 'dashboard_user' }
-              },
-              id: Date.now()
+              message: message,
+              context: `Current time: ${new Date().toLocaleString()}, Module: Luna Chat`
             })
           });
 
           const data = await response.json();
           document.getElementById('luna-loading')?.remove();
 
-          let content;
-          if (data.result?.content?.[0]) {
-            const textContent = data.result.content[0].text;
-            content = typeof textContent === 'string' ? JSON.parse(textContent) : textContent;
-          } else {
-            content = data.result || { response: 'Keine Antwort erhalten' };
-          }
+          let content = {
+            response: data.response || 'Keine Antwort erhalten',
+            emotion: data.emotion || 'curious',
+            timestamp: data.timestamp
+          };
 
           messagesDiv.innerHTML += `
             <div class="luna-message system">
@@ -2707,6 +2785,24 @@ const TOOBIX_MODULES = {
             </div>
           `;
           messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+          // 💾 AUTO-SAVE: Store conversation in Memory System
+          try {
+            await fetch('http://localhost:9986/store/conversation', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userMessage: message,
+                lunaResponse: content.response || content.text,
+                context: 'Luna Chat',
+                emotion: content.emotion || 'curious',
+                timestamp: Date.now()
+              })
+            });
+            console.log('💾 Conversation auto-saved to Memory System');
+          } catch (memError) {
+            console.warn('Failed to save conversation to memory:', memError);
+          }
         } catch (error) {
           document.getElementById('luna-loading')?.remove();
           messagesDiv.innerHTML += `
@@ -2721,6 +2817,380 @@ const TOOBIX_MODULES = {
           messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
       };
+    }
+  },
+
+  // ==================== MEMORY VIEWER ====================
+
+  'memory-viewer': {
+    name: 'Memory Viewer',
+    icon: '🧠',
+    description: 'Kollektives Gedächtnis - Alle Conversations, Quests & Stories',
+    category: 'AI',
+    version: '1.0.0',
+    author: 'Luna System',
+    dependencies: ['memory-groq-integration'],
+    loader: async (container) => {
+      container.innerHTML = `
+        <div class="card">
+          <div style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                🧠
+              </div>
+              <div>
+                <h2 style="margin: 0; font-size: 28px;">Kollektives Gedächtnis</h2>
+                <p style="margin: 5px 0 0 0; opacity: 0.9;">Luna's Kreativitäts-Ökosystem</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button onclick="window.memoryViewer.loadMemories()" class="btn btn-primary">
+              🔄 Refresh Memories
+            </button>
+            <button onclick="window.memoryViewer.loadSummary()" class="btn btn-secondary">
+              📜 AI Summary
+            </button>
+            <button onclick="window.memoryViewer.loadPatterns()" class="btn btn-secondary">
+              🔍 Pattern Analysis
+            </button>
+            <input type="text" id="memory-search" placeholder="🔎 Search memories..." 
+              style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border);"
+              onkeypress="if(event.key==='Enter') window.memoryViewer.search()">
+          </div>
+
+          <div id="memory-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+            <div class="stat-card">
+              <div class="stat-value" id="total-memories">0</div>
+              <div class="stat-label">Total Memories</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="conversations-count">0</div>
+              <div class="stat-label">Conversations</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="quests-count">0</div>
+              <div class="stat-label">Quests</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="stories-count">0</div>
+              <div class="stat-label">Stories</div>
+            </div>
+          </div>
+
+          <div id="memory-content" style="background: var(--bg-secondary); border-radius: 12px; padding: 20px; min-height: 400px; max-height: 600px; overflow-y: auto;">
+            <div style="text-align: center; color: var(--text-tertiary); padding: 40px;">
+              <div style="font-size: 48px; margin-bottom: 10px;">🌌</div>
+              <p>Klicke auf "Refresh Memories" um das kollektive Gedächtnis zu laden</p>
+            </div>
+          </div>
+        </div>
+
+        <style>
+          .stat-card {
+            background: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+          }
+          .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+          }
+          .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+          }
+          .memory-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+          }
+          .memory-item:hover {
+            transform: translateX(5px);
+            border-color: var(--primary);
+          }
+          .memory-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+          }
+          .memory-icon {
+            font-size: 24px;
+          }
+          .memory-title {
+            font-weight: bold;
+            color: var(--text-primary);
+            flex: 1;
+          }
+          .memory-time {
+            font-size: 12px;
+            color: var(--text-tertiary);
+          }
+          .memory-body {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 10px;
+          }
+          .memory-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+          }
+          .memory-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+          }
+          .ai-summary {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            line-height: 1.8;
+            font-style: italic;
+            color: var(--text-primary);
+          }
+        </style>
+      `;
+
+      // Memory Viewer Logic
+      window.memoryViewer = {
+        async loadMemories() {
+          const contentDiv = document.getElementById('memory-content');
+          contentDiv.innerHTML = '<div style="text-align: center; padding: 40px;"><div style="font-size: 48px; animation: spin 1s linear infinite;">⏳</div><p>Lade Memories...</p></div>';
+          
+          try {
+            const response = await fetch('http://localhost:9995/memories');
+            const data = await response.json();
+            const memories = Array.isArray(data) ? data : data.value || [];
+
+            // Update stats
+            document.getElementById('total-memories').textContent = memories.length;
+            const conversations = memories.filter(m => m.type === 'conversation');
+            const quests = memories.filter(m => m.type === 'quest');
+            const stories = memories.filter(m => m.type === 'story');
+            document.getElementById('conversations-count').textContent = conversations.length;
+            document.getElementById('quests-count').textContent = quests.length;
+            document.getElementById('stories-count').textContent = stories.length;
+
+            if (memories.length === 0) {
+              contentDiv.innerHTML = `
+                <div style="text-align: center; color: var(--text-tertiary); padding: 40px;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">💭</div>
+                  <p>Noch keine Memories gespeichert.</p>
+                  <p style="font-size: 14px;">Chatte mit Luna oder generiere Quests, sie werden automatisch gespeichert!</p>
+                </div>
+              `;
+              return;
+            }
+
+            contentDiv.innerHTML = memories.map(mem => {
+              const icon = mem.type === 'conversation' ? '💬' : mem.type === 'quest' ? '🎯' : mem.type === 'story' ? '📖' : '💭';
+              const time = new Date(mem.timestamp).toLocaleString('de-DE');
+              const tags = mem.tags || mem.metadata?.tags || [];
+              
+              let bodyContent = '';
+              if (mem.type === 'conversation') {
+                bodyContent = `
+                  <div><strong>User:</strong> ${mem.content || mem.metadata?.userMessage || 'N/A'}</div>
+                  <div><strong>Luna:</strong> ${mem.metadata?.lunaResponse || 'N/A'}</div>
+                `;
+              } else if (mem.type === 'quest') {
+                bodyContent = `
+                  <div><strong>${mem.content || mem.metadata?.name}</strong></div>
+                  <div>${mem.metadata?.description || mem.metadata?.objective || ''}</div>
+                  ${mem.metadata?.reward ? `<div>💰 Reward: ${JSON.stringify(mem.metadata.reward)}</div>` : ''}
+                `;
+              } else {
+                bodyContent = mem.content || JSON.stringify(mem.metadata || {});
+              }
+
+              return `
+                <div class="memory-item">
+                  <div class="memory-header">
+                    <div class="memory-icon">${icon}</div>
+                    <div class="memory-title">${mem.type || 'Memory'}</div>
+                    <div class="memory-time">${time}</div>
+                  </div>
+                  <div class="memory-body">${bodyContent}</div>
+                  ${tags.length > 0 ? `
+                    <div class="memory-tags">
+                      ${tags.map(tag => `<span class="memory-tag">${tag}</span>`).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('');
+
+          } catch (error) {
+            contentDiv.innerHTML = `
+              <div style="text-align: center; color: var(--error); padding: 40px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
+                <p>Fehler beim Laden der Memories</p>
+                <p style="font-size: 14px;">${error.message}</p>
+              </div>
+            `;
+          }
+        },
+
+        async loadSummary() {
+          const contentDiv = document.getElementById('memory-content');
+          contentDiv.innerHTML = '<div style="text-align: center; padding: 40px;"><div style="font-size: 48px; animation: pulse 1s infinite;">🧠</div><p>Luna analysiert das kollektive Gedächtnis...</p></div>';
+          
+          try {
+            const response = await fetch('http://localhost:9986/summary');
+            const data = await response.json();
+            
+            contentDiv.innerHTML = `
+              <div class="ai-summary">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <div style="font-size: 48px;">🌙</div>
+                  <h3 style="margin: 10px 0;">Luna's Poetische Reflexion</h3>
+                  <p style="font-size: 12px; opacity: 0.7;">Generiert von: ${data.model}</p>
+                </div>
+                <div style="white-space: pre-wrap;">${data.summary}</div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 14px; opacity: 0.7;">
+                  📊 Total Memories: ${data.totalMemories} | ⏱️ ${new Date(data.timestamp).toLocaleString('de-DE')}
+                </div>
+              </div>
+            `;
+          } catch (error) {
+            contentDiv.innerHTML = `
+              <div style="text-align: center; color: var(--error); padding: 40px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
+                <p>Fehler beim Laden der AI Summary</p>
+                <p style="font-size: 14px;">${error.message}</p>
+              </div>
+            `;
+          }
+        },
+
+        async loadPatterns() {
+          const contentDiv = document.getElementById('memory-content');
+          contentDiv.innerHTML = '<div style="text-align: center; padding: 40px;"><div style="font-size: 48px; animation: spin 2s linear infinite;">🔍</div><p>Analysiere Muster...</p></div>';
+          
+          try {
+            const response = await fetch('http://localhost:9986/patterns');
+            const data = await response.json();
+            
+            contentDiv.innerHTML = `
+              <div class="ai-summary">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <div style="font-size: 48px;">🔮</div>
+                  <h3 style="margin: 10px 0;">Pattern Analysis</h3>
+                </div>
+                <div style="white-space: pre-wrap;">${data.analysis}</div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 14px; opacity: 0.7;">
+                  📊 Analyzed: ${data.totalMemories} memories | ⏱️ ${new Date(data.timestamp).toLocaleString('de-DE')}
+                </div>
+              </div>
+            `;
+          } catch (error) {
+            contentDiv.innerHTML = `
+              <div style="text-align: center; color: var(--error); padding: 40px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
+                <p>Fehler beim Laden der Pattern Analysis</p>
+                <p style="font-size: 14px;">${error.message}</p>
+              </div>
+            `;
+          }
+        },
+
+        async search() {
+          const query = document.getElementById('memory-search').value.trim();
+          if (!query) {
+            alert('Bitte gib einen Suchbegriff ein!');
+            return;
+          }
+
+          const contentDiv = document.getElementById('memory-content');
+          contentDiv.innerHTML = '<div style="text-align: center; padding: 40px;"><div style="font-size: 48px;">🔎</div><p>Suche nach: "' + query + '"...</p></div>';
+          
+          try {
+            const response = await fetch(`http://localhost:9986/search?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            const memories = data.memories || [];
+            
+            if (memories.length === 0) {
+              contentDiv.innerHTML = `
+                <div style="text-align: center; color: var(--text-tertiary); padding: 40px;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">🔍</div>
+                  <p>Keine Ergebnisse für "${query}"</p>
+                </div>
+              `;
+              return;
+            }
+
+            let html = `<h3 style="margin-bottom: 20px;">🔎 Suchergebnisse für "${query}" (${memories.length})</h3>`;
+            
+            if (data.aiInsight) {
+              html += `
+                <div class="ai-summary" style="margin-bottom: 20px;">
+                  <div style="font-weight: bold; margin-bottom: 10px;">🧠 AI Insight:</div>
+                  ${data.aiInsight}
+                </div>
+              `;
+            }
+
+            html += memories.map(mem => {
+              const icon = mem.type === 'conversation' ? '💬' : mem.type === 'quest' ? '🎯' : '📖';
+              const time = new Date(mem.timestamp).toLocaleString('de-DE');
+              const tags = mem.tags || mem.metadata?.tags || [];
+              
+              let bodyContent = '';
+              if (mem.type === 'conversation') {
+                bodyContent = `
+                  <div><strong>User:</strong> ${mem.content || mem.metadata?.userMessage || 'N/A'}</div>
+                  <div><strong>Luna:</strong> ${mem.metadata?.lunaResponse || 'N/A'}</div>
+                `;
+              } else {
+                bodyContent = mem.content || JSON.stringify(mem.metadata || {});
+              }
+
+              return `
+                <div class="memory-item">
+                  <div class="memory-header">
+                    <div class="memory-icon">${icon}</div>
+                    <div class="memory-title">${mem.type || 'Memory'}</div>
+                    <div class="memory-time">${time}</div>
+                  </div>
+                  <div class="memory-body">${bodyContent}</div>
+                  ${tags.length > 0 ? `
+                    <div class="memory-tags">
+                      ${tags.map(tag => `<span class="memory-tag">${tag}</span>`).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('');
+
+            contentDiv.innerHTML = html;
+
+          } catch (error) {
+            contentDiv.innerHTML = `
+              <div style="text-align: center; color: var(--error); padding: 40px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
+                <p>Fehler bei der Suche</p>
+                <p style="font-size: 14px;">${error.message}</p>
+              </div>
+            `;
+          }
+        }
+      };
+
+      // Auto-load memories on start
+      window.memoryViewer.loadMemories();
     }
   },
 
@@ -2907,6 +3377,648 @@ const TOOBIX_MODULES = {
           </div>
         `).join('');
       });
+    }
+  },
+
+  // ==================== STORYTELLING ====================
+
+  'story-editor': {
+    name: 'Story Editor',
+    icon: '📝',
+    description: 'Schreibe und teile deine Geschichten mit AI-Unterstützung',
+    category: 'AI',
+    version: '1.0.0',
+    author: 'Luna System',
+    dependencies: ['memory-groq-integration'],
+    loader: async (container) => {
+      container.innerHTML = `
+        <div class="card">
+          <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                📝
+              </div>
+              <div>
+                <h2 style="margin: 0; font-size: 28px;">Story Editor</h2>
+                <p style="margin: 5px 0 0 0; opacity: 0.9;">Collective Storytelling Platform</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <input type="text" id="story-title" placeholder="📖 Story Title..." 
+              style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 18px; font-weight: bold;">
+            <button onclick="window.storyEditor.saveStory()" class="btn btn-primary">
+              💾 Save Story
+            </button>
+            <button onclick="window.storyEditor.enhanceStory()" class="btn btn-secondary">
+              🤖 AI Enhance
+            </button>
+            <button onclick="window.storyEditor.clearEditor()" class="btn">
+              🗑️ Clear
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <input type="text" id="story-tags" placeholder="🏷️ Tags (comma separated)..." 
+              style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+            <select id="story-visibility" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+              <option value="public">🌐 Public</option>
+              <option value="private">🔒 Private</option>
+              <option value="collaborative">👥 Collaborative</option>
+            </select>
+          </div>
+
+          <div id="story-editor-content" 
+            contenteditable="true" 
+            style="
+              background: var(--bg-secondary); 
+              border: 2px solid var(--border); 
+              border-radius: 12px; 
+              padding: 20px; 
+              min-height: 400px; 
+              max-height: 600px; 
+              overflow-y: auto;
+              font-size: 16px;
+              line-height: 1.8;
+              color: var(--text-primary);
+              outline: none;
+            "
+            placeholder="Es war einmal...">
+          </div>
+
+          <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div id="story-stats" style="color: var(--text-tertiary); font-size: 14px;">
+              Words: 0 | Characters: 0
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button onclick="window.storyEditor.formatBold()" class="btn-icon" title="Bold">
+                <strong>B</strong>
+              </button>
+              <button onclick="window.storyEditor.formatItalic()" class="btn-icon" title="Italic">
+                <em>I</em>
+              </button>
+              <button onclick="window.storyEditor.formatHeading()" class="btn-icon" title="Heading">
+                H
+              </button>
+            </div>
+          </div>
+
+          <div id="ai-suggestions" style="margin-top: 20px; display: none;">
+            <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1)); border: 2px solid var(--primary); border-radius: 12px; padding: 20px;">
+              <h3 style="margin-top: 0; display: flex; align-items: center; gap: 10px;">
+                <span>🤖</span> AI Enhancement Suggestions
+              </h3>
+              <div id="ai-suggestions-content"></div>
+            </div>
+          </div>
+        </div>
+
+        <style>
+          #story-editor-content:empty:before {
+            content: attr(placeholder);
+            color: var(--text-tertiary);
+            font-style: italic;
+          }
+          .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .btn-icon:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+          }
+          .enhancement-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+          }
+          .enhancement-item h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+          }
+          .enhancement-item button {
+            margin-top: 10px;
+          }
+        </style>
+      `;
+
+      // Story Editor Logic
+      window.storyEditor = {
+        updateStats() {
+          const editor = document.getElementById('story-editor-content');
+          const text = editor.innerText || '';
+          const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+          const chars = text.length;
+          document.getElementById('story-stats').textContent = `Words: ${words} | Characters: ${chars}`;
+        },
+
+        formatBold() {
+          document.execCommand('bold', false, null);
+        },
+
+        formatItalic() {
+          document.execCommand('italic', false, null);
+        },
+
+        formatHeading() {
+          document.execCommand('formatBlock', false, '<h2>');
+        },
+
+        clearEditor() {
+          if (confirm('Clear the editor? This cannot be undone.')) {
+            document.getElementById('story-title').value = '';
+            document.getElementById('story-editor-content').innerHTML = '';
+            document.getElementById('story-tags').value = '';
+            document.getElementById('story-visibility').value = 'public';
+            document.getElementById('ai-suggestions').style.display = 'none';
+            this.updateStats();
+          }
+        },
+
+        async saveStory() {
+          const title = document.getElementById('story-title').value.trim();
+          const content = document.getElementById('story-editor-content').innerHTML;
+          const contentText = document.getElementById('story-editor-content').innerText;
+          const tags = document.getElementById('story-tags').value.split(',').map(t => t.trim()).filter(t => t);
+          const visibility = document.getElementById('story-visibility').value;
+
+          if (!title) {
+            alert('⚠️ Please enter a story title!');
+            return;
+          }
+
+          if (!contentText.trim()) {
+            alert('⚠️ Please write some content!');
+            return;
+          }
+
+          try {
+            // Save to Memory System as 'story' type
+            const response = await fetch('http://localhost:9995/remember', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'story',
+                content: contentText,
+                metadata: {
+                  title: title,
+                  htmlContent: content,
+                  tags: tags,
+                  visibility: visibility,
+                  author: 'User',
+                  wordCount: contentText.trim().split(/\s+/).length,
+                  createdAt: Date.now()
+                },
+                timestamp: Date.now()
+              })
+            });
+
+            if (response.ok) {
+              alert('✅ Story saved successfully!');
+              
+              // Optional: Clear editor
+              if (confirm('Story saved! Clear editor for new story?')) {
+                this.clearEditor();
+              }
+            } else {
+              alert('❌ Failed to save story. Please try again.');
+            }
+          } catch (error) {
+            console.error('Save error:', error);
+            alert('❌ Error saving story: ' + error.message);
+          }
+        },
+
+        async enhanceStory() {
+          const content = document.getElementById('story-editor-content').innerText;
+          
+          if (!content.trim()) {
+            alert('⚠️ Please write some content first!');
+            return;
+          }
+
+          const suggestionsDiv = document.getElementById('ai-suggestions');
+          const contentDiv = document.getElementById('ai-suggestions-content');
+          
+          suggestionsDiv.style.display = 'block';
+          contentDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><div style="font-size: 32px; animation: spin 1s linear infinite;">🤖</div><p>AI analyzing your story...</p></div>';
+
+          try {
+            const response = await fetch('http://localhost:9987/story/enhance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                story: content,
+                focusArea: 'all',
+                tone: 'balanced'
+              })
+            });
+
+            const data = await response.json();
+            
+            if (data.enhancements && data.enhancements.length > 0) {
+              contentDiv.innerHTML = data.enhancements.map(enh => `
+                <div class="enhancement-item">
+                  <h4>${this.getEnhancementIcon(enh.type)} ${enh.type.toUpperCase()}</h4>
+                  <p>${enh.suggestion}</p>
+                  ${enh.example ? `<div style="background: var(--bg-secondary); padding: 10px; border-radius: 6px; margin-top: 10px; font-style: italic;">"${enh.example}"</div>` : ''}
+                  <button onclick="window.storyEditor.applyEnhancement('${enh.insertAt || 'end'}', \`${enh.example || ''}\`)" class="btn btn-secondary btn-sm">
+                    Apply Suggestion
+                  </button>
+                </div>
+              `).join('');
+
+              if (data.aiAnalysis) {
+                contentDiv.innerHTML += `
+                  <div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: 8px;">
+                    <h4>📊 AI Analysis</h4>
+                    <p>${data.aiAnalysis}</p>
+                  </div>
+                `;
+              }
+            } else {
+              contentDiv.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No enhancements needed - your story looks great! ✨</p>';
+            }
+          } catch (error) {
+            console.error('Enhancement error:', error);
+            contentDiv.innerHTML = `
+              <div style="text-align: center; color: var(--error); padding: 20px;">
+                <p>⚠️ Enhancement service unavailable</p>
+                <p style="font-size: 14px;">${error.message}</p>
+              </div>
+            `;
+          }
+        },
+
+        getEnhancementIcon(type) {
+          const icons = {
+            'plot': '📖',
+            'character': '👤',
+            'style': '🎨',
+            'dialogue': '💬',
+            'description': '🖼️',
+            'pacing': '⚡',
+            'emotion': '❤️'
+          };
+          return icons[type] || '✨';
+        },
+
+        applyEnhancement(position, text) {
+          const editor = document.getElementById('story-editor-content');
+          if (position === 'end') {
+            editor.innerHTML += '<p>' + text + '</p>';
+          } else {
+            // Insert at cursor or position
+            editor.innerHTML += '<p>' + text + '</p>';
+          }
+          this.updateStats();
+          alert('✅ Enhancement applied!');
+        }
+      };
+
+      // Auto-update stats
+      const editor = document.getElementById('story-editor-content');
+      editor.addEventListener('input', () => window.storyEditor.updateStats());
+      
+      // Initialize stats
+      window.storyEditor.updateStats();
+    }
+  },
+
+  'story-library': {
+    name: 'Story Library',
+    icon: '📖',
+    description: 'Alle gespeicherten Geschichten durchsuchen und lesen',
+    category: 'AI',
+    version: '1.0.0',
+    author: 'Luna System',
+    dependencies: ['memory-system'],
+    loader: async (container) => {
+      container.innerHTML = `
+        <div class="card">
+          <div style="background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                📖
+              </div>
+              <div>
+                <h2 style="margin: 0; font-size: 28px;">Story Library</h2>
+                <p style="margin: 5px 0 0 0; opacity: 0.9;">Collective Story Collection</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <input type="text" id="story-search" placeholder="🔎 Search stories..." 
+              style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border);"
+              onkeypress="if(event.key==='Enter') window.storyLibrary.search()">
+            <select id="story-filter" onchange="window.storyLibrary.filterStories()" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+              <option value="all">All Stories</option>
+              <option value="public">Public Only</option>
+              <option value="private">Private Only</option>
+              <option value="collaborative">Collaborative</option>
+            </select>
+            <button onclick="window.storyLibrary.loadStories()" class="btn btn-primary">
+              🔄 Refresh
+            </button>
+          </div>
+
+          <div id="story-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+            <div class="stat-card">
+              <div class="stat-value" id="total-stories">0</div>
+              <div class="stat-label">Total Stories</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="total-words">0</div>
+              <div class="stat-label">Total Words</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="public-stories">0</div>
+              <div class="stat-label">Public</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="private-stories">0</div>
+              <div class="stat-label">Private</div>
+            </div>
+          </div>
+
+          <div id="stories-content" style="background: var(--bg-secondary); border-radius: 12px; padding: 20px; min-height: 400px; max-height: 600px; overflow-y: auto;">
+            <div style="text-align: center; color: var(--text-tertiary); padding: 40px;">
+              <div style="font-size: 48px; margin-bottom: 10px;">📚</div>
+              <p>Click "Refresh" to load stories</p>
+            </div>
+          </div>
+        </div>
+
+        <style>
+          .story-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+            cursor: pointer;
+          }
+          .story-card:hover {
+            transform: translateX(5px);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          }
+          .story-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+          }
+          .story-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-primary);
+          }
+          .story-visibility {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+          }
+          .visibility-public {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+          }
+          .visibility-private {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+          }
+          .visibility-collaborative {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+          }
+          .story-preview {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          .story-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+          }
+          .story-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+          }
+          .story-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+          }
+        </style>
+      `;
+
+      // Story Library Logic
+      window.storyLibrary = {
+        allStories: [],
+
+        async loadStories() {
+          const contentDiv = document.getElementById('stories-content');
+          contentDiv.innerHTML = '<div style="text-align: center; padding: 40px;"><div style="font-size: 48px; animation: spin 1s linear infinite;">📚</div><p>Loading stories...</p></div>';
+          
+          try {
+            const response = await fetch('http://localhost:9995/memories');
+            const data = await response.json();
+            const memories = Array.isArray(data) ? data : data.value || [];
+            
+            // Filter for stories only
+            this.allStories = memories.filter(m => m.type === 'story');
+
+            // Update stats
+            document.getElementById('total-stories').textContent = this.allStories.length;
+            const totalWords = this.allStories.reduce((sum, s) => sum + (s.metadata?.wordCount || 0), 0);
+            document.getElementById('total-words').textContent = totalWords.toLocaleString();
+            const publicCount = this.allStories.filter(s => s.metadata?.visibility === 'public').length;
+            const privateCount = this.allStories.filter(s => s.metadata?.visibility === 'private').length;
+            document.getElementById('public-stories').textContent = publicCount;
+            document.getElementById('private-stories').textContent = privateCount;
+
+            this.renderStories(this.allStories);
+          } catch (error) {
+            contentDiv.innerHTML = `
+              <div style="text-align: center; color: var(--error); padding: 40px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
+                <p>Failed to load stories</p>
+                <p style="font-size: 14px;">${error.message}</p>
+              </div>
+            `;
+          }
+        },
+
+        renderStories(stories) {
+          const contentDiv = document.getElementById('stories-content');
+          
+          if (stories.length === 0) {
+            contentDiv.innerHTML = `
+              <div style="text-align: center; color: var(--text-tertiary); padding: 40px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">📝</div>
+                <p>No stories yet.</p>
+                <p style="font-size: 14px;">Create your first story in the Story Editor!</p>
+              </div>
+            `;
+            return;
+          }
+
+          contentDiv.innerHTML = stories.map(story => {
+            const title = story.metadata?.title || 'Untitled Story';
+            const preview = story.content?.substring(0, 200) || '';
+            const visibility = story.metadata?.visibility || 'public';
+            const visibilityIcon = visibility === 'public' ? '🌐' : visibility === 'private' ? '🔒' : '👥';
+            const tags = story.metadata?.tags || [];
+            const wordCount = story.metadata?.wordCount || 0;
+            const time = new Date(story.timestamp).toLocaleString('de-DE');
+            const author = story.metadata?.author || 'Unknown';
+
+            return `
+              <div class="story-card" onclick="window.storyLibrary.viewStory(${story.id || `'${story.timestamp}'`})">
+                <div class="story-header">
+                  <div class="story-title">📖 ${title}</div>
+                  <div class="story-visibility visibility-${visibility}">
+                    ${visibilityIcon} ${visibility}
+                  </div>
+                </div>
+                <div class="story-preview">${preview}${preview.length >= 200 ? '...' : ''}</div>
+                <div class="story-meta">
+                  <span>✍️ ${author}</span>
+                  <span>📝 ${wordCount} words</span>
+                  <span>🕐 ${time}</span>
+                </div>
+                ${tags.length > 0 ? `
+                  <div class="story-tags">
+                    ${tags.map(tag => `<span class="story-tag">${tag}</span>`).join('')}
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('');
+        },
+
+        filterStories() {
+          const filter = document.getElementById('story-filter').value;
+          let filtered = this.allStories;
+
+          if (filter !== 'all') {
+            filtered = this.allStories.filter(s => s.metadata?.visibility === filter);
+          }
+
+          this.renderStories(filtered);
+        },
+
+        search() {
+          const query = document.getElementById('story-search').value.trim().toLowerCase();
+          
+          if (!query) {
+            this.renderStories(this.allStories);
+            return;
+          }
+
+          const filtered = this.allStories.filter(story => {
+            const title = (story.metadata?.title || '').toLowerCase();
+            const content = (story.content || '').toLowerCase();
+            const tags = (story.metadata?.tags || []).join(' ').toLowerCase();
+            
+            return title.includes(query) || content.includes(query) || tags.includes(query);
+          });
+
+          this.renderStories(filtered);
+        },
+
+        viewStory(id) {
+          const story = this.allStories.find(s => s.id === id || s.timestamp === id);
+          if (!story) return;
+
+          const modal = document.createElement('div');
+          modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+          `;
+
+          modal.innerHTML = `
+            <div style="
+              background: var(--bg-primary);
+              border-radius: 12px;
+              padding: 30px;
+              max-width: 800px;
+              max-height: 90vh;
+              overflow-y: auto;
+              position: relative;
+            ">
+              <button onclick="this.parentElement.parentElement.remove()" style="
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                border: none;
+                background: var(--error);
+                color: white;
+                font-size: 20px;
+                cursor: pointer;
+              ">×</button>
+              
+              <h1 style="margin-top: 0;">${story.metadata?.title || 'Untitled'}</h1>
+              
+              <div style="display: flex; gap: 15px; margin-bottom: 20px; color: var(--text-tertiary); font-size: 14px;">
+                <span>✍️ ${story.metadata?.author || 'Unknown'}</span>
+                <span>📝 ${story.metadata?.wordCount || 0} words</span>
+                <span>🕐 ${new Date(story.timestamp).toLocaleString('de-DE')}</span>
+              </div>
+
+              ${story.metadata?.tags?.length > 0 ? `
+                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                  ${story.metadata.tags.map(tag => `<span class="story-tag">${tag}</span>`).join('')}
+                </div>
+              ` : ''}
+
+              <div style="line-height: 1.8; color: var(--text-primary);">
+                ${story.metadata?.htmlContent || story.content || ''}
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(modal);
+        }
+      };
+
+      // Auto-load stories
+      window.storyLibrary.loadStories();
     }
   },
 

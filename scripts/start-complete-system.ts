@@ -19,6 +19,7 @@ const services = [
   { name: 'BlockWorld AI', script: 'scripts/blockworld-ai-agent.ts', port: 9990 },
   { name: 'Service Consciousness', script: 'scripts/service-consciousness.ts', port: 9989 },
   { name: 'Port Manager', script: 'scripts/port-manager.ts', port: 9988 },
+  { name: 'Groq API Service', script: 'scripts/groq-api-service.ts', port: 9987 },
   { name: 'Ethics Core', script: 'scripts/ethics-core.ts', port: 9981 },
   { name: 'AI Sandbox', script: 'scripts/ai-sandbox.ts', port: 3003 },
   { name: 'Story-Idle API', script: 'scripts/story-idle-api.ts', port: 3004 }
