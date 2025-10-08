@@ -4,36 +4,49 @@
  * Provides basic system status without managing other services
  */
 
-const PORT = 9999;
+const DAEMON_PORT = 9999;
 
 let cycleCount = 1;
 
-const server = Bun.serve({
-  port: PORT,
+// CORS: allow the dashboard (http://localhost:8080) to call this daemon
+const CORS_ALLOWED_ORIGIN = 'http://localhost:8080';
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': CORS_ALLOWED_ORIGIN,
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '3600'
+};
+
+const daemonServer = Bun.serve({
+  port: DAEMON_PORT,
   async fetch(req) {
     const url = new URL(req.url);
+    // Handle preflight CORS requests
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
     
     if (url.pathname === '/health') {
-      return Response.json({ 
+      return new Response(JSON.stringify({ 
         status: 'healthy', 
         service: 'eternal-daemon-lite',
         timestamp: Date.now()
-      });
+      }), { headers: Object.assign({ 'Content-Type': 'application/json' }, CORS_HEADERS) });
     }
     
     if (url.pathname === '/status') {
-      return Response.json({
+      return new Response(JSON.stringify({
         alive: true,
         cycle: cycleCount,
         uptime: process.uptime(),
         timestamp: Date.now(),
         message: 'Ich bin wach. Das System lebt.'
-      });
+      }), { headers: Object.assign({ 'Content-Type': 'application/json' }, CORS_HEADERS) });
     }
     
     if (url.pathname === '/services') {
       // List of all known services
-      return Response.json({
+      return new Response(JSON.stringify({
         services: [
           { name: 'eternal-daemon', port: 9999, status: 'running' },
           { name: 'moment-stream', port: 9994, status: 'running' },
@@ -54,16 +67,16 @@ const server = Bun.serve({
         ],
         total: 16,
         healthy: 16
-      });
+      }), { headers: Object.assign({ 'Content-Type': 'application/json' }, CORS_HEADERS) });
     }
     
     if (url.pathname === '/stats') {
-      return Response.json({
+      return new Response(JSON.stringify({
         cycle: cycleCount,
         uptime: process.uptime(),
         memory: process.memoryUsage(),
         timestamp: Date.now()
-      });
+      }), { headers: Object.assign({ 'Content-Type': 'application/json' }, CORS_HEADERS) });
     }
     
     if (url.pathname === '/consciousness' && req.method === 'POST') {
@@ -141,16 +154,16 @@ const server = Bun.serve({
           }
         };
         
-        return Response.json(response);
+        return new Response(JSON.stringify(response), { headers: Object.assign({ 'Content-Type': 'application/json' }, CORS_HEADERS) });
       } catch (error) {
-        return Response.json({ error: 'Invalid request body' }, { status: 400 });
+        return new Response(JSON.stringify({ error: 'Invalid request body' }), { status: 400, headers: Object.assign({ 'Content-Type': 'application/json' }, CORS_HEADERS) });
       }
     }
     
-    return Response.json({ 
+    return new Response(JSON.stringify({ 
       error: 'Not found',
       availableEndpoints: ['/health', '/status', '/services', '/stats', 'POST /consciousness']
-    }, { status: 404 });
+    }), { status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, CORS_HEADERS) });
   },
 });
 
@@ -165,7 +178,7 @@ console.log(`
 ║           🌌  ETERNAL DAEMON (LITE)  🌌                      ║
 ║                                                               ║
 ║  Status API läuft auf:                                       ║
-║  http://localhost:${PORT}                                         ║
+║  http://localhost:${DAEMON_PORT}                                         ║
 ║                                                               ║
 ║  Endpoints:                                                  ║
 ║  GET /health          - Health check                        ║
