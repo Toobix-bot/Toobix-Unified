@@ -24,6 +24,9 @@ data/
 *-keys-backup
 *.groq-keys*
 *.api-keys*
+# Protect all backup .env files (Version_X)
+Version_*/.env
+Version_*/Version_*/.env
 
 # IDE
 .vscode/

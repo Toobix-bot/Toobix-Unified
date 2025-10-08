@@ -319,10 +319,7 @@ Respond naturally as Luna would, with personality and depth.`;
 
         const userPrompt = `Story to enhance:\n\n${body.story}\n\nTone preference: ${tone}\nProvide 3-5 specific enhancement suggestions.`;
         
-        const response = await makeGroqRequest([
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ]);
+        const response = await callGroqAPI(userPrompt, systemPrompt, 0.8, 800);
         
         try {
           // Try to parse as JSON
@@ -386,6 +383,168 @@ Respond naturally as Luna would, with personality and depth.`;
         }, { status: 500 });
       }
     }
+
+    // ═══════════════════════════════════════════════════════════
+    // 🌙 PHASE 4.2: DREAMSCAPE PLATFORM - DREAM ENDPOINTS
+    // ═══════════════════════════════════════════════════════════
+
+    // POST /dream/generate - Convert text description to dream visualization
+    if (url.pathname === '/dream/generate' && req.method === 'POST') {
+      try {
+        const body = await req.json();
+        const { description, mood = 'peaceful' } = body;
+
+        if (!description || typeof description !== 'string') {
+          return Response.json({ error: 'Description is required' }, { status: 400 });
+        }
+
+        const systemPrompt = `Du bist Luna, eine AI die Träume visualisiert. 
+Analysiere die Traumbeschreibung und wähle 5-8 passende Emojis aus dieser Liste:
+⭐🌙☀️💫✨🔮🧙‍♂️🧚👻🤖👽🦄🏔️🌊🌲🏰🌋🏝️🐉🦅🐺🦋🐙🦉⚡🔥💧🌪️☁️🌈
+
+Berücksichtige die Stimmung: ${mood}
+
+Antworte im JSON-Format:
+{
+  "elements": [
+    {"emoji": "🌙", "symbolism": "Kurze Erklärung"},
+    ...
+  ],
+  "interpretation": "2-3 Sätze über die Traumsymbolik"
+}`;
+
+        const userPrompt = `Traumbeschreibung: ${description}`;
+        
+        const response = await callGroqAPI(userPrompt, systemPrompt, 0.9, 500);
+        
+        try {
+          const jsonMatch = response.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            return Response.json({
+              ...parsed,
+              mood: mood,
+              model: MODEL,
+              timestamp: Date.now(),
+            });
+          }
+        } catch (e) {
+          // Fallback: Extract emojis from text
+          const emojiRegex = /[\u{1F300}-\u{1F9FF}]/gu;
+          const emojis = response.match(emojiRegex) || [];
+          return Response.json({
+            elements: emojis.slice(0, 8).map(emoji => ({ emoji, symbolism: 'Traumsymbol' })),
+            interpretation: response.substring(0, 200),
+            mood: mood,
+            model: MODEL,
+          });
+        }
+      } catch (error: any) {
+        return Response.json({ error: 'Dream generation error: ' + error.message }, { status: 500 });
+      }
+    }
+
+    // POST /dream/interpret - Analyze dream symbolism
+    if (url.pathname === '/dream/interpret' && req.method === 'POST') {
+      try {
+        const body = await req.json();
+        const { elements, mood = 'peaceful' } = body;
+
+        if (!elements || !Array.isArray(elements) || elements.length === 0) {
+          return Response.json({ error: 'Elements array is required' }, { status: 400 });
+        }
+
+        const systemPrompt = `Du bist Luna, Expertin für Traumdeutung und Symbolanalyse.
+Analysiere die Traumelemente und erkläre ihre tiefere Bedeutung.
+Sei kreativ, tiefgründig und inspirierend.
+Berücksichtige die Stimmung: ${mood}
+
+Schreibe 3-5 Sätze über:
+- Was diese Symbole zusammen bedeuten könnten
+- Welche emotionalen Themen sie repräsentieren
+- Was der Träumende daraus lernen könnte`;
+
+        const elementList = elements.join(' ');
+        const userPrompt = `Traumelemente: ${elementList}\n\nWas bedeutet dieser Traum?`;
+        
+        const interpretation = await callGroqAPI(userPrompt, systemPrompt, 0.85, 600);
+        
+        return Response.json({
+          interpretation: interpretation,
+          elements: elements,
+          mood: mood,
+          symbolCount: elements.length,
+          model: MODEL,
+          timestamp: Date.now(),
+        });
+        
+      } catch (error: any) {
+        return Response.json({ error: 'Dream interpretation error: ' + error.message }, { status: 500 });
+      }
+    }
+
+    // POST /dream/evolve - Evolve dream based on user interaction
+    if (url.pathname === '/dream/evolve' && req.method === 'POST') {
+      try {
+        const body = await req.json();
+        const { currentElements, userAction, mood = 'peaceful' } = body;
+
+        if (!currentElements || !Array.isArray(currentElements)) {
+          return Response.json({ error: 'currentElements array is required' }, { status: 400 });
+        }
+
+        if (!userAction || typeof userAction !== 'string') {
+          return Response.json({ error: 'userAction is required' }, { status: 400 });
+        }
+
+        const systemPrompt = `Du bist Luna, eine AI die Träume evolutionär weiterentwickelt.
+Basierend auf den aktuellen Traumelementen und der Benutzeraktion, 
+schlage 2-4 neue Elemente vor die den Traum weiterentwickeln.
+
+Verfügbare Emojis: ⭐🌙☀️💫✨🔮🧙‍♂️🧚👻🤖👽🦄🏔️🌊🌲🏰🌋🏝️🐉🦅🐺🦋🐙🦉⚡🔥💧🌪️☁️🌈
+
+Stimmung: ${mood}
+
+Antworte im JSON-Format:
+{
+  "newElements": ["🌙", "✨"],
+  "evolution": "Kurze Erklärung wie sich der Traum entwickelt",
+  "suggestion": "Was könnte als nächstes passieren"
+}`;
+
+        const elementList = currentElements.join(' ');
+        const userPrompt = `Aktuelle Elemente: ${elementList}\n\nBenutzeraktion: ${userAction}\n\nWie entwickelt sich der Traum?`;
+        
+        const response = await callGroqAPI(userPrompt, systemPrompt, 0.9, 500);
+        
+        try {
+          const jsonMatch = response.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            return Response.json({
+              ...parsed,
+              mood: mood,
+              model: MODEL,
+              timestamp: Date.now(),
+            });
+          }
+        } catch (e) {
+          // Fallback
+          const emojiRegex = /[\u{1F300}-\u{1F9FF}]/gu;
+          const emojis = response.match(emojiRegex) || [];
+          return Response.json({
+            newElements: emojis.slice(0, 4),
+            evolution: response.substring(0, 150),
+            suggestion: 'Der Traum entwickelt sich weiter...',
+            mood: mood,
+            model: MODEL,
+          });
+        }
+        
+      } catch (error: any) {
+        return Response.json({ error: 'Dream evolution error: ' + error.message }, { status: 500 });
+      }
+    }
     
     // Clear Cache
     if (url.pathname === '/cache/clear' && req.method === 'POST') {
@@ -407,6 +566,9 @@ Respond naturally as Luna would, with personality and depth.`;
         'POST /blockworld/structure',
         'POST /luna/chat',
         'POST /story/enhance',
+        'POST /dream/generate',
+        'POST /dream/interpret',
+        'POST /dream/evolve',
         'POST /cache/clear',
       ],
     }, { status: 404 });
@@ -429,11 +591,16 @@ console.log(`
 ║  POST /story-idle/quest      - Generate RPG quest           ║
 ║  POST /blockworld/structure  - Generate structure           ║
 ║  POST /luna/chat             - Luna chatbot                 ║
-║  POST /story/enhance         - Story enhancement (NEW!)     ║
+║  POST /story/enhance         - Story enhancement            ║
+║  POST /dream/generate        - Text → Dream (NEW! 🌙)       ║
+║  POST /dream/interpret       - Dream symbolism (NEW! 🌙)    ║
+║  POST /dream/evolve          - Dream evolution (NEW! 🌙)    ║
 ║  POST /cache/clear           - Clear response cache         ║
 ║                                                               ║
 ║  Rate Limit: ${RATE_LIMIT.maxRequestsPerMinute} requests/minute                           ║
 ║  Cache TTL: 5 minutes                                        ║
+║                                                               ║
+║  🌙 Phase 4.2 Dreamscape Platform active!                   ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 `);
