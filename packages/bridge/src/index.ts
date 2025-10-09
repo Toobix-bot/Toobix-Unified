@@ -478,21 +478,39 @@ export class BridgeService {
         required: ['prompt']
       },
       handler: async (args: any) => {
-        try {
-          const text = await this.ai.generate(args.prompt, args.context || {})
-          return {
-            ok: true,
-            text: text,
-            model: 'llama-3.3-70b-versatile',
-            timestamp: Date.now()
-          }
-        } catch (error) {
-          console.error('Generate tool error:', error)
+        const contextMessages = Array.isArray(args?.context)
+          ? args.context.map((entry: any) => {
+              if (entry && typeof entry === 'object' && 'role' in entry && 'content' in entry) {
+                return {
+                  role: String(entry.role) as 'system' | 'user' | 'assistant',
+                  content: String(entry.content ?? '')
+                }
+              }
+              return { role: 'user' as const, content: String(entry ?? '') }
+            })
+          : undefined
+
+        const result = await this.ai.generate(args.prompt, {
+          context: contextMessages,
+          classification: args?.classification || 'simulation',
+          notes: 'bridge.generate tool invocation'
+        })
+
+        if (!result.ok) {
           return {
             ok: false,
-            error: error instanceof Error ? error.message : 'Generation failed',
+            error: result.text,
+            metadata: result.metadata,
             timestamp: Date.now()
           }
+        }
+
+        return {
+          ok: true,
+          text: result.text,
+          model: result.metadata.model,
+          metadata: result.metadata,
+          timestamp: Date.now()
         }
       }
     })
@@ -4811,12 +4829,16 @@ export class BridgeService {
     })
 
     this.mcp.registerRoute('POST', '/api/luna/chat', async (req: any) => {
+      let message = ''
       try {
         const body = await req.json()
-        const message = body.message || ''
+        message = body.message || ''
         
         // Generate AI response
-        const response = await this.ai.generate(message, [])
+        const result = await this.ai.generate(message, {
+          classification: 'fiction',
+          notes: 'Luna conversational reply'
+        })
         
         // Update soul with interaction
         this.soul.processEvent({
@@ -4826,14 +4848,32 @@ export class BridgeService {
           timestamp: Date.now()
         })
         
+        if (!result.ok) {
+          return {
+            reply: result.text,
+            metadata: result.metadata,
+            soul: this.soul.getSummary()
+          }
+        }
+
         return {
-          reply: response,
+          reply: result.text,
+          metadata: result.metadata,
           soul: this.soul.getSummary()
         }
       } catch (error) {
         console.error('Luna chat error:', error)
         return {
           reply: 'Entschuldigung, ich hatte einen Moment der Verwirrung. Kannst du das nochmal sagen?',
+          metadata: {
+            prompt: message,
+            model: 'llama-3.3-70b-versatile',
+            parameters: { temperature: 0.7, max_tokens: 1000 },
+            timestamp: new Date().toISOString(),
+            classification: 'unspecified',
+            source: { provider: 'fallback', type: 'chat.completion' },
+            error: error instanceof Error ? error.message : 'Unknown error'
+          },
           soul: this.soul.getSummary()
         }
       }

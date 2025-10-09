@@ -83,12 +83,19 @@ async function main() {
     }
   }, async (args: any) => {
     const prompt = String(args?.prompt || '')
-    const out = await ai.generate(prompt, {
+    const result = await ai.generate(prompt, {
       temperature: args?.temperature,
       max_tokens: args?.maxTokens,
-      model: args?.model
+      model: args?.model,
+      classification: args?.classification || 'simulation',
+      notes: 'stdio generate tool'
     })
-    return { text: out }
+
+    return {
+      ok: result.ok,
+      text: result.text,
+      metadata: result.metadata
+    }
   })
 
   // Connect transport
@@ -97,4 +104,3 @@ async function main() {
 }
 
 await main()
-

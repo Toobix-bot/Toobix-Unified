@@ -163,12 +163,18 @@ ACTION: [action-name]
 REASONING: [why this action]
 `
 
-    const response = await this.ai.generate(prompt, {
+    const result = await this.ai.generate(prompt, {
       temperature: 0.8,
-      max_tokens: 200
+      max_tokens: 200,
+      classification: 'simulation',
+      notes: 'ai-sandbox state analysis'
     })
 
-    return response
+    if (!result.ok) {
+      console.warn('AI Sandbox received non-OK response:', result.metadata)
+    }
+
+    return result.text
   }
 
   private async decideNextAction(analysis: string): Promise<any> {
