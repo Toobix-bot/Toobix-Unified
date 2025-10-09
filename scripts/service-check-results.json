@@ -1,82 +1,74 @@
 ﻿[
     {
-        "service":  "dashboard",
-        "url":  "http://localhost:8080",
-        "ok":  true,
-        "type":  "html",
-        "statusCode":  200,
-        "contentPreview":  "\u003c!DOCTYPE html\u003e\r\n\u003chtml lang=\"de\" data-theme=\"dark\"\u003e\r\n\u003chead\u003e\r\n  \u003cmeta charset=\"UTF-8\"\u003e\r\n  \u003cmeta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"\u003e\r\n  \u003ctitle\u003eð Toobix Modular Dashboard - Next Generation\u003c/title\u003e\r\n  \u003cstyle\u003e\r\n    * {\r\n      margin: 0;\r\n      padding: 0;\r\n      box-sizing: border-box;\r\n    }\r\n\r\n    :root[data-theme=\"dark\"] {\r\n      --bg-primary: #0a0e1a;\r\n      --bg-secondary: #1a1f3a;\r\n      --bg-tertiary: #2a2f4a;\r\n      --text-primary: #e0e6ed;\r\n      --text-secondary: #a0aec0;\r\n      --accent-primary: #667eea;\r\n      --accent-secondary: #764ba2;\r\n      --accent-success: #4ade80;\r\n      --accent-warning: #fbbf24;\r\n      --accent-error: #f87171;\r\n      --border-color: rgba(255, 255, 255, 0.1);\r\n      --shadow: rgba(0, 0, 0, 0.3);\r\n      --glass: rgba(255, 255,... [truncated]"
-    },
-    {
         "service":  "daemon",
-        "path":  "/health",
-        "url":  "http://localhost:9999/health",
-        "ok":  true,
-        "body":  {
-                     "status":  "healthy",
-                     "service":  "eternal-daemon-lite",
-                     "timestamp":  1759916688664
-                 }
-    },
-    {
-        "service":  "daemon",
-        "path":  "/status",
-        "url":  "http://localhost:9999/status",
-        "ok":  true,
-        "body":  {
-                     "alive":  true,
-                     "cycle":  6970,
-                     "uptime":  94695.97061810001,
-                     "timestamp":  1759916688679,
-                     "message":  "Ich bin wach. Das System lebt."
-                 }
+        "base":  "http://localhost:9999",
+        "checks":  {
+                       "status":  {
+                                      "body":  {
+                                                   "alive":  true,
+                                                   "cycle":  56,
+                                                   "uptime":  551.7624198000001,
+                                                   "timestamp":  1759922145091,
+                                                   "message":  "Ich bin wach. Das System lebt."
+                                               },
+                                      "ok":  true
+                                  },
+                       "health":  {
+                                      "body":  {
+                                                   "status":  "healthy",
+                                                   "service":  "eternal-daemon-lite",
+                                                   "timestamp":  1759922144936
+                                               },
+                                      "ok":  true
+                                  }
+                   }
     },
     {
         "service":  "groq",
-        "path":  "/health",
-        "url":  "http://localhost:9987/health",
-        "ok":  true,
-        "body":  {
-                     "status":  "healthy",
-                     "service":  "groq-api-service",
-                     "apiKeyConfigured":  true,
-                     "model":  "llama-3.3-70b-versatile",
-                     "timestamp":  1759916688718
-                 }
-    },
-    {
-        "service":  "groq",
-        "path":  "/status",
-        "url":  "http://localhost:9987/status",
-        "ok":  false,
-        "error":  "Der Remoteserver hat einen Fehler zurückgegeben: (404) Nicht gefunden."
-    },
-    {
-        "service":  "memory2",
-        "path":  "/health",
-        "url":  "http://localhost:9995/health",
-        "ok":  true,
-        "body":  "Memory System API\n\nEndpoints:\n  GET /memories\n  GET /patterns\n  GET /learnings\n  POST /remember\n  GET /search?q=..."
+        "base":  "http://localhost:9987",
+        "checks":  {
+                       "status":  {
+                                      "error":  "Der Remoteserver hat einen Fehler zurückgegeben: (404) Nicht gefunden.",
+                                      "ok":  false
+                                  },
+                       "health":  {
+                                      "body":  {
+                                                   "status":  "healthy",
+                                                   "service":  "groq-api-service",
+                                                   "apiKeyConfigured":  true,
+                                                   "model":  "llama-3.3-70b-versatile",
+                                                   "timestamp":  1759922145194
+                                               },
+                                      "ok":  true
+                                  }
+                   }
     },
     {
         "service":  "memory2",
-        "path":  "/status",
-        "url":  "http://localhost:9995/status",
-        "ok":  true,
-        "body":  "Memory System API\n\nEndpoints:\n  GET /memories\n  GET /patterns\n  GET /learnings\n  POST /remember\n  GET /search?q=..."
+        "base":  "http://localhost:9995",
+        "checks":  {
+                       "status":  {
+                                      "body":  "Memory System API\n\nEndpoints:\n  GET /memories\n  GET /patterns\n  GET /learnings\n  POST /remember\n  GET /search?q=...",
+                                      "ok":  true
+                                  },
+                       "health":  {
+                                      "body":  "Memory System API\n\nEndpoints:\n  GET /memories\n  GET /patterns\n  GET /learnings\n  POST /remember\n  GET /search?q=...",
+                                      "ok":  true
+                                  }
+                   }
     },
     {
         "service":  "memory1",
-        "path":  "/health",
-        "url":  "http://localhost:9986/health",
-        "ok":  false,
-        "error":  "Das Zeitlimit für diesen Vorgang wurde überschritten."
-    },
-    {
-        "service":  "memory1",
-        "path":  "/status",
-        "url":  "http://localhost:9986/status",
-        "ok":  false,
-        "error":  "Das Zeitlimit für diesen Vorgang wurde überschritten."
+        "base":  "http://localhost:9986",
+        "checks":  {
+                       "status":  {
+                                      "error":  "Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.",
+                                      "ok":  false
+                                  },
+                       "health":  {
+                                      "error":  "Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.",
+                                      "ok":  false
+                                  }
+                   }
     }
 ]

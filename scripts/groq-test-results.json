@@ -1,0 +1,33 @@
+﻿{
+    "health":  {
+                   "body":  {
+                                "status":  "healthy",
+                                "service":  "groq-api-service",
+                                "apiKeyConfigured":  true,
+                                "model":  "llama-3.3-70b-versatile",
+                                "timestamp":  1759922894594
+                            },
+                   "ok":  true
+               },
+    "luna_chat":  {
+                      "body":  {
+                                   "response":  "pong",
+                                   "timestamp":  1759922895288
+                               },
+                      "ok":  true
+                  },
+    "story_quest":  {
+                        "body":  {
+                                     "quest":  "```json\n{\n  \"name\": \"The Missing Blacksmith\",\n  \"description\": \"The village of Oakwood is in dire need of its blacksmith, who has gone missing while searching for rare iron ores in the nearby forest. Without him, the village\u0027s defenses are weakening, and the villagers are in a state of panic. The village elder has asked for a brave warrior to find the missing blacksmith and bring him back safely.\",\n  \"objective\": \"Find the missing blacksmith, Thorgrim, in the Oakwood Forest and escort him back to the village of Oakwood\",\n  \"reward\": {\n    \"gold\": 50,\n    \"items\": [\"Iron Sword\", \"Leather Armor\"],\n    \"XP\": 100\n  }\n}\n```",
+                                     "timestamp":  1759922895843
+                                 },
+                        "ok":  true
+                    },
+    "blockworld_structure":  {
+                                 "body":  {
+                                              "structure":  "```json\n{\n  \"building_name\": \"Cozy Cottage\",\n  \"dimensions\": {\n    \"width\": 7,\n    \"height\": 5,\n    \"depth\": 7\n  },\n  \"materials_needed\": [\n    \"Dirt\",\n    \"Stone\",\n    \"Wood\",\n    \"Glass\"\n  ],\n  \"instructions\": [\n    {\n      \"step\": 1,\n      \"description\": \"Create the foundation\",\n      \"block_placements\": [\n        {\"x\": 0, \"y\": 0, \"z\": 0, \"block\": \"Dirt\"},\n        {\"x\": 1, \"y\": 0, \"z\": 0, \"block\": \"Dirt\"},\n        {\"x\": 2, \"y\": 0, \"z\": 0, \"block\": \"Dirt\"},\n        {\"x\": 3, \"y\": 0, \"z\": 0, \"block\": \"Dirt\"},\n        {\"x\": 4, \"y\": 0, \"z\": 0, \"block\": \"Dirt\"},\n        {\"x\": 5, \"y\": 0, \"z\": 0, \"block\": \"Dirt\"},\n        {\"x\": 6, \"y\": 0, \"z\": 0, \"block\": \"Dirt\"},\n        {\"x\": 0, \"y\": 0, \"z\": 1, \"block\": \"Dirt\"},\n        {\"x\": 1, \"y\": 0, \"z\": 1, \"block\": \"Dirt\"},\n        {\"x\": 2, \"y\": 0, \"z\": 1, \"block\": \"Dirt\"},\n        {\"x\": 3, \"y\": 0, \"z\": 1, \"block\": \"Dirt\"},\n        {\"x\": 4, \"y\": 0, \"z\": ",
+                                              "timestamp":  1759922896737
+                                          },
+                                 "ok":  true
+                             }
+}
