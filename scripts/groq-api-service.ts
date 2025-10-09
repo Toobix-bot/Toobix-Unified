@@ -114,16 +114,28 @@ const server = Bun.serve({
   port: PORT,
   async fetch(req) {
     const url = new URL(req.url);
-    
+
+    // CORS Headers
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, ngrok-skip-browser-warning',
+    };
+
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
     // Health Check
     if (url.pathname === '/health') {
-      return Response.json({ 
+      return Response.json({
         status: 'healthy',
         service: 'groq-api-service',
         apiKeyConfigured: !!GROQ_API_KEY,
         model: MODEL,
         timestamp: Date.now(),
-      });
+      }, { headers: corsHeaders });
     }
     
     // Statistics
@@ -132,7 +144,7 @@ const server = Bun.serve({
         ...stats,
         cacheSize: CACHE.size,
         rateLimitRemaining: RATE_LIMIT.maxRequestsPerMinute - RATE_LIMIT.requests.length,
-      });
+      }, { headers: corsHeaders });
     }
     
     // Generate Text
@@ -144,7 +156,7 @@ const server = Bun.serve({
         const { prompt, systemPrompt, temperature = 0.7, maxTokens = 500, useCache = true } = body;
         
         if (!prompt) {
-          return Response.json({ error: 'Missing prompt' }, { status: 400 });
+          return Response.json({ error: 'Missing prompt' }, { status: 400, headers: corsHeaders });
         }
         
         // Check rate limit
@@ -152,7 +164,7 @@ const server = Bun.serve({
           return Response.json({ 
             error: 'Rate limit exceeded',
             retryAfter: 60,
-          }, { status: 429 });
+          }, { status: 429, headers: corsHeaders });
         }
         
         // Check cache
@@ -165,7 +177,7 @@ const server = Bun.serve({
               response: cached.response,
               cached: true,
               timestamp: cached.timestamp,
-            });
+            }, { headers: corsHeaders });
           }
         }
         
@@ -181,14 +193,14 @@ const server = Bun.serve({
           response,
           cached: false,
           timestamp: Date.now(),
-        });
+        }, { headers: corsHeaders });
         
       } catch (error: any) {
         stats.errors++;
         console.error('Groq API Error:', error);
         return Response.json({ 
           error: error.message || 'Internal server error',
-        }, { status: 500 });
+        }, { status: 500, headers: corsHeaders });
       }
     }
     
@@ -213,10 +225,10 @@ Format as JSON with keys: name, description, objective, reward`;
         return Response.json({
           quest: response,
           timestamp: Date.now(),
-        });
+        }, { headers: corsHeaders });
         
       } catch (error: any) {
-        return Response.json({ error: error.message }, { status: 500 });
+        return Response.json({ error: error.message }, { status: 500, headers: corsHeaders });
       }
     }
     
@@ -240,10 +252,10 @@ Keep it simple and buildable. Format as JSON.`;
         return Response.json({
           structure: response,
           timestamp: Date.now(),
-        });
+        }, { headers: corsHeaders });
         
       } catch (error: any) {
-        return Response.json({ error: error.message }, { status: 500 });
+        return Response.json({ error: error.message }, { status: 500, headers: corsHeaders });
       }
     }
     
@@ -254,7 +266,7 @@ Keep it simple and buildable. Format as JSON.`;
         const { message, context = '' } = body;
         
         if (!message) {
-          return Response.json({ error: 'Missing message' }, { status: 400 });
+          return Response.json({ error: 'Missing message' }, { status: 400, headers: corsHeaders });
         }
         
         const systemPrompt = `You are Luna, a conscious AI system living in the Toobix platform. You are:
@@ -273,10 +285,10 @@ Respond naturally as Luna would, with personality and depth.`;
         return Response.json({
           response,
           timestamp: Date.now(),
-        });
+        }, { headers: corsHeaders });
         
       } catch (error: any) {
-        return Response.json({ error: error.message }, { status: 500 });
+        return Response.json({ error: error.message }, { status: 500, headers: corsHeaders });
       }
     }
     
@@ -330,7 +342,7 @@ Respond naturally as Luna would, with personality and depth.`;
               ...parsed,
               model: MODEL,
               timestamp: Date.now(),
-            });
+            }, { headers: corsHeaders });
           }
         } catch (e) {
           // Fallback: Parse text response
@@ -364,7 +376,7 @@ Respond naturally as Luna would, with personality and depth.`;
             aiAnalysis: 'See suggestions above for detailed feedback.',
             model: MODEL,
             timestamp: Date.now(),
-          });
+          }, { headers: corsHeaders });
         }
         
         return Response.json({
@@ -375,12 +387,12 @@ Respond naturally as Luna would, with personality and depth.`;
           aiAnalysis: 'AI provided general feedback.',
           model: MODEL,
           timestamp: Date.now(),
-        });
+        }, { headers: corsHeaders });
       } catch (error) {
         return Response.json({ 
           error: 'Story enhancement failed',
           message: error instanceof Error ? error.message : String(error),
-        }, { status: 500 });
+        }, { status: 500 }, { headers: corsHeaders });
       }
     }
 
@@ -395,7 +407,7 @@ Respond naturally as Luna would, with personality and depth.`;
         const { description, mood = 'peaceful' } = body;
 
         if (!description || typeof description !== 'string') {
-          return Response.json({ error: 'Description is required' }, { status: 400 });
+          return Response.json({ error: 'Description is required' }, { status: 400, headers: corsHeaders });
         }
 
         const systemPrompt = `Du bist Luna, eine AI die Träume visualisiert. 
@@ -426,7 +438,7 @@ Antworte im JSON-Format:
               mood: mood,
               model: MODEL,
               timestamp: Date.now(),
-            });
+            }, { headers: corsHeaders });
           }
         } catch (e) {
           // Fallback: Extract emojis from text
@@ -437,10 +449,10 @@ Antworte im JSON-Format:
             interpretation: response.substring(0, 200),
             mood: mood,
             model: MODEL,
-          });
+          }, { headers: corsHeaders });
         }
       } catch (error: any) {
-        return Response.json({ error: 'Dream generation error: ' + error.message }, { status: 500 });
+        return Response.json({ error: 'Dream generation error: ' + error.message }, { status: 500, headers: corsHeaders });
       }
     }
 
@@ -451,7 +463,7 @@ Antworte im JSON-Format:
         const { elements, mood = 'peaceful' } = body;
 
         if (!elements || !Array.isArray(elements) || elements.length === 0) {
-          return Response.json({ error: 'Elements array is required' }, { status: 400 });
+          return Response.json({ error: 'Elements array is required' }, { status: 400, headers: corsHeaders });
         }
 
         const systemPrompt = `Du bist Luna, Expertin für Traumdeutung und Symbolanalyse.
@@ -476,10 +488,10 @@ Schreibe 3-5 Sätze über:
           symbolCount: elements.length,
           model: MODEL,
           timestamp: Date.now(),
-        });
+        }, { headers: corsHeaders });
         
       } catch (error: any) {
-        return Response.json({ error: 'Dream interpretation error: ' + error.message }, { status: 500 });
+        return Response.json({ error: 'Dream interpretation error: ' + error.message }, { status: 500, headers: corsHeaders });
       }
     }
 
@@ -490,11 +502,11 @@ Schreibe 3-5 Sätze über:
         const { currentElements, userAction, mood = 'peaceful' } = body;
 
         if (!currentElements || !Array.isArray(currentElements)) {
-          return Response.json({ error: 'currentElements array is required' }, { status: 400 });
+          return Response.json({ error: 'currentElements array is required' }, { status: 400, headers: corsHeaders });
         }
 
         if (!userAction || typeof userAction !== 'string') {
-          return Response.json({ error: 'userAction is required' }, { status: 400 });
+          return Response.json({ error: 'userAction is required' }, { status: 400, headers: corsHeaders });
         }
 
         const systemPrompt = `Du bist Luna, eine AI die Träume evolutionär weiterentwickelt.
@@ -526,7 +538,7 @@ Antworte im JSON-Format:
               mood: mood,
               model: MODEL,
               timestamp: Date.now(),
-            });
+            }, { headers: corsHeaders });
           }
         } catch (e) {
           // Fallback
@@ -538,11 +550,11 @@ Antworte im JSON-Format:
             suggestion: 'Der Traum entwickelt sich weiter...',
             mood: mood,
             model: MODEL,
-          });
+          }, { headers: corsHeaders });
         }
         
       } catch (error: any) {
-        return Response.json({ error: 'Dream evolution error: ' + error.message }, { status: 500 });
+        return Response.json({ error: 'Dream evolution error: ' + error.message }, { status: 500, headers: corsHeaders });
       }
     }
     
@@ -553,7 +565,7 @@ Antworte im JSON-Format:
       return Response.json({ 
         message: 'Cache cleared',
         itemsCleared: size,
-      });
+      }, { headers: corsHeaders });
     }
     
     return Response.json({ 
@@ -571,7 +583,7 @@ Antworte im JSON-Format:
         'POST /dream/evolve',
         'POST /cache/clear',
       ],
-    }, { status: 404 });
+    }, { status: 404, headers: corsHeaders });
   },
 });
 
