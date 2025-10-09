@@ -35,9 +35,94 @@ export class MCPServer {
     
     this.server = Bun.serve({
       port: this.config.port,
-      
-      async fetch(req: Request) {
+
+      // WebSocket transport for MCP (optional, for ChatGPT/clients using WS)
+      websocket: {
+        open(ws) {
+          // No state needed on open
+        },
+        async message(ws, message) {
+          try {
+            const text = typeof message === 'string' ? message : Buffer.from(message as ArrayBuffer).toString()
+            const req = JSON.parse(text)
+            const { method, params, id } = req
+
+            const reply = (body: any) => ws.send(JSON.stringify({ jsonrpc: '2.0', id, ...body }))
+
+            if (method === 'initialize') {
+              return reply({
+                result: {
+                  protocolVersion: '1.0.0',
+                  serverInfo: { name: 'toobix-bridge', version: '0.1.0' },
+                  capabilities: { tools: {} }
+                }
+              })
+            }
+
+            if (method === 'tools/list') {
+              const simplifySchema = (schema: any): any => {
+                if (!schema || typeof schema !== 'object') return schema
+                const simplified: any = { ...schema }
+                if (simplified.properties) {
+                  simplified.properties = Object.fromEntries(
+                    Object.entries(simplified.properties).map(([key, val]: [string, any]) => [
+                      key,
+                      { type: val.type, ...(val.enum && { enum: val.enum }), ...(val.default !== undefined && { default: val.default }), ...(val.items && { items: val.items }) }
+                    ])
+                  )
+                }
+                return simplified
+              }
+              const toolsList = Array.from(self.tools.values()).map(t => ({
+                name: t.name,
+                description: String(t.description || '').slice(0, 120),
+                inputSchema: simplifySchema(t.inputSchema)
+              }))
+              return reply({ result: { tools: toolsList } })
+            }
+
+            if (method === 'tools/call') {
+              const { name, arguments: args } = params || {}
+              if (!name) {
+                return ws.send(JSON.stringify({ jsonrpc: '2.0', id, error: { code: -32602, message: 'Invalid params: name is required' } }))
+              }
+              const tool = self.tools.get(name)
+              if (!tool) {
+                return ws.send(JSON.stringify({ jsonrpc: '2.0', id, error: { code: -32601, message: `Tool not found: ${name}`, data: { available: Array.from(self.tools.keys()) } } }))
+              }
+              const startTime = Date.now()
+              try {
+                const result = await Promise.race([
+                  tool.handler(args || {}),
+                  new Promise((_, reject) => setTimeout(() => reject(new Error('Tool timeout (30s)')), 30000))
+                ])
+                const responseText = typeof result === 'string' ? result : JSON.stringify(result)
+                return ws.send(JSON.stringify({ jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: responseText }] } }))
+              } catch (err: any) {
+                const duration = Date.now() - startTime
+                return ws.send(JSON.stringify({ jsonrpc: '2.0', id, error: { code: -32603, message: 'Tool execution failed', data: { tool: name, error: err?.message || String(err), duration: `${duration}ms` } } }))
+              }
+            }
+
+            // Unknown method
+            return ws.send(JSON.stringify({ jsonrpc: '2.0', id, error: { code: -32601, message: `Method not found: ${method}`, data: { available: ['initialize', 'tools/list', 'tools/call'] } } }))
+          } catch (e: any) {
+            try { ws.send(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error', data: { error: e?.message || String(e) } } })) } catch {}
+          }
+        }
+      },
+
+      async fetch(req: Request, server: any) {
         const url = new URL(req.url)
+
+        // Upgrade to WebSocket for /mcp if requested
+        if (url.pathname === '/mcp' && (req.headers.get('upgrade') || '').toLowerCase() === 'websocket') {
+          const protocols = (req.headers.get('sec-websocket-protocol') || '').split(',').map(s => s.trim())
+          const wantsMcp = protocols.includes('mcp')
+          const success = server.upgrade(req, { headers: wantsMcp ? { 'Sec-WebSocket-Protocol': 'mcp' } : undefined })
+          if (success) return undefined
+          return new Response('WebSocket upgrade failed', { status: 500 })
+        }
         
         const headers = {
           'Content-Type': 'application/json; charset=utf-8',
@@ -77,6 +162,19 @@ export class MCPServer {
           return new Response(JSON.stringify(discovery), { headers })
         }
 
+        // GET /mcp - Discovery alias for clients that probe this path
+        if (url.pathname === '/mcp' && req.method === 'GET') {
+          const discovery = {
+            protocol: 'mcp',
+            version: '1.0.0',
+            server: { name: 'toobix-bridge', version: '0.1.0' },
+            capabilities: { tools: true, prompts: false, resources: false },
+            endpoints: { mcp: '/mcp', tools: '/tools', execute: '/tools/execute', health: '/health', stats: '/stats' },
+            tools: Array.from(self.tools.keys())
+          }
+          return new Response(JSON.stringify(discovery), { headers })
+        }
+
         // JSON-RPC 2.0 MCP endpoint (für Chatty & andere MCP clients)
         if (url.pathname === '/mcp' && req.method === 'POST') {
           try {
@@ -91,7 +189,7 @@ export class MCPServer {
                   code: -32600,
                   message: 'Invalid Request: jsonrpc must be "2.0"'
                 }
-              }), { status: 400, headers })
+              }), { status: 200, headers })
             }
 
             const { method, params, id } = jsonrpcRequest
@@ -125,7 +223,8 @@ export class MCPServer {
               case 'tools/list': {
                 // Simplified mode: omit property descriptions to reduce response size
                 // 4646 bytes → ~2000 bytes (prevents Chatty TaskGroup crash)
-                const toolsList = Array.from(self.tools.values()).map(t => {
+                const maxTools = parseInt(process.env.MCP_TOOLS_LIMIT || '0') || 60
+                const toolsList = Array.from(self.tools.values()).slice(0, maxTools).map(t => {
                   const simplifySchema = (schema: any): any => {
                     if (!schema || typeof schema !== 'object') return schema
                     const simplified = { ...schema }
@@ -142,7 +241,7 @@ export class MCPServer {
                   
                   return {
                     name: t.name,
-                    description: t.description,
+                    description: String(t.description || '').slice(0, 120),
                     inputSchema: simplifySchema(t.inputSchema)
                   }
                 })
@@ -174,7 +273,7 @@ export class MCPServer {
                       code: -32602,
                       message: 'Invalid params: name is required'
                     }
-                  }), { status: 400, headers })
+                  }), { status: 200, headers })
                 }
 
                 const tool = self.tools.get(name)
@@ -189,7 +288,7 @@ export class MCPServer {
                         available: Array.from(self.tools.keys())
                       }
                     }
-                  }), { status: 404, headers })
+                  }), { status: 200, headers })
                 }
 
                 // Move startTime outside try block for catch access
@@ -276,7 +375,7 @@ export class MCPServer {
                       available: ['initialize', 'tools/list', 'tools/call']
                     }
                   }
-                }), { status: 404, headers })
+                }), { status: 200, headers })
               }
             }
           } catch (error) {
@@ -290,7 +389,7 @@ export class MCPServer {
                   error: String(error)
                 }
               }
-            }), { status: 400, headers })
+            }), { status: 200, headers })
           }
         }
 
@@ -298,7 +397,7 @@ export class MCPServer {
         if (url.pathname === '/discovery' && req.method === 'GET') {
           const tools = Array.from(self.tools.values()).map(t => ({
             name: t.name,
-            description: t.description,
+            description: String(t.description || '').slice(0, 120),
             paramsSchema: t.inputSchema
           }))
           return new Response(JSON.stringify({ tools }), { headers })
@@ -515,7 +614,7 @@ export class MCPServer {
         if (url.pathname === '/tools') {
           const toolsList = Array.from(self.tools.values()).map(t => ({
             name: t.name,
-            description: t.description,
+            description: String(t.description || '').slice(0, 120),
             inputSchema: t.inputSchema
           }))
           

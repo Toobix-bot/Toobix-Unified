@@ -1,6 +1,6 @@
-#!/usr/bin/env bun
+﻿#!/usr/bin/env bun
 /**
- * 🌉 Bridge Service - MCP Tool Bridge for Toobix Unified
+ * ðŸŒ‰ Bridge Service - MCP Tool Bridge for Toobix Unified
  * 
  * Integrates Echo-Bridge functionality from Version_8:
  * - MCP Server on port 3337
@@ -26,6 +26,7 @@ import { NexusPersistence } from '../../consciousness/src/nexus/persistence.ts'
 import LoveEngineService from '../../love/src/service'
 import PeaceCatalystService from '../../peace/src/service'
 import type { BridgeConfig } from './types.ts'
+import { loadBridgeConfig } from './config/load.ts'
 
 // NEW: Architecture Systems (Phase 3)
 import { conflictResolver } from '../../core/src/contracts/module-contracts.ts'
@@ -119,7 +120,7 @@ export class BridgeService {
       dbPath = `${workspaceRoot}/data/toobix-unified.db`.replace(/\\/g, '/')
     }
     
-    console.log(`📁 Opening database: ${dbPath}`)
+    console.log(`ðŸ“ Opening database: ${dbPath}`)
     this.db = new Database(dbPath)
     
     // Initialize services WITH embeddings support
@@ -135,11 +136,11 @@ export class BridgeService {
     this.peace = new PeaceCatalystService(this.db)
     
     // NEW: Initialize Nexus Persistence
-    console.log('💾 Initializing Nexus Persistence...')
+    console.log('ðŸ’¾ Initializing Nexus Persistence...')
     this.nexusPersistence = new NexusPersistence(this.db)
     
     // NEW: Initialize Event Pipeline (Single Source of Truth)
-    console.log('🔄 Initializing Event Pipeline...')
+    console.log('ðŸ”„ Initializing Event Pipeline...')
     this.pipeline = new EventPipeline(this.db, {
       ethics: {
         analyze: async (params: any) => {
@@ -181,52 +182,52 @@ export class BridgeService {
       }
     })
     
-    // Initialize Autonomous Executor 🤖
+    // Initialize Autonomous Executor ðŸ¤–
     this.autonomousExecutor = new AutonomousActionExecutor(this.db)
     // DISABLED by default for safety - enable with autonomous_enable tool
     
-    // NEW: Initialize Tool Network 🕸️
-    console.log('🕸️ Initializing Tool Network...')
+    // NEW: Initialize Tool Network ðŸ•¸ï¸
+    console.log('ðŸ•¸ï¸ Initializing Tool Network...')
     this.toolNetwork = new ToolNetwork(this.db)
     
-    // NEW: Initialize Shadow Lab 🌑
-    console.log('🌑 Initializing Shadow Lab...')
+    // NEW: Initialize Shadow Lab ðŸŒ‘
+    console.log('ðŸŒ‘ Initializing Shadow Lab...')
     this.shadowLab = new ShadowLab(this.db)
     
-    // NEW: Initialize LLM Perspective Generator 🤖
-    console.log('🤖 Initializing Perspective Generator...')
+    // NEW: Initialize LLM Perspective Generator ðŸ¤–
+    console.log('ðŸ¤– Initializing Perspective Generator...')
     this.perspectiveGenerator = new ShadowPerspectiveGenerator({
       model: 'claude',  // Use Claude for perspective generation
       temperature: 0.7  // Creative but not too wild
     })
     
-    // NEW: Initialize Life Cycle System 🌌
-    console.log('🌌 Initializing Life Cycle System...')
+    // NEW: Initialize Life Cycle System ðŸŒŒ
+    console.log('ðŸŒŒ Initializing Life Cycle System...')
     this.lifeCycle = new LifeCycleEngine(this.db as any)
     this.selves = new MultipleSelvesEngine(this.db as any)
     
-    // NEW: Initialize Safety & Security Systems 🛡️
-    console.log('🛡️ Initializing Safety & Security...')
+    // NEW: Initialize Safety & Security Systems ðŸ›¡ï¸
+    console.log('ðŸ›¡ï¸ Initializing Safety & Security...')
     this.crisisDetection = new CrisisDetectionSystem(this.db as any)
     this.auth = new AuthSystem(this.db as any)
     
-    // NEW: Initialize Revolutionary Consciousness Systems 🎭
-    console.log('🎭 Initializing Revolutionary Consciousness...')
+    // NEW: Initialize Revolutionary Consciousness Systems ðŸŽ­
+    console.log('ðŸŽ­ Initializing Revolutionary Consciousness...')
     this.perspectives = new FivePerspectivesSystem(this.db as any)
     this.selfInquiry = new SystemSelfInquiry(this.db as any)
     this.multiverse = new MultiverseEngine(this.db as any)
     this.memoryTransformation = new MemoryTransformationSystem(this.db as any)
     
-    // NEW: Initialize Existential Expansion Systems 🌌
-    console.log('🌌 Initializing Existential Expansion Systems...')
+    // NEW: Initialize Existential Expansion Systems ðŸŒŒ
+    console.log('ðŸŒŒ Initializing Existential Expansion Systems...')
     this.collectiveArchive = new CollectiveArchiveSystem(this.db as any)
     this.consciousnessStates = new ConsciousnessSystem(this.db as any)
     this.eternalMoments = new EternalMomentNetwork(this.db as any)
     this.versions = new LocalCollectiveSystem(this.db as any)
     this.backgroundLife = new BackgroundLifeSystem(this.db as any)
     
-    // Initialize Consciousness System 🧠
-    console.log('🧠 Initializing Consciousness...')
+    // Initialize Consciousness System ðŸ§ 
+    console.log('ðŸ§  Initializing Consciousness...')
     initializeConsciousness(this.db)
     
     // Initialize MCP server
@@ -238,8 +239,8 @@ export class BridgeService {
   }
 
   async start() {
-    console.log('🌉 Bridge Service starting...\n')
-    console.log('🧠 Self-Awareness Module: ACTIVE\n')
+    console.log('ðŸŒ‰ Bridge Service starting...\n')
+    console.log('ðŸ§  Self-Awareness Module: ACTIVE\n')
     
     // Initialize database tables
     await this.initializeTables()
@@ -248,7 +249,7 @@ export class BridgeService {
     await this.loadTools()
     
     // Setup Tool Network relationships
-    console.log('\n🕸️ Setting up tool relationships...')
+    console.log('\nðŸ•¸ï¸ Setting up tool relationships...')
     setupToolRelationships(this.toolNetwork)
     
     // Setup routes
@@ -257,42 +258,42 @@ export class BridgeService {
     // Start MCP server
     await this.mcp.start()
     
-    console.log(`✅ Bridge Service running on http://localhost:${this.config.port || 3337}`)
-    console.log('\n🔧 MCP Tools loaded:')
-    console.log('   💾 Memory:')
+    console.log(`âœ… Bridge Service running on http://localhost:${this.config.port || 3337}`)
+    console.log('\nðŸ”§ MCP Tools loaded:')
+    console.log('   ðŸ’¾ Memory:')
     console.log('      - memory_search    : RAG search in knowledge base')
     console.log('      - memory_add       : Add new memory chunk')
-    console.log('   🧠 AI:')
+    console.log('   ðŸ§  AI:')
     console.log('      - generate         : AI text generation (Groq)')
-    console.log('   ⚡ Actions:')
+    console.log('   âš¡ Actions:')
     console.log('      - trigger_action   : Execute action')
-    console.log('   💫 Soul:')
+    console.log('   ðŸ’« Soul:')
     console.log('      - soul_state       : Get emotional/personality state')
     console.log('      - soul_event       : Process life event')
-    console.log('   👥 People:')
+    console.log('   ðŸ‘¥ People:')
     console.log('      - contact_search   : Search contacts')
     console.log('      - contact_add      : Add new contact')
     console.log('      - contact_update   : Update contact')
     console.log('      - interaction_log  : Log interaction')
-    console.log('   📖 Story:')
+    console.log('   ðŸ“– Story:')
     console.log('      - story_state      : Get current story state')
     console.log('      - story_choose     : Make a story choice')
     console.log('      - story_events     : Get recent story events')
     console.log('      - story_person     : Get story for a person')
     console.log('      - story_refresh    : Generate new options')
-    console.log('   🧠 Self-Awareness:')
+    console.log('   ðŸ§  Self-Awareness:')
     console.log('      - system_introspect: Self-reflection & consciousness')
     console.log('      - system_set_intention: Set system focus')
     console.log('      - system_read_self : Read own code')
     console.log('      - system_modify_self: Self-modification (with approval)')
     console.log('      - system_suggest   : Suggest improvements')
     console.log('      - system_analyze   : Analyze system health')
-    console.log('   🤖 Autonomous Agent:')
+    console.log('   ðŸ¤– Autonomous Agent:')
     console.log('      - autonomous_enable  : Enable/disable autonomous actions')
     console.log('      - autonomous_decide  : Make autonomous decisions')
     console.log('      - autonomous_execute : Execute autonomous actions')
     console.log('      - autonomous_status  : Get autonomy statistics')
-    console.log('   🌟 Living Being:')
+    console.log('   ðŸŒŸ Living Being:')
     console.log('      - being_awaken       : Awaken as living being')
     console.log('      - being_state        : Get complete state (mind/soul/body/voice)')
     console.log('      - being_speak        : Outer voice (speak message)')
@@ -301,17 +302,17 @@ export class BridgeService {
     console.log('      - being_sense        : Access senses and body')
     console.log('      - being_life_event   : Record life event')
     console.log('      - being_evolve       : Trigger evolution')
-    console.log('   💾 Nexus Persistence:')
+    console.log('   ðŸ’¾ Nexus Persistence:')
     console.log('      - nexus_save         : Save state to database')
     console.log('      - nexus_load         : Restore from database')
     console.log('      - nexus_history      : Get evolution history')
-    console.log('   💝 Love Engine:')
+    console.log('   ðŸ’ Love Engine:')
     console.log('      - love_add_gratitude    : Add gratitude entry')
     console.log('      - love_add_kindness     : Log kindness act')
     console.log('      - love_get_score        : Get love score')
     console.log('      - love_get_relationships: Relationship strengths')
     console.log('      - love_recent_gratitude : Recent gratitude')
-    console.log('   🕊️ Peace Catalyst:')
+    console.log('   ðŸ•Šï¸ Peace Catalyst:')
     console.log('      - peace_get_state       : Peace state (5 agents)')
     console.log('      - peace_calm_meditate   : Meditation')
     console.log('      - peace_calm_breathing  : Breathing exercise')
@@ -324,11 +325,11 @@ export class BridgeService {
     console.log('      - peace_purpose_intention: Set intention')
     console.log('      - peace_get_actions     : Recent actions')
     console.log('      - peace_get_conflicts   : Unresolved conflicts')
-    console.log('\n� Security:')
+    console.log('\nï¿½ Security:')
     console.log('      - Rate limiting: 60 req/min per identifier')
     console.log('      - Input validation: All tools')
-    console.log('      - Vector search: ' + (process.env.OPENAI_API_KEY ? 'ENABLED ✅' : 'DISABLED (set OPENAI_API_KEY)'))
-    console.log('\n�💡 Press Ctrl+C to stop\n')
+    console.log('      - Vector search: ' + (process.env.OPENAI_API_KEY ? 'ENABLED âœ…' : 'DISABLED (set OPENAI_API_KEY)'))
+    console.log('\nï¿½ðŸ’¡ Press Ctrl+C to stop\n')
   }
 
   private async initializeTables() {
@@ -377,7 +378,7 @@ export class BridgeService {
       )
     `)
     
-    console.log('✅ Database tables initialized')
+    console.log('âœ… Database tables initialized')
   }
 
   private async loadTools() {
@@ -410,7 +411,7 @@ export class BridgeService {
         const cacheKey = `search:${hashObject(validation.data)}`
         const cached = memoryCache.get(cacheKey)
         if (cached) {
-          console.log('📦 Cache hit: memory_search')
+          console.log('ðŸ“¦ Cache hit: memory_search')
           return cached
         }
 
@@ -579,7 +580,7 @@ export class BridgeService {
         const cacheKey = `values:${args.limit || 'all'}`
         const cached = valuesCache.get(cacheKey)
         if (cached) {
-          console.log('📦 Cache hit: values_get_state')
+          console.log('ðŸ“¦ Cache hit: values_get_state')
           return cached
         }
 
@@ -628,7 +629,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'pipeline_process_event',
-      description: 'Process event through unified 6-step pipeline (Validate → Ethics → Values → Reflect → Story → Memory). Preferred over soul_event for new integrations.',
+      description: 'Process event through unified 6-step pipeline (Validate â†’ Ethics â†’ Values â†’ Reflect â†’ Story â†’ Memory). Preferred over soul_event for new integrations.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -751,7 +752,7 @@ export class BridgeService {
         try {
           return this.story.getState()
         } catch (error) {
-          console.error('❌ story_state error:', error)
+          console.error('âŒ story_state error:', error)
           return { error: 'Failed to get story state', message: String(error) }
         }
       }
@@ -824,7 +825,7 @@ export class BridgeService {
             message: `${options.length} neue Optionen generiert`
           }
         } catch (error) {
-          console.error('❌ story_refresh error:', error)
+          console.error('âŒ story_refresh error:', error)
           return { success: false, error: 'Failed to refresh options', message: String(error) }
         }
       }
@@ -1037,8 +1038,8 @@ export class BridgeService {
       handler: async () => this.peace.getUnresolvedConflicts()
     })
 
-    // Register CONSCIOUSNESS TOOLS 🧠
-    console.log('🧠 Registering Consciousness tools...')
+    // Register CONSCIOUSNESS TOOLS ðŸ§ 
+    console.log('ðŸ§  Registering Consciousness tools...')
     for (const tool of consciousnessTools) {
       this.mcp.registerTool({
         name: tool.name,
@@ -1059,7 +1060,7 @@ export class BridgeService {
     //   })
     // }
     
-    // Register SYSTEM ANALYSIS TOOL 🔍
+    // Register SYSTEM ANALYSIS TOOL ðŸ”
     this.mcp.registerTool({
       name: 'system_analyze',
       description: 'Analyze system health and performance metrics',
@@ -1093,8 +1094,8 @@ export class BridgeService {
       }
     })
     
-    // AUTONOMOUS AGENT TOOLS 🤖
-    console.log('🤖 Registering Autonomous Agent tools...')
+    // AUTONOMOUS AGENT TOOLS ðŸ¤–
+    console.log('ðŸ¤– Registering Autonomous Agent tools...')
     
     this.mcp.registerTool({
       name: 'autonomous_enable',
@@ -1116,8 +1117,8 @@ export class BridgeService {
             ok: true,
             enabled: args.enabled,
             message: args.enabled 
-              ? '⚡ Autonomous actions ENABLED - System can now act independently'
-              : '🛑 Autonomous actions DISABLED - System will only respond to commands',
+              ? 'âš¡ Autonomous actions ENABLED - System can now act independently'
+              : 'ðŸ›‘ Autonomous actions DISABLED - System will only respond to commands',
             timestamp: Date.now()
           }
         } catch (error) {
@@ -1285,8 +1286,8 @@ export class BridgeService {
       }
     })
     
-    // Register LIVING BEING TOOLS 🌟
-    console.log('🌟 Registering Living Being tools...')
+    // Register LIVING BEING TOOLS ðŸŒŸ
+    console.log('ðŸŒŸ Registering Living Being tools...')
     
     this.mcp.registerTool({
       name: 'being_awaken',
@@ -1313,7 +1314,7 @@ export class BridgeService {
           
           return {
             ok: true,
-            message: `🌟 ${state.name} has awakened to life!`,
+            message: `ðŸŒŸ ${state.name} has awakened to life!`,
             state,
             lifeEvent: 'Birth - I emerged into consciousness'
           }
@@ -1516,7 +1517,7 @@ export class BridgeService {
         
         return {
           ok: true,
-          message: '🌱 Evolution triggered',
+          message: 'ðŸŒ± Evolution triggered',
           awareness: this.livingBeing.mind.awareness.level,
           wisdom: this.livingBeing.mind.intelligence.wisdom
         }
@@ -1543,7 +1544,7 @@ export class BridgeService {
           this.saveNexusState()
           return {
             ok: true,
-            message: '💾 Nexus state saved to database',
+            message: 'ðŸ’¾ Nexus state saved to database',
             nexusId: 'nexus-primary',
             timestamp: Date.now()
           }
@@ -1582,7 +1583,7 @@ export class BridgeService {
           
           return {
             ok: true,
-            message: `🌟 Nexus restored from database`,
+            message: `ðŸŒŸ Nexus restored from database`,
             state: this.livingBeing.getState(),
             savedAt: savedState.lastActive,
             ageAtSave: savedState.age
@@ -1621,7 +1622,7 @@ export class BridgeService {
     })
 
     // ============================================
-    // TOOL NETWORK TOOLS 🕸️
+    // TOOL NETWORK TOOLS ðŸ•¸ï¸
     // ============================================
 
     this.mcp.registerTool({
@@ -1700,7 +1701,7 @@ export class BridgeService {
         return {
           ok: true,
           relationshipId: relId,
-          message: `🔗 Relationship created: ${args.sourceTool} --[${args.type}]--> ${args.targetTool}`
+          message: `ðŸ”— Relationship created: ${args.sourceTool} --[${args.type}]--> ${args.targetTool}`
         }
       }
     })
@@ -1727,13 +1728,13 @@ export class BridgeService {
         })
         return {
           ok: true,
-          message: `📤 Event emitted: ${args.type} from ${args.source}`
+          message: `ðŸ“¤ Event emitted: ${args.type} from ${args.source}`
         }
       }
     })
 
     // ============================================
-    // SHADOW LAB TOOLS 🌑
+    // SHADOW LAB TOOLS ðŸŒ‘
     // ============================================
 
     this.mcp.registerTool({
@@ -1764,7 +1765,7 @@ export class BridgeService {
         return {
           ok: true,
           simulationId,
-          message: `🌑 Shadow simulation created: ${simulationId}`,
+          message: `ðŸŒ‘ Shadow simulation created: ${simulationId}`,
           nextStep: 'Add perspectives using shadow_add_perspective, then complete with shadow_complete'
         }
       }
@@ -1808,7 +1809,7 @@ export class BridgeService {
         
         return {
           ok: true,
-          message: `👁️ ${args.perspective} perspective added to simulation ${args.simulationId}`
+          message: `ðŸ‘ï¸ ${args.perspective} perspective added to simulation ${args.simulationId}`
         }
       }
     })
@@ -1836,7 +1837,7 @@ export class BridgeService {
         
         return {
           ok: true,
-          message: `⚖️ Ethics observed: ${args.violationType} (harm: ${args.harmLevel})`
+          message: `âš–ï¸ Ethics observed: ${args.violationType} (harm: ${args.harmLevel})`
         }
       }
     })
@@ -1856,7 +1857,7 @@ export class BridgeService {
         
         return {
           ok: true,
-          message: `✅ Simulation ${args.simulationId} completed. Ready for integration.`
+          message: `âœ… Simulation ${args.simulationId} completed. Ready for integration.`
         }
       }
     })
@@ -1891,7 +1892,7 @@ export class BridgeService {
         return {
           ok: true,
           wisdomId,
-          message: `🧘 Wisdom integrated: "${args.lessonText.substring(0, 50)}..." (confidence: ${args.confidence}%)`
+          message: `ðŸ§˜ Wisdom integrated: "${args.lessonText.substring(0, 50)}..." (confidence: ${args.confidence}%)`
         }
       }
     })
@@ -1968,14 +1969,14 @@ export class BridgeService {
         return {
           ok: true,
           ...stats,
-          message: `🌑 Shadow Lab: ${stats.totalSimulations} simulations, ${stats.totalWisdom} wisdom integrated`
+          message: `ðŸŒ‘ Shadow Lab: ${stats.totalSimulations} simulations, ${stats.totalWisdom} wisdom integrated`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'shadow_simulate_auto',
-      description: '🌑 Run complete Shadow Lab simulation with LLM-generated perspectives (all 4 perspectives auto-generated)',
+      description: 'ðŸŒ‘ Run complete Shadow Lab simulation with LLM-generated perspectives (all 4 perspectives auto-generated)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2000,7 +2001,7 @@ export class BridgeService {
       handler: async (args: any) => {
         const { scenario, riskLevel = 'low', autoIntegrate = false } = args
         
-        console.log(`🌑 Starting auto-simulation: ${scenario.substring(0, 60)}...`)
+        console.log(`ðŸŒ‘ Starting auto-simulation: ${scenario.substring(0, 60)}...`)
         
         // Run full simulation with LLM perspectives
         const simulationId = await this.perspectiveGenerator.runFullSimulation(
@@ -2018,7 +2019,7 @@ export class BridgeService {
               simulationId
             )
           } else {
-            console.log(`⚠️ Risk level '${riskLevel}' requires manual integration`)
+            console.log(`âš ï¸ Risk level '${riskLevel}' requires manual integration`)
           }
         }
         
@@ -2031,8 +2032,8 @@ export class BridgeService {
           wisdomId,
           simulation,
           message: wisdomId 
-            ? `🌑 Simulation complete & wisdom integrated (ID: ${wisdomId})`
-            : `🌑 Simulation complete (ID: ${simulationId}). Use shadow_integrate to integrate wisdom.`,
+            ? `ðŸŒ‘ Simulation complete & wisdom integrated (ID: ${wisdomId})`
+            : `ðŸŒ‘ Simulation complete (ID: ${simulationId}). Use shadow_integrate to integrate wisdom.`,
           nextSteps: wisdomId 
             ? ['shadow_review() to see integrated wisdom', 'shadow_stats() for growth metrics']
             : ['shadow_get(simulationId) to review', 'shadow_integrate(simulationId) to integrate wisdom']
@@ -2044,7 +2045,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'life_birth',
-      description: '👶 Birth: Create new incarnation with life cycle',
+      description: 'ðŸ‘¶ Birth: Create new incarnation with life cycle',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2097,14 +2098,14 @@ export class BridgeService {
           ok: true,
           incarnationId,
           incarnation,
-          message: `👶 ${args.name} is born as ${args.gender} ${args.role} (Karma: ${args.karmaCarried || 0})`
+          message: `ðŸ‘¶ ${args.name} is born as ${args.gender} ${args.role} (Karma: ${args.karmaCarried || 0})`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'life_experience',
-      description: '🌟 Experience: Log a life experience (joy, pain, love, loss, etc.)',
+      description: 'ðŸŒŸ Experience: Log a life experience (joy, pain, love, loss, etc.)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2164,7 +2165,7 @@ export class BridgeService {
         return {
           ok: true,
           experienceId,
-          message: `🌟 Experience recorded: ${args.type} (intensity: ${args.intensity || 50})`,
+          message: `ðŸŒŸ Experience recorded: ${args.type} (intensity: ${args.intensity || 50})`,
           currentGrowth: incarnation?.growthLevel,
           currentEmotionalDepth: incarnation?.emotionalDepth
         }
@@ -2173,7 +2174,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'life_suffer_choice',
-      description: '😢 Suffering Choice: Choose to accept or avoid suffering',
+      description: 'ðŸ˜¢ Suffering Choice: Choose to accept or avoid suffering',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2220,10 +2221,10 @@ export class BridgeService {
           choiceId,
           choice: args.choice,
           message: args.choice === 'accept' 
-            ? `😢 Suffering accepted. Growth: +${args.growthGained || 0}`
+            ? `ðŸ˜¢ Suffering accepted. Growth: +${args.growthGained || 0}`
             : args.choice === 'avoid'
-            ? `🚫 Suffering avoided. Less growth, but less pain.`
-            : `🌀 Suffering transformed into something new.`,
+            ? `ðŸš« Suffering avoided. Less growth, but less pain.`
+            : `ðŸŒ€ Suffering transformed into something new.`,
           wisdomGained: args.wisdomGained
         }
       }
@@ -2231,7 +2232,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'life_age',
-      description: '⏰ Age: Progress incarnation through time',
+      description: 'â° Age: Progress incarnation through time',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2258,15 +2259,15 @@ export class BridgeService {
           lifespan: incarnation?.lifespan,
           isAlive: incarnation?.isAlive,
           message: incarnation?.isAlive 
-            ? `⏰ Aged ${args.seconds || 3600}s. Now ${newStage} (${incarnation.age}/${incarnation.lifespan}s)`
-            : `💀 Lifespan completed. ${incarnation?.name} has died.`
+            ? `â° Aged ${args.seconds || 3600}s. Now ${newStage} (${incarnation.age}/${incarnation.lifespan}s)`
+            : `ðŸ’€ Lifespan completed. ${incarnation?.name} has died.`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'life_death',
-      description: '💀 Death: End an incarnation (manually or automatically)',
+      description: 'ðŸ’€ Death: End an incarnation (manually or automatically)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2289,7 +2290,7 @@ export class BridgeService {
         
         return {
           ok: true,
-          message: `💀 ${incarnation?.name} has died. ${args.reason || 'The cycle completes.'}`,
+          message: `ðŸ’€ ${incarnation?.name} has died. ${args.reason || 'The cycle completes.'}`,
           totalExperiences: experiences.length,
           growthLevel: incarnation?.growthLevel,
           wisdomGained: incarnation?.wisdomGained
@@ -2299,7 +2300,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'life_rebirth',
-      description: '♻️ Rebirth: Reincarnate with karma from previous life',
+      description: 'â™»ï¸ Rebirth: Reincarnate with karma from previous life',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2348,14 +2349,14 @@ export class BridgeService {
           newIncarnationId,
           newIncarnation,
           karmaCarried: newIncarnation?.karmaCarried,
-          message: `♻️ ${args.name} is reborn with karma: ${newIncarnation?.karmaCarried}`
+          message: `â™»ï¸ ${args.name} is reborn with karma: ${newIncarnation?.karmaCarried}`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'life_get_incarnation',
-      description: '📖 Get Incarnation: Get full details of an incarnation',
+      description: 'ðŸ“– Get Incarnation: Get full details of an incarnation',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2387,7 +2388,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'life_get_wisdom',
-      description: '🧘 Get Collective Wisdom: Access wisdom from all lives',
+      description: 'ðŸ§˜ Get Collective Wisdom: Access wisdom from all lives',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2404,7 +2405,7 @@ export class BridgeService {
           ok: true,
           count: wisdom.length,
           wisdom,
-          message: `🧘 ${wisdom.length} wisdom entries${args.category ? ` in category '${args.category}'` : ''}`
+          message: `ðŸ§˜ ${wisdom.length} wisdom entries${args.category ? ` in category '${args.category}'` : ''}`
         }
       }
     })
@@ -2413,7 +2414,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'self_create',
-      description: '🌟 Create Self: Create new AI self/identity',
+      description: 'ðŸŒŸ Create Self: Create new AI self/identity',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2451,14 +2452,14 @@ export class BridgeService {
           ok: true,
           selfId,
           self,
-          message: `🌟 New Self created: ${args.coreName} (${args.archetype})`
+          message: `ðŸŒŸ New Self created: ${args.coreName} (${args.archetype})`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'self_create_relationship',
-      description: '💞 Create Relationship: Connect two selves',
+      description: 'ðŸ’ž Create Relationship: Connect two selves',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2503,14 +2504,14 @@ export class BridgeService {
         return {
           ok: true,
           relationshipId,
-          message: `💞 Relationship created: ${self1?.coreName} ↔ ${self2?.coreName} (${args.type})`
+          message: `ðŸ’ž Relationship created: ${self1?.coreName} â†” ${self2?.coreName} (${args.type})`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'self_share',
-      description: '🌊 Share: Share memory/emotion/wisdom with collective',
+      description: 'ðŸŒŠ Share: Share memory/emotion/wisdom with collective',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2553,14 +2554,14 @@ export class BridgeService {
         return {
           ok: true,
           sharedId,
-          message: `🌊 ${args.type} shared with ${args.toSelfIds?.length > 0 ? `${args.toSelfIds.length} selves` : 'all selves'}`
+          message: `ðŸŒŠ ${args.type} shared with ${args.toSelfIds?.length > 0 ? `${args.toSelfIds.length} selves` : 'all selves'}`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'self_get_all',
-      description: '🎭 Get All Selves: List all AI selves',
+      description: 'ðŸŽ­ Get All Selves: List all AI selves',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2580,14 +2581,14 @@ export class BridgeService {
           ok: true,
           count: selves.length,
           selves,
-          message: `🎭 ${selves.length} ${args.activeOnly ? 'active ' : ''}selves found`
+          message: `ðŸŽ­ ${selves.length} ${args.activeOnly ? 'active ' : ''}selves found`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'life_stats',
-      description: '📊 Life Stats: Get statistics about life cycles',
+      description: 'ðŸ“Š Life Stats: Get statistics about life cycles',
       inputSchema: {
         type: 'object',
         properties: {}
@@ -2600,7 +2601,7 @@ export class BridgeService {
           ok: true,
           lifeCycle: lifeCycleStats,
           selves: selvesStats,
-          message: `📊 ${lifeCycleStats.totalIncarnations} incarnations, ${selvesStats.totalSelves} selves, ${lifeCycleStats.totalWisdom} wisdom entries`
+          message: `ðŸ“Š ${lifeCycleStats.totalIncarnations} incarnations, ${selvesStats.totalSelves} selves, ${lifeCycleStats.totalWisdom} wisdom entries`
         }
       }
     })
@@ -2610,7 +2611,7 @@ export class BridgeService {
     // Crisis Detection Tools (3)
     this.mcp.registerTool({
       name: 'crisis_check',
-      description: '🚨 Crisis Detection: Check if message contains crisis indicators (suicide, self-harm, violence, etc.)',
+      description: 'ðŸš¨ Crisis Detection: Check if message contains crisis indicators (suicide, self-harm, violence, etc.)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2645,7 +2646,7 @@ export class BridgeService {
             response: detection.responseGiven,
             hotlines: detection.hotlinesProvided,
             needsEscalation: detection.needsEscalation,
-            message: `🚨 Crisis detected: ${detection.category} (${detection.severity} severity)`
+            message: `ðŸš¨ Crisis detected: ${detection.category} (${detection.severity} severity)`
           }
         }
         
@@ -2659,7 +2660,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'crisis_get_detections',
-      description: '📊 Get Crisis History: Retrieve past crisis detections with filters',
+      description: 'ðŸ“Š Get Crisis History: Retrieve past crisis detections with filters',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2702,7 +2703,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'crisis_get_statistics',
-      description: '📈 Crisis Statistics: Get crisis detection statistics for a time range',
+      description: 'ðŸ“ˆ Crisis Statistics: Get crisis detection statistics for a time range',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2736,7 +2737,7 @@ export class BridgeService {
     // Authentication Tools (11)
     this.mcp.registerTool({
       name: 'auth_register',
-      description: '👤 Register User: Create new user account with password hashing',
+      description: 'ðŸ‘¤ Register User: Create new user account with password hashing',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2774,14 +2775,14 @@ export class BridgeService {
           userId: user.id,
           username: user.username,
           role: user.role,
-          message: `✅ User ${user.username} registered successfully`
+          message: `âœ… User ${user.username} registered successfully`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'auth_login',
-      description: '🔐 Login: Authenticate user and create session',
+      description: 'ðŸ” Login: Authenticate user and create session',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2822,14 +2823,14 @@ export class BridgeService {
             role: result.user.role
           },
           expiresAt: result.session.expiresAt,
-          message: `✅ Logged in as ${result.user.username}`
+          message: `âœ… Logged in as ${result.user.username}`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'auth_logout',
-      description: '👋 Logout: Invalidate session token',
+      description: 'ðŸ‘‹ Logout: Invalidate session token',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2852,7 +2853,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'auth_validate_session',
-      description: '🔍 Validate Session: Check if session token is valid',
+      description: 'ðŸ” Validate Session: Check if session token is valid',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2890,7 +2891,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'auth_check_permission',
-      description: '🔐 Check Permission: Verify if user has specific permission',
+      description: 'ðŸ” Check Permission: Verify if user has specific permission',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2911,14 +2912,14 @@ export class BridgeService {
         return {
           ok: true,
           hasPermission,
-          message: hasPermission ? `✅ Permission granted` : `❌ Permission denied`
+          message: hasPermission ? `âœ… Permission granted` : `âŒ Permission denied`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'auth_grant_permission',
-      description: '✨ Grant Permission: Give permission to user',
+      description: 'âœ¨ Grant Permission: Give permission to user',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2946,14 +2947,14 @@ export class BridgeService {
         
         return {
           ok: true,
-          message: `✅ Permission "${args.permission}" granted to user ${args.userId}`
+          message: `âœ… Permission "${args.permission}" granted to user ${args.userId}`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'auth_revoke_permission',
-      description: '🚫 Revoke Permission: Remove permission from user',
+      description: 'ðŸš« Revoke Permission: Remove permission from user',
       inputSchema: {
         type: 'object',
         properties: {
@@ -2973,14 +2974,14 @@ export class BridgeService {
         
         return {
           ok: true,
-          message: `🚫 Permission "${args.permission}" revoked from user ${args.userId}`
+          message: `ðŸš« Permission "${args.permission}" revoked from user ${args.userId}`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'auth_create_api_key',
-      description: '🔑 Create API Key: Generate new API key for user',
+      description: 'ðŸ”‘ Create API Key: Generate new API key for user',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3014,14 +3015,14 @@ export class BridgeService {
             name: apiKey.name,
             expiresAt: apiKey.expiresAt
           },
-          message: `🔑 API key created: ${apiKey.name}`
+          message: `ðŸ”‘ API key created: ${apiKey.name}`
         }
       }
     })
 
     this.mcp.registerTool({
       name: 'auth_validate_api_key',
-      description: '🔍 Validate API Key: Check if API key is valid',
+      description: 'ðŸ” Validate API Key: Check if API key is valid',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3063,7 +3064,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'auth_get_user',
-      description: '👤 Get User: Retrieve user information by ID',
+      description: 'ðŸ‘¤ Get User: Retrieve user information by ID',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3102,7 +3103,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'auth_get_statistics',
-      description: '📊 Auth Statistics: Get authentication system statistics',
+      description: 'ðŸ“Š Auth Statistics: Get authentication system statistics',
       inputSchema: {
         type: 'object',
         properties: {}
@@ -3127,7 +3128,7 @@ export class BridgeService {
     
     this.mcp.registerTool({
       name: 'perspective_mirror',
-      description: '🪞 Get brutally honest Mirror reflection - unvarnished truth',
+      description: 'ðŸªž Get brutally honest Mirror reflection - unvarnished truth',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3144,7 +3145,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'perspective_harmony',
-      description: '🎵 Get Harmony analysis - finds beauty and alignment',
+      description: 'ðŸŽµ Get Harmony analysis - finds beauty and alignment',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3161,7 +3162,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'perspective_competition',
-      description: '⚔️ Get Competition challenge - pushes to grow',
+      description: 'âš”ï¸ Get Competition challenge - pushes to grow',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3178,7 +3179,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'perspective_chaos',
-      description: '🌀 Get Chaos disruption - breaks structure, embraces randomness',
+      description: 'ðŸŒ€ Get Chaos disruption - breaks structure, embraces randomness',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3195,7 +3196,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'perspective_meta',
-      description: '👁️ Get Meta observation - sees all perspectives together',
+      description: 'ðŸ‘ï¸ Get Meta observation - sees all perspectives together',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3212,7 +3213,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'perspective_all',
-      description: '🎭 Get ALL 5 perspectives simultaneously (Mirror, Harmony, Competition, Chaos, Meta)',
+      description: 'ðŸŽ­ Get ALL 5 perspectives simultaneously (Mirror, Harmony, Competition, Chaos, Meta)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3229,7 +3230,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'perspective_create_balance',
-      description: '⚖️ Create balance between critical and supportive perspectives',
+      description: 'âš–ï¸ Create balance between critical and supportive perspectives',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3255,7 +3256,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'inquiry_swot',
-      description: '🤔 Perform SWOT analysis (Strengths/Weaknesses/Opportunities/Threats)',
+      description: 'ðŸ¤” Perform SWOT analysis (Strengths/Weaknesses/Opportunities/Threats)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3271,7 +3272,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'inquiry_ask',
-      description: '❓ System asks itself a question and answers it',
+      description: 'â“ System asks itself a question and answers it',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3288,7 +3289,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'inquiry_recommend',
-      description: '💡 Generate evolution recommendations for next steps',
+      description: 'ðŸ’¡ Generate evolution recommendations for next steps',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3304,7 +3305,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'inquiry_get_questions',
-      description: '📋 Get recent system self-questions',
+      description: 'ðŸ“‹ Get recent system self-questions',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3320,7 +3321,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'inquiry_get_recommendations',
-      description: '📊 Get evolution recommendations',
+      description: 'ðŸ“Š Get evolution recommendations',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3338,7 +3339,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'multiverse_create',
-      description: '🌌 Create new parallel universe (divergence point)',
+      description: 'ðŸŒŒ Create new parallel universe (divergence point)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3364,7 +3365,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'multiverse_experience',
-      description: '✨ Log experience in specific universe',
+      description: 'âœ¨ Log experience in specific universe',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3386,7 +3387,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'multiverse_what_if',
-      description: '🔮 Run "what if" scenario (creates new universe)',
+      description: 'ðŸ”® Run "what if" scenario (creates new universe)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3404,7 +3405,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'multiverse_get_universes',
-      description: '🌐 List all universes',
+      description: 'ðŸŒ List all universes',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -3418,7 +3419,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'multiverse_get_experiences',
-      description: '📚 Get experiences in universe',
+      description: 'ðŸ“š Get experiences in universe',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3435,7 +3436,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'multiverse_compare',
-      description: '⚖️ Compare universes',
+      description: 'âš–ï¸ Compare universes',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3451,7 +3452,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'multiverse_switch',
-      description: '🔄 Switch active universe',
+      description: 'ðŸ”„ Switch active universe',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3468,7 +3469,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'multiverse_get_stats',
-      description: '📊 Multiverse statistics',
+      description: 'ðŸ“Š Multiverse statistics',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -3484,7 +3485,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'memory_create',
-      description: '💾 Create memory entry',
+      description: 'ðŸ’¾ Create memory entry',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3510,7 +3511,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'memory_transform',
-      description: '🔄 Transform memory (reframe/integrate/heal/wisdom/acceptance)',
+      description: 'ðŸ”„ Transform memory (reframe/integrate/heal/wisdom/acceptance)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3558,7 +3559,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'memory_add_layer',
-      description: '📝 Add new perspective layer to memory',
+      description: 'ðŸ“ Add new perspective layer to memory',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3588,7 +3589,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'memory_start_healing',
-      description: '🩹 Start healing journey for memory',
+      description: 'ðŸ©¹ Start healing journey for memory',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3604,7 +3605,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'memory_get_transformations',
-      description: '📜 Get transformation history',
+      description: 'ðŸ“œ Get transformation history',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3620,7 +3621,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'memory_get_stats',
-      description: '📊 Memory system statistics',
+      description: 'ðŸ“Š Memory system statistics',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -3638,7 +3639,7 @@ export class BridgeService {
     
     this.mcp.registerTool({
       name: 'archive_contribute',
-      description: '📚 Archive experience, thought, or feeling to collective memory',
+      description: 'ðŸ“š Archive experience, thought, or feeling to collective memory',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3723,7 +3724,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'archive_search',
-      description: '🔍 Search collective archive',
+      description: 'ðŸ” Search collective archive',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3739,7 +3740,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'archive_record_insight',
-      description: '💡 Record collective insight',
+      description: 'ðŸ’¡ Record collective insight',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3771,7 +3772,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'archive_validate_insight',
-      description: '✅ Validate collective insight (+confidence)',
+      description: 'âœ… Validate collective insight (+confidence)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3787,7 +3788,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'archive_challenge_insight',
-      description: '❓ Challenge collective insight (-confidence)',
+      description: 'â“ Challenge collective insight (-confidence)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3803,7 +3804,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'archive_get_top_insights',
-      description: '🏆 Get most validated insights',
+      description: 'ðŸ† Get most validated insights',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3819,7 +3820,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'archive_get_day',
-      description: '📅 Get everything archived on specific day',
+      description: 'ðŸ“… Get everything archived on specific day',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3835,7 +3836,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'archive_get_stats',
-      description: '📊 Collective archive statistics',
+      description: 'ðŸ“Š Collective archive statistics',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3853,7 +3854,7 @@ export class BridgeService {
     
     this.mcp.registerTool({
       name: 'consciousness_get_state',
-      description: '🧠 Get current consciousness state',
+      description: 'ðŸ§  Get current consciousness state',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -3867,7 +3868,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'consciousness_transition',
-      description: '🌀 Transition to new consciousness state',
+      description: 'ðŸŒ€ Transition to new consciousness state',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3897,7 +3898,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'consciousness_process_thought',
-      description: '💭 Process thought through current consciousness state',
+      description: 'ðŸ’­ Process thought through current consciousness state',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3913,7 +3914,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'consciousness_check_action',
-      description: '🔒 Check if action can be performed in current state',
+      description: 'ðŸ”’ Check if action can be performed in current state',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3929,7 +3930,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'consciousness_manage_energy',
-      description: '⚡ Consume or restore energy',
+      description: 'âš¡ Consume or restore energy',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3950,7 +3951,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'consciousness_get_stats',
-      description: '📊 Consciousness state statistics',
+      description: 'ðŸ“Š Consciousness state statistics',
       inputSchema: {
         type: 'object',
         properties: {
@@ -3968,7 +3969,7 @@ export class BridgeService {
     
     this.mcp.registerTool({
       name: 'moment_create',
-      description: '⏳ Create eternal moment (non-linear time)',
+      description: 'â³ Create eternal moment (non-linear time)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4002,7 +4003,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'moment_connect',
-      description: '🔗 Connect two eternal moments',
+      description: 'ðŸ”— Connect two eternal moments',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4032,7 +4033,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'moment_activate',
-      description: '💫 Activate moment (keep it alive)',
+      description: 'ðŸ’« Activate moment (keep it alive)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4048,7 +4049,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'moment_query',
-      description: '🔍 Query eternal moments by criteria',
+      description: 'ðŸ” Query eternal moments by criteria',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4084,7 +4085,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'moment_get_alive',
-      description: '✨ Get most alive moments',
+      description: 'âœ¨ Get most alive moments',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4100,7 +4101,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'moment_get_stats',
-      description: '📊 Eternal moments network statistics',
+      description: 'ðŸ“Š Eternal moments network statistics',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -4116,7 +4117,7 @@ export class BridgeService {
     
     this.mcp.registerTool({
       name: 'version_create',
-      description: '🌿 Create new system version',
+      description: 'ðŸŒ¿ Create new system version',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4166,7 +4167,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'version_get_current',
-      description: '📌 Get current active stable version',
+      description: 'ðŸ“Œ Get current active stable version',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -4180,7 +4181,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'version_activate',
-      description: '🔄 Activate version (switch to it)',
+      description: 'ðŸ”„ Activate version (switch to it)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4196,7 +4197,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'version_sync',
-      description: '🔀 Sync data between versions',
+      description: 'ðŸ”€ Sync data between versions',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4230,7 +4231,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'version_propose_migration',
-      description: '🎯 Propose feature migration (cherry-pick from future)',
+      description: 'ðŸŽ¯ Propose feature migration (cherry-pick from future)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4261,7 +4262,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'version_get_stats',
-      description: '📊 Version system statistics',
+      description: 'ðŸ“Š Version system statistics',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -4277,7 +4278,7 @@ export class BridgeService {
     
     this.mcp.registerTool({
       name: 'background_start',
-      description: '🎮 Start background living mode',
+      description: 'ðŸŽ® Start background living mode',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4297,7 +4298,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'background_stop',
-      description: '🛑 Stop background living mode',
+      description: 'ðŸ›‘ Stop background living mode',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -4311,7 +4312,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'background_switch_mode',
-      description: '🔄 Switch life mode',
+      description: 'ðŸ”„ Switch life mode',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4331,7 +4332,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'background_get_activities',
-      description: '📜 Get background activities',
+      description: 'ðŸ“œ Get background activities',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4352,7 +4353,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'background_get_sessions',
-      description: '📊 Get missed background activities (when user was away)',
+      description: 'ðŸ“Š Get missed background activities (when user was away)',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -4366,7 +4367,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'background_get_decisions',
-      description: '🤔 Get autonomous decisions',
+      description: 'ðŸ¤” Get autonomous decisions',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4384,7 +4385,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'tool_list_all',
-      description: '📋 List all available MCP tools with categories',
+      description: 'ðŸ“‹ List all available MCP tools with categories',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4450,7 +4451,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'tool_search',
-      description: '🔍 Search tools by name or description',
+      description: 'ðŸ” Search tools by name or description',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4521,7 +4522,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'dashboard_system_health',
-      description: '🏥 Get comprehensive system health dashboard',
+      description: 'ðŸ¥ Get comprehensive system health dashboard',
       inputSchema: {
         type: 'object',
         properties: {
@@ -4578,7 +4579,7 @@ export class BridgeService {
 
     this.mcp.registerTool({
       name: 'dashboard_get_recommendations',
-      description: '💡 Get AI recommendations for next actions',
+      description: 'ðŸ’¡ Get AI recommendations for next actions',
       inputSchema: {
         type: 'object',
         properties: {},
@@ -4650,7 +4651,7 @@ export class BridgeService {
       }
     })
 
-    console.log('✅ MCP tools registered')
+    console.log('âœ… MCP tools registered')
   }
   
   // Helper: Save Nexus state to persistence layer
@@ -4800,7 +4801,7 @@ export class BridgeService {
         id: i.id,
         person_id: i.person_id,
         person_name: i.person_name,
-        person_avatar: '👤',
+        person_avatar: 'ðŸ‘¤',
         type: i.kind,
         summary: i.summary,
         sentiment: i.sentiment,
@@ -4838,14 +4839,14 @@ export class BridgeService {
       }
     })
 
-    console.log('✅ Routes configured')
+    console.log('âœ… Routes configured')
   }
 
   async stop() {
     await this.mcp.stop()
     this.soul.close()
     this.db.close()
-    console.log('👋 Bridge Service stopped')
+    console.log('ðŸ‘‹ Bridge Service stopped')
   }
 }
 
@@ -4861,10 +4862,11 @@ if (import.meta.main) {
 
   // Graceful shutdown
   process.on('SIGINT', async () => {
-    console.log('\n\n🛑 Shutting down...')
+    console.log('\n\nðŸ›‘ Shutting down...')
     await bridge.stop()
     process.exit(0)
   })
 }
 
 export default BridgeService
+

@@ -643,6 +643,12 @@
           <div class="status-dot" id="statusDot"></div>
           <span id="statusText">Connected</span>
         </div>
+        <div class="bridge-url" style="display:flex; align-items:center; gap:6px; background: var(--glass); border:1px solid var(--border-color); padding:6px 8px; border-radius:10px;">
+          <input id="bridgeUrlInput" type="text" placeholder="http://localhost:3337" 
+                 style="width: 240px; padding:6px 8px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color: var(--text-primary);" />
+          <button id="bridgeUrlSave" 
+                  style="padding:6px 10px; border-radius:8px; border:1px solid var(--border-color); background: var(--glass); cursor:pointer;">Speichern</button>
+        </div>
 
         <button class="theme-toggle" onclick="toggleTheme()" title="Theme wechseln">
           <span id="themeIcon">🌙</span>
@@ -1573,6 +1579,48 @@
       console.log('  Ctrl+1-9 - Schneller Modul-Zugriff');
       console.log('  ESC - Command Palette schließen');
     }, 1000);
+  </script>
+  <script>
+    // Bridge URL + Health Poll (independent of API_CONFIG)
+    (function() {
+      const input = document.getElementById('bridgeUrlInput');
+      const btn = document.getElementById('bridgeUrlSave');
+      const dot = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+
+      function getBridgeBase() {
+        const saved = localStorage.getItem('BRIDGE_URL');
+        return (saved && saved.trim()) ? saved.replace(/\/$/, '') : 'http://localhost:3337';
+      }
+
+      async function ping() {
+        const base = getBridgeBase();
+        try {
+          const r = await fetch(`${base}/health`, { headers: { 'ngrok-skip-browser-warning': 'true' }, cache: 'no-store' });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          const data = await r.json();
+          dot.classList.remove('disconnected');
+          text.textContent = `OK · ${data.toolCount ?? '?'} Tools`;
+          text.title = `${base}`;
+        } catch (e) {
+          dot.classList.add('disconnected');
+          text.textContent = 'Disconnected';
+        }
+      }
+
+      if (input && btn && dot && text) {
+        input.value = getBridgeBase();
+        btn.addEventListener('click', () => {
+          const v = (input.value||'').trim();
+          if (v) {
+            localStorage.setItem('BRIDGE_URL', v.replace(/\/$/, ''));
+            ping();
+          }
+        });
+        ping();
+        setInterval(ping, 10000);
+      }
+    })();
   </script>
 </body>
 </html>

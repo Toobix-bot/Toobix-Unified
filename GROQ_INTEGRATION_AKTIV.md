@@ -11,7 +11,7 @@
 
 ✅ **1. Groq API-Key** 
 - Datei: `.env`
-- Key: `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`
+- Key: `gsk_...` (Platzhalter)
 - Status: ✅ Valid & Active
 
 ✅ **2. Backend Integration**

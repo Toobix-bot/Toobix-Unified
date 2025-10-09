@@ -54,6 +54,157 @@ export interface StoryStats {
   options: number
 }
 
+export interface BridgeToolSchema {
+  type?: string | string[]
+  description?: string
+  enum?: unknown[]
+  default?: unknown
+  format?: string
+  properties?: Record<string, BridgeToolSchema>
+  required?: string[]
+  items?: BridgeToolSchema | BridgeToolSchema[]
+  anyOf?: BridgeToolSchema[]
+  oneOf?: BridgeToolSchema[]
+  allOf?: BridgeToolSchema[]
+  additionalProperties?: boolean | BridgeToolSchema
+}
+
+export interface BridgeTool {
+  name: string
+  description?: string
+  inputSchema?: BridgeToolSchema
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const normalizeSchema = (schema: unknown): BridgeToolSchema | undefined => {
+  if (!isRecord(schema)) {
+    return undefined
+  }
+
+  const normalized: BridgeToolSchema = {}
+
+  if ('type' in schema && (typeof schema.type === 'string' || Array.isArray(schema.type))) {
+    normalized.type = schema.type as string | string[]
+  }
+
+  if ('description' in schema && typeof schema.description === 'string') {
+    normalized.description = schema.description
+  }
+
+  if ('enum' in schema && Array.isArray(schema.enum)) {
+    normalized.enum = schema.enum
+  }
+
+  if ('default' in schema) {
+    normalized.default = schema.default
+  }
+
+  if ('format' in schema && typeof schema.format === 'string') {
+    normalized.format = schema.format
+  }
+
+  if ('required' in schema && Array.isArray(schema.required)) {
+    normalized.required = schema.required.filter((item): item is string => typeof item === 'string')
+  }
+
+  if ('properties' in schema && isRecord(schema.properties)) {
+    const properties: Record<string, BridgeToolSchema> = {}
+
+    for (const [key, value] of Object.entries(schema.properties)) {
+      const normalizedChild = normalizeSchema(value)
+      if (normalizedChild) {
+        properties[key] = normalizedChild
+      }
+    }
+
+    if (Object.keys(properties).length > 0) {
+      normalized.properties = properties
+    }
+  }
+
+  if ('items' in schema) {
+    if (Array.isArray(schema.items)) {
+      const normalizedItems = schema.items
+        .map(item => normalizeSchema(item))
+        .filter((item): item is BridgeToolSchema => Boolean(item))
+
+      if (normalizedItems.length > 0) {
+        normalized.items = normalizedItems
+      }
+    } else {
+      const normalizedItem = normalizeSchema(schema.items)
+      if (normalizedItem) {
+        normalized.items = normalizedItem
+      }
+    }
+  }
+
+  if ('anyOf' in schema && Array.isArray(schema.anyOf)) {
+    const normalizedAnyOf = schema.anyOf
+      .map(entry => normalizeSchema(entry))
+      .filter((entry): entry is BridgeToolSchema => Boolean(entry))
+
+    if (normalizedAnyOf.length > 0) {
+      normalized.anyOf = normalizedAnyOf
+    }
+  }
+
+  if ('oneOf' in schema && Array.isArray(schema.oneOf)) {
+    const normalizedOneOf = schema.oneOf
+      .map(entry => normalizeSchema(entry))
+      .filter((entry): entry is BridgeToolSchema => Boolean(entry))
+
+    if (normalizedOneOf.length > 0) {
+      normalized.oneOf = normalizedOneOf
+    }
+  }
+
+  if ('allOf' in schema && Array.isArray(schema.allOf)) {
+    const normalizedAllOf = schema.allOf
+      .map(entry => normalizeSchema(entry))
+      .filter((entry): entry is BridgeToolSchema => Boolean(entry))
+
+    if (normalizedAllOf.length > 0) {
+      normalized.allOf = normalizedAllOf
+    }
+  }
+
+  if ('additionalProperties' in schema) {
+    if (typeof schema.additionalProperties === 'boolean') {
+      normalized.additionalProperties = schema.additionalProperties
+    } else {
+      const additionalProps = normalizeSchema(schema.additionalProperties)
+      if (additionalProps) {
+        normalized.additionalProperties = additionalProps
+      }
+    }
+  }
+
+  return normalized
+}
+
+const normalizeTool = (raw: unknown): BridgeTool | null => {
+  if (!isRecord(raw)) {
+    return null
+  }
+
+  const name = typeof raw.name === 'string' ? raw.name : undefined
+  if (!name) {
+    return null
+  }
+
+  const description = typeof raw.description === 'string' ? raw.description : undefined
+  const inputSchema = normalizeSchema(raw.inputSchema)
+
+  return {
+    name,
+    description,
+    ...(inputSchema ? { inputSchema } : {})
+  }
+}
+
 // ============================================
 // Bridge API Client
 // ============================================
@@ -139,6 +290,23 @@ export class BridgeClient {
 
   async getPersonStory(personId: string): Promise<any> {
     return this.callTool('story_person', { personId })
+  }
+
+  async listTools(): Promise<BridgeTool[]> {
+    const res = await fetch(`${this.baseUrl}/tools`)
+
+    if (!res.ok) {
+      throw new Error('Failed to load tools')
+    }
+
+    const data = await res.json()
+    if (!isRecord(data) || !Array.isArray(data.tools)) {
+      return []
+    }
+
+    return data.tools
+      .map(tool => normalizeTool(tool))
+      .filter((tool): tool is BridgeTool => Boolean(tool))
   }
 
   // ============================================

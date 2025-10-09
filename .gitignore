@@ -24,6 +24,8 @@ data/
 *-keys-backup
 *.groq-keys*
 *.api-keys*
+# Local secrets vault (never commit)
+/.secrets/
 # Protect all backup .env files (Version_X)
 Version_*/.env
 Version_*/Version_*/.env
@@ -49,6 +51,9 @@ yarn-debug.log*
 yarn-error.log*
 next-dev.log
 bun-debug.log*
+
+# Local logs folder used by scripts
+/.logs/
 
 # Testing
 coverage/

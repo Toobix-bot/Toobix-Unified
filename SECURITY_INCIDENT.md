@@ -15,7 +15,7 @@
 
 **Betroffener Key:**
 ```
-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
+gsk_... (Platzhalter)
 ```
 **Status:** ⚠️ KOMPROMITTIERT - MUSS WIDERRUFEN WERDEN
 
@@ -43,7 +43,7 @@ GROQ_API_KEY=your_groq_api_key_here
 
 #### 1. Alten Key widerrufen
 1. Gehe zu: https://console.groq.com/keys
-2. Finde den Key: `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`
+2. Finde den Key: `gsk_...` (Platzhalter)
 3. Klicke auf **"Delete"** oder **"Revoke"**
 4. Bestätige die Löschung
 

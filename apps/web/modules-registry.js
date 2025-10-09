@@ -320,6 +320,346 @@ const TOOBIX_MODULES = {
     }
   },
 
+  // ==================== SYSTEM STATUS ====================
+
+  'system-status': {
+    name: 'System Status',
+    icon: '🩺',
+    description: 'Health, stats und Live-Verbindung zum Bridge-Server',
+    category: 'System',
+    version: '1.0.0',
+    author: 'Toobix System',
+    dependencies: ['bridge'],
+    loader: async (container) => {
+      const getBridgeBase = () => {
+        const saved = localStorage.getItem('BRIDGE_URL')
+        if (saved) return saved.replace(/\/$/, '')
+        // Default lokal
+        return 'http://localhost:3337'
+      }
+
+      const base = getBridgeBase()
+      container.innerHTML = `
+        <div class="card">
+          <h2>🩺 System Status</h2>
+          <div id="status-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:16px; margin-top:16px;">
+            <div class="stat-card"><div class="stat-icon">⚙️</div><div class="stat-value" id="svc-tools">–</div><div class="stat-label">Tools</div></div>
+            <div class="stat-card"><div class="stat-icon">🕒</div><div class="stat-value" id="svc-time">–</div><div class="stat-label">Timestamp</div></div>
+            <div class="stat-card"><div class="stat-icon">🌐</div><div class="stat-value" id="svc-base">–</div><div class="stat-label">Bridge URL</div></div>
+          </div>
+          <div style="margin-top:20px">
+            <button id="btn-refresh" style="padding:8px 12px; border:1px solid var(--border-color); background:var(--glass); border-radius:8px; cursor:pointer;">↻ Aktualisieren</button>
+            <span id="svc-info" style="margin-left:12px; color: var(--text-secondary);"></span>
+          </div>
+          <pre id="svc-json" style="margin-top:16px; background:var(--bg-tertiary); padding:12px; border-radius:10px; overflow:auto; max-height:260px;"></pre>
+        </div>
+      `
+
+      async function load() {
+        const info = document.getElementById('svc-info')
+        info.textContent = 'Lade…'
+        try {
+          const res = await fetch(`${base}/health`, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+          const data = await res.json()
+          document.getElementById('svc-tools').textContent = String(data.toolCount ?? '–')
+          document.getElementById('svc-time').textContent = new Date(data.timestamp || Date.now()).toLocaleTimeString()
+          document.getElementById('svc-base').textContent = base
+          let out = `# health\n${JSON.stringify(data, null, 2)}`
+          try {
+            const rs = await fetch(`${base}/stats`, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+            if (rs.ok) {
+              const stats = await rs.json()
+              out += `\n\n# stats\n${JSON.stringify(stats, null, 2)}`
+            }
+          } catch {}
+          document.getElementById('svc-json').textContent = out
+          info.textContent = 'OK'
+          info.style.color = 'var(--success, #19c37d)'
+        } catch (e) {
+          document.getElementById('svc-json').textContent = String(e)
+          document.getElementById('svc-tools').textContent = '–'
+          document.getElementById('svc-time').textContent = '–'
+          document.getElementById('svc-base').textContent = base
+          const info = document.getElementById('svc-info')
+          info.textContent = 'Fehler beim Laden'
+          info.style.color = 'var(--danger, #ff5656)'
+        }
+      }
+
+      container.querySelector('#btn-refresh').addEventListener('click', load)
+      load()
+    }
+  },
+
+  // ==================== MCP TOOL TESTER ====================
+
+  'mcp-tool-tester': {
+    name: 'MCP Tool Tester',
+    icon: '🧪',
+    description: 'Ein Tool per Dropdown auswählen, Args senden und Ergebnis prüfen',
+    category: 'System',
+    version: '1.0.0',
+    author: 'Toobix System',
+    dependencies: ['bridge'],
+    loader: async (container) => {
+      const base = (localStorage.getItem('BRIDGE_URL') || 'http://localhost:3337').replace(/\/$/, '')
+      container.innerHTML = `
+        <div class="card">
+          <h2>🧪 MCP Tool Tester</h2>
+          <div style="display:flex; gap:8px; align-items:center; margin:12px 0;">
+            <select id="toolSelect" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border-color); background:var(--glass); color: var(--text-primary);"></select>
+            <button id="reloadTools" style="padding:8px 12px; border:1px solid var(--border-color); background:var(--glass); border-radius:8px; cursor:pointer;">↻</button>
+            <button id="callTool" style="padding:8px 12px; border:1px solid var(--border-color); background:var(--glass); border-radius:8px; cursor:pointer;">Ausführen</button>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <div style="font-weight:600; margin-bottom:6px;">Argumente (JSON)</div>
+              <textarea id="argsInput" style="width:100%; height:160px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-tertiary); color: var(--text-primary); padding:10px;">{}</textarea>
+              <div style="font-weight:600; margin:10px 0 6px;">Form (Schema)</div>
+              <div id="argsForm" style="display:grid; gap:8px;"></div>
+            </div>
+            <div>
+              <div style="font-weight:600; margin-bottom:6px;">Antwort</div>
+              <pre id="toolOutput" style="width:100%; height:160px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-tertiary); color: var(--text-primary); padding:10px; overflow:auto;"></pre>
+            </div>
+          </div>
+          <div id="toolMeta" style="margin-top:8px; color: var(--text-secondary);"></div>
+          <div id="curlOut" style="margin-top:8px; font-size:12px; color: var(--text-secondary);"></div>
+        </div>
+      `
+
+      const select = container.querySelector('#toolSelect')
+      const argsInput = container.querySelector('#argsInput')
+      const out = container.querySelector('#toolOutput')
+      const meta = container.querySelector('#toolMeta')
+      const curlOut = container.querySelector('#curlOut')
+      const argsForm = container.querySelector('#argsForm')
+      const schemaMap = new Map()
+
+      async function loadTools() {
+        select.innerHTML = ''
+        try {
+          // Prefer JSON-RPC tools/list for schemas
+          const body = { jsonrpc: '2.0', id: 'list', method: 'tools/list' }
+          const r = await fetch(`${base}/mcp`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' }, body: JSON.stringify(body) })
+          const d = await r.json().catch(() => ({}))
+          const tools = (d.result?.tools) || []
+          tools.forEach(t => {
+            const name = t.name || t
+            const opt = document.createElement('option')
+            opt.value = name
+            opt.textContent = name
+            select.appendChild(opt)
+            if (t.inputSchema) schemaMap.set(name, t.inputSchema)
+          })
+          meta.textContent = `${tools.length} Tools geladen`
+          renderForm(schemaMap.get(select.value))
+        } catch (e) {
+          meta.textContent = `Fehler beim Laden: ${String(e)}`
+        }
+      }
+
+      function renderForm(schema) {
+        argsForm.innerHTML = ''
+        if (!schema || !schema.properties) return
+        const props = schema.properties || {}
+        const required = new Set(schema.required || [])
+        const current = {}
+        Object.entries(props).forEach(([key, def]) => {
+          const label = document.createElement('label')
+          label.style.display = 'block'
+          label.style.fontSize = '12px'
+          label.style.color = 'var(--text-secondary)'
+          label.textContent = `${key}${required.has(key) ? ' *' : ''}`
+          const input = document.createElement('input')
+          input.style.width = '100%'
+          input.style.padding = '8px'
+          input.style.borderRadius = '8px'
+          input.style.border = '1px solid var(--border-color)'
+          input.style.background = 'var(--glass)'
+          const t = def?.type
+          input.type = (t === 'number') ? 'number' : (t === 'boolean' ? 'checkbox' : 'text')
+          if (t === 'boolean') input.checked = !!def?.default
+          else if (def?.default !== undefined) input.value = String(def.default)
+          input.dataset.key = key
+          argsForm.appendChild(label)
+          argsForm.appendChild(input)
+          // seed current
+          current[key] = (t === 'boolean') ? input.checked : (t === 'number' ? Number(input.value||0) : (input.value||''))
+          input.addEventListener('input', syncJson)
+          input.addEventListener('change', syncJson)
+        })
+        argsInput.value = JSON.stringify(current, null, 2)
+      }
+
+      function collectArgs() {
+        if (!argsForm || argsForm.children.length === 0) {
+          try { return JSON.parse(argsInput.value || '{}') } catch { return {} }
+        }
+        const inputs = argsForm.querySelectorAll('input')
+        const out = {}
+        inputs.forEach(inp => {
+          const key = inp.dataset.key
+          if (!key) return
+          if (inp.type === 'checkbox') out[key] = !!inp.checked
+          else if (inp.type === 'number') out[key] = Number(inp.value || 0)
+          else out[key] = inp.value
+        })
+        return out
+      }
+
+      function syncJson() {
+        const obj = collectArgs()
+        argsInput.value = JSON.stringify(obj, null, 2)
+      }
+
+      select.addEventListener('change', () => {
+        const schema = schemaMap.get(select.value)
+        renderForm(schema)
+      })
+
+      async function call() {
+        const tool = select.value
+        const args = collectArgs()
+        const body = { jsonrpc: '2.0', id: String(Date.now()), method: 'tools/call', params: { name: tool, arguments: args } }
+        const t0 = performance.now()
+        const r = await fetch(`${base}/mcp`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' }, body: JSON.stringify(body) })
+        const txt = await r.text()
+        const dt = Math.round(performance.now() - t0)
+        try { out.textContent = JSON.stringify(JSON.parse(txt), null, 2) } catch { out.textContent = txt }
+        meta.textContent = `Status ${r.status} · Dauer ${dt}ms`
+        curlOut.textContent = `curl -X POST ${base}/mcp -H "Content-Type: application/json" -d '${JSON.stringify(body)}'`
+      }
+
+      container.querySelector('#reloadTools').addEventListener('click', loadTools)
+      container.querySelector('#callTool').addEventListener('click', call)
+      await loadTools()
+    }
+  },
+
+  // ==================== LUNA TESTER ====================
+
+  'luna-tester': {
+    name: 'Luna Tester',
+    icon: '🌙',
+    description: 'Kurzer Chat mit Luna über Bridge /api/luna/chat',
+    category: 'System',
+    version: '1.0.0',
+    author: 'Toobix System',
+    dependencies: ['bridge'],
+    loader: async (container) => {
+      const base = (localStorage.getItem('BRIDGE_URL') || 'http://localhost:3337').replace(/\/$/, '')
+      container.innerHTML = `
+        <div class="card">
+          <h2>🌙 Luna Tester</h2>
+          <div style="display:flex; gap:8px; margin:12px 0;">
+            <input id="lunaMsg" placeholder="Nachricht an Luna…" style="flex:1; padding:10px; border-radius:10px; border:1px solid var(--border-color); background:var(--glass); color: var(--text-primary);" />
+            <button id="sendLuna" style="padding:8px 12px; border:1px solid var(--border-color); background:var(--glass); border-radius:8px; cursor:pointer;">Senden</button>
+          </div>
+          <label style="display:flex; align-items:center; gap:8px; font-size:13px; color: var(--text-secondary); margin-bottom:8px;">
+            <input id="lunaSaveMemory" type="checkbox" /> Als Memory speichern
+          </label>
+          <pre id="lunaOut" style="background:var(--bg-tertiary); padding:12px; border-radius:10px; min-height:120px; overflow:auto;"></pre>
+        </div>
+      `
+      const msg = container.querySelector('#lunaMsg')
+      const out = container.querySelector('#lunaOut')
+      const saveCb = container.querySelector('#lunaSaveMemory')
+      const send = async () => {
+        const body = { message: msg.value || '' }
+        const t0 = performance.now()
+        try {
+          const r = await fetch(`${base}/api/luna/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+          const d = await r.json()
+          const dt = Math.round(performance.now() - t0)
+          out.textContent = `# ${r.status} · ${dt}ms\n${JSON.stringify(d, null, 2)}`
+          if (saveCb?.checked && d?.reply) {
+            try {
+              await fetch(`${base}/tools/execute`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tool: 'memory_add', args: { text: `Luna: ${d.reply}`, metadata: { source: 'luna-tester', question: body.message } } }) })
+            } catch {}
+          }
+        } catch (e) { out.textContent = `Fehler: ${String(e)}` }
+      }
+      container.querySelector('#sendLuna').addEventListener('click', send)
+    }
+  },
+
+  // ==================== MCP TOOLS ====================
+
+  'mcp-tools': {
+    name: 'MCP Tools',
+    icon: '🛠️',
+    description: 'Liste der verfügbaren Tools via Discovery',
+    category: 'System',
+    version: '1.0.0',
+    author: 'Toobix System',
+    dependencies: ['bridge'],
+    loader: async (container) => {
+      const getBridgeBase = () => {
+        const saved = localStorage.getItem('BRIDGE_URL')
+        if (saved) return saved.replace(/\/$/, '')
+        return 'http://localhost:3337'
+      }
+      const base = getBridgeBase()
+
+      container.innerHTML = `
+        <div class="card">
+          <h2>🛠️ MCP Tools</h2>
+          <div style="display:flex; gap:8px; margin: 10px 0 14px;">
+            <input id="tool-filter" placeholder="Filter…" style="flex:1; padding:8px; border-radius:8px; border:1px solid var(--border-color); background:var(--glass)" />
+            <button id="btn-reload" style="padding:8px 12px; border:1px solid var(--border-color); background:var(--glass); border-radius:8px; cursor:pointer;">↻</button>
+          </div>
+          <div id="tools-list" class="module-grid"></div>
+          <div id="tools-info" style="margin-top:8px; color: var(--text-secondary);"></div>
+        </div>
+      `
+
+      let tools = []
+
+      async function fetchTools() {
+        const info = document.getElementById('tools-info')
+        info.textContent = 'Lade Tools…'
+        try {
+          // Bevorzugt /discovery (strukturierte Tools); Fallback GET /mcp
+          const res = await fetch(`${base}/discovery`, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+          if (res.ok) {
+            const data = await res.json()
+            tools = (data.tools || []).map(t => ({ name: t.name, description: t.description || '' }))
+          } else {
+            const res2 = await fetch(`${base}/mcp`, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+            const data2 = await res2.json()
+            tools = (data2.tools || []).map(name => ({ name, description: '' }))
+          }
+          info.textContent = `${tools.length} Tools • Quelle: ${base}`
+          render()
+        } catch (e) {
+          info.textContent = 'Fehler beim Laden der Tools'
+          document.getElementById('tools-list').innerHTML = `<div style="color:var(--danger,#ff5656)">${String(e)}</div>`
+        }
+      }
+
+      function render(filter = '') {
+        const list = document.getElementById('tools-list')
+        const q = filter.trim().toLowerCase()
+        const items = tools.filter(t => !q || t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q))
+        list.innerHTML = items.map(t => `
+          <div class="module-card" title="${t.name}">
+            <div class="module-icon">🧩</div>
+            <div class="module-name">${t.name}</div>
+            <div class="module-description">${t.description || '–'}</div>
+            <div class="module-meta">
+              <span class="module-tag">MCP</span>
+            </div>
+          </div>
+        `).join('') || '<div>Keine Tools gefunden.</div>'
+      }
+
+      container.querySelector('#btn-reload')?.addEventListener('click', fetchTools)
+      container.querySelector('#tool-filter')?.addEventListener('input', (e) => render(e.target.value))
+      fetchTools()
+    }
+  },
+
   // ==================== GAMES ====================
 
   'story-idle-game': {

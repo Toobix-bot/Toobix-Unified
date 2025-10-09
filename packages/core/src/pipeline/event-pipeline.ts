@@ -365,50 +365,77 @@ export class EventPipeline {
    */
   private async logToStory(event: SystemEvent): Promise<StepResult> {
     try {
-      // Map to Story service schema
-      const storyEvent = {
-        id: event.id!,
-        ts: event.timestamp!,
-        epoch: 0, // Current epoch
-        kind: event.type || 'system_event',
-        text: event.description,
-        mood: 'calm', // Default mood
-        deltas: JSON.stringify({
-          action: event.action,
-          source: event.source,
-          ...event.metadata
-        }),
-        tags: JSON.stringify([event.type, event.source]),
-        option_ref: null,
-        person_id: null
+      // 1) Story-Modul benachrichtigen (wenn vorhanden), aber nicht frühzeitig zurückkehren
+      if (this.story && typeof this.story.addEvent === 'function') {
+        try {
+          await this.story.addEvent({
+            id: event.id,
+            type: event.type,
+            description: event.description,
+            metadata: {
+              action: event.action,
+              source: event.source,
+              ...(event.metadata || {})
+            },
+            created_at: event.timestamp || Date.now()
+          })
+        } catch (_) {
+          // Ignoriere Story-Modul-Fehler und schreibe dennoch in die DB
+        }
       }
-      
-      // Store in database using Story schema
-      this.db.prepare(`
-        INSERT INTO story_events (id, ts, epoch, kind, text, mood, deltas, tags, option_ref, person_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
-        storyEvent.id,
-        storyEvent.ts,
-        storyEvent.epoch,
-        storyEvent.kind,
-        storyEvent.text,
-        storyEvent.mood,
-        storyEvent.deltas,
-        storyEvent.tags,
-        storyEvent.option_ref,
-        storyEvent.person_id
-      )
-      
-      return {
-        success: true,
-        data: { storyEventId: event.id }
+
+      // 2) In Datenbank schreiben – Schema dynamisch erkennen
+      const columns = this.db
+        .query("PRAGMA table_info('story_events')")
+        .all() as Array<{ name: string }>
+      const names = new Set(columns.map(c => c.name))
+
+      if (names.has('type') && names.has('description') && names.has('created_at')) {
+        // Minimal-Schema (wie in den Integrationstests)
+        this.db.prepare(`
+          INSERT INTO story_events (id, type, description, metadata, created_at)
+          VALUES (?, ?, ?, ?, ?)
+        `).run(
+          event.id,
+          event.type,
+          event.description,
+          JSON.stringify({ action: event.action, source: event.source, ...(event.metadata || {}) }),
+          event.timestamp || Date.now()
+        )
+      } else {
+        // Erweitertes Schema (Bridge-Variante)
+        const storyEvent = {
+          id: event.id!,
+          ts: event.timestamp || Date.now(),
+          epoch: 0,
+          kind: event.type || 'system_event',
+          text: event.description,
+          mood: 'calm',
+          deltas: JSON.stringify({ action: event.action, source: event.source, ...(event.metadata || {}) }),
+          tags: JSON.stringify([event.type, event.source]),
+          option_ref: null,
+          person_id: null
+        }
+        this.db.prepare(`
+          INSERT INTO story_events (id, ts, epoch, kind, text, mood, deltas, tags, option_ref, person_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          storyEvent.id,
+          storyEvent.ts,
+          storyEvent.epoch,
+          storyEvent.kind,
+          storyEvent.text,
+          storyEvent.mood,
+          storyEvent.deltas,
+          storyEvent.tags,
+          storyEvent.option_ref,
+          storyEvent.person_id
+        )
       }
+
+      return { success: true, data: { storyEventId: event.id } }
     } catch (error: any) {
-      return {
-        success: false,
-        errors: [`Story logging error: ${error.message}`]
-      }
+      return { success: false, errors: [`Story logging error: ${error.message}`] }
     }
   }
   

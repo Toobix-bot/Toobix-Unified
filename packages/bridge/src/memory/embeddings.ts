@@ -256,16 +256,27 @@ export class VectorStore {
    */
   getChunks(memoryId: string): TextChunk[] {
     const rows = this.db.prepare(`
-      SELECT * FROM memory_chunks WHERE memory_id = ? ORDER BY chunk_index
+      SELECT id, memory_id, text, embedding, metadata, created_at
+      FROM vector_chunks
+      WHERE memory_id = ?
+      ORDER BY created_at, id
     `).all(memoryId) as any[]
-    
-    return rows.map(row => ({
-      id: row.id,
-      text: row.text,
-      embedding: row.embedding ? Array.from(new Float32Array(row.embedding.buffer)) : undefined,
-      metadata: JSON.parse(row.metadata),
-      created_at: row.created_at
-    }))
+
+    return rows.map(row => {
+      let embeddingArray: number[] | undefined
+      if (row.embedding) {
+        const bytes: Uint8Array = row.embedding
+        const f32 = new Float32Array(bytes.buffer, (bytes as any).byteOffset || 0, Math.floor((bytes as any).byteLength / 4))
+        embeddingArray = Array.from(f32)
+      }
+      return {
+        id: row.id,
+        text: row.text,
+        embedding: embeddingArray,
+        metadata: row.metadata ? JSON.parse(row.metadata) : {},
+        created_at: row.created_at
+      }
+    })
   }
   
   /**
@@ -274,25 +285,29 @@ export class VectorStore {
    */
   searchSimilar(queryEmbedding: number[], limit: number = 5): Array<TextChunk & { similarity: number }> {
     const allChunks = this.db.prepare(`
-      SELECT * FROM memory_chunks WHERE embedding IS NOT NULL
+      SELECT id, memory_id, text, embedding, metadata, created_at
+      FROM vector_chunks
+      WHERE embedding IS NOT NULL
     `).all() as any[]
-    
+
     const embedder = new EmbeddingService({ apiKey: '' })
-    
+
     const results = allChunks.map(row => {
-      const embedding = Array.from(new Float32Array(row.embedding.buffer))
+      const bytes: Uint8Array = row.embedding
+      const f32 = new Float32Array(bytes.buffer, (bytes as any).byteOffset || 0, Math.floor((bytes as any).byteLength / 4))
+      const embedding = Array.from(f32)
       const similarity = embedder.cosineSimilarity(queryEmbedding, embedding)
-      
+
       return {
         id: row.id,
         text: row.text,
         embedding,
-        metadata: JSON.parse(row.metadata),
+        metadata: row.metadata ? JSON.parse(row.metadata) : {},
         created_at: row.created_at,
         similarity
       }
     })
-    
+
     return results
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, limit)

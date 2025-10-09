@@ -4,7 +4,7 @@
 
 ### 1. 🔴 Alten Key löschen (SOFORT!)
 1. Öffne: https://console.groq.com/keys
-2. Finde Key: `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`
+2. Finde Key: `gsk_...` (Platzhalter)
 3. Klicke **"Delete"**
 
 ### 2. 🟢 Neuen Key erstellen
