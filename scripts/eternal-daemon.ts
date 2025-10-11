@@ -777,8 +777,8 @@ The daemon is listening on port 9999.
             },
             {
                 name: 'story-idle-api',
-                script: 'scripts/story-idle-api.ts',
-                purpose: 'Story-Idle Game API for dashboard integration'
+                script: 'scripts/story-idle-api-integrated.ts',
+                purpose: 'Story-Idle Game API - Fully Integrated with Resources, Buildings, Characters, Mini-Games, Git Integration'
             },
             {
                 name: 'achievement-system',
@@ -868,7 +868,7 @@ The daemon is listening on port 9999.
                     scriptPath = 'scripts/ai-sandbox.ts';
                     break;
                 case 'story-idle-api':
-                    scriptPath = 'scripts/story-idle-api.ts';
+                    scriptPath = 'scripts/story-idle-api-integrated.ts';
                     break;
                 case 'achievement-system':
                     scriptPath = 'scripts/achievement-system.ts';

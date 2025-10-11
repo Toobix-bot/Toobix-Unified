@@ -1,10 +1,12 @@
-// Story-Idle Game State Management
+// Story-Idle Game State Management - Extended with Resources
+// This extends the original game-state.ts with resource management
+
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { Resources, ResourceManager, DEFAULT_RESOURCES, DEFAULT_CAPS } from './resource-manager'
 import { PassiveGenerator } from './passive-generator'
 
-export interface GameState {
+export interface ExtendedGameState {
   // Player Progress
   player: {
     name: string
@@ -23,8 +25,8 @@ export interface GameState {
     stability: number   // Tests, Reliability, Structure
   }
 
-  // Resources (NEW!)
-  resources?: {
+  // Resources
+  resources: {
     current: Resources
     caps: Partial<Resources>
     generationRates: Partial<Resources>
@@ -66,14 +68,14 @@ export interface GameState {
     filesChanged: number
   }
 
-  // Passive Generation (NEW!)
-  passiveGeneration?: {
+  // Passive Generation
+  passiveGeneration: {
     lastUpdateTime: number
     maxOfflineTimeHours: number
   }
 }
 
-const DEFAULT_STATE: GameState = {
+const DEFAULT_EXTENDED_STATE: ExtendedGameState = {
   player: {
     name: 'Creator',
     level: 1,
@@ -87,6 +89,12 @@ const DEFAULT_STATE: GameState = {
     wisdom: 10,
     creativity: 10,
     stability: 10
+  },
+  resources: {
+    current: { ...DEFAULT_RESOURCES },
+    caps: { ...DEFAULT_CAPS },
+    generationRates: {},
+    multipliers: {}
   },
   characters: {
     luna: {
@@ -118,58 +126,54 @@ const DEFAULT_STATE: GameState = {
     commits: 0,
     filesChanged: 0
   },
-  resources: {
-    current: { ...DEFAULT_RESOURCES },
-    caps: { ...DEFAULT_CAPS },
-    generationRates: {},
-    multipliers: {}
-  },
   passiveGeneration: {
     lastUpdateTime: Date.now(),
     maxOfflineTimeHours: 24
   }
 }
 
-export class GameStateManager {
+export class ExtendedGameStateManager {
   private statePath: string
-  private state: GameState
+  private state: ExtendedGameState
   private resourceManager: ResourceManager
   private passiveGenerator: PassiveGenerator
 
   constructor(dataPath: string = './data') {
-    this.statePath = join(dataPath, 'story-idle-state.json')
+    this.statePath = join(dataPath, 'story-idle-state-extended.json')
     this.state = this.loadState()
 
     // Initialize resource manager
     this.resourceManager = new ResourceManager(
-      this.state.resources?.current,
-      this.state.resources?.caps as any
+      this.state.resources.current,
+      this.state.resources.caps as any
     )
 
     // Initialize passive generator
     this.passiveGenerator = new PassiveGenerator({
-      maxOfflineTimeHours: this.state.passiveGeneration?.maxOfflineTimeHours || 24
+      maxOfflineTimeHours: this.state.passiveGeneration.maxOfflineTimeHours
     })
 
     // Calculate offline rewards if any
     this.processOfflineRewards()
   }
 
-  private loadState(): GameState {
+  private loadState(): ExtendedGameState {
     if (existsSync(this.statePath)) {
       try {
         const data = readFileSync(this.statePath, 'utf-8')
-        return { ...DEFAULT_STATE, ...JSON.parse(data) }
+        return { ...DEFAULT_EXTENDED_STATE, ...JSON.parse(data) }
       } catch (error) {
-        console.warn('Could not load game state, using default')
-        return DEFAULT_STATE
+        console.warn('Could not load extended game state, using default')
+        return DEFAULT_EXTENDED_STATE
       }
     }
-    return DEFAULT_STATE
+    return DEFAULT_EXTENDED_STATE
   }
 
   public saveState(): void {
     try {
+      // Sync resources before saving
+      this.syncResourcesToState()
       writeFileSync(this.statePath, JSON.stringify(this.state, null, 2))
     } catch (error) {
       console.error('Failed to save game state:', error)
@@ -177,7 +181,7 @@ export class GameStateManager {
   }
 
   // Getters
-  public getState(): GameState {
+  public getState(): ExtendedGameState {
     return this.state
   }
 
@@ -191,6 +195,14 @@ export class GameStateManager {
 
   public getCharacter(id: string) {
     return this.state.characters[id]
+  }
+
+  public getResourceManager(): ResourceManager {
+    return this.resourceManager
+  }
+
+  public getPassiveGenerator(): PassiveGenerator {
+    return this.passiveGenerator
   }
 
   // XP & Leveling
@@ -214,7 +226,7 @@ export class GameStateManager {
   }
 
   // Stats
-  public addStat(stat: keyof GameState['stats'], amount: number): void {
+  public addStat(stat: keyof ExtendedGameState['stats'], amount: number): void {
     this.state.stats[stat] = Math.min(100, this.state.stats[stat] + amount)
     this.saveState()
   }
@@ -229,6 +241,11 @@ export class GameStateManager {
       this.state.characters[characterId].lastInteraction = new Date().toISOString()
       this.saveState()
     }
+  }
+
+  public addCharacter(id: string, data: ExtendedGameState['characters'][string]): void {
+    this.state.characters[id] = data
+    this.saveState()
   }
 
   // Quests
@@ -279,17 +296,8 @@ export class GameStateManager {
 
   // ========== Resource Management ==========
 
-  // Get resource manager (for external access)
-  public getResourceManager(): ResourceManager {
-    return this.resourceManager
-  }
-
   // Process offline rewards when game loads
   private processOfflineRewards(): void {
-    if (!this.state.passiveGeneration) {
-      return // No passive generation setup yet
-    }
-
     const result = this.passiveGenerator.calculateOfflineRewards(
       this.resourceManager,
       this.state
@@ -311,12 +319,22 @@ export class GameStateManager {
     this.saveState()
   }
 
+  // Start passive generation (call when game is running)
+  public startPassiveGeneration(): void {
+    this.passiveGenerator.start(this.resourceManager, this.state)
+    console.log('⚡ Passive resource generation started!')
+  }
+
+  // Stop passive generation (call when game closes)
+  public stopPassiveGeneration(): void {
+    this.passiveGenerator.stop()
+    this.syncResourcesToState()
+    this.saveState()
+    console.log('⏸️  Passive generation stopped and progress saved!')
+  }
+
   // Sync resources from manager to state
   private syncResourcesToState(): void {
-    if (!this.state.resources) {
-      return // No resources to sync
-    }
-
     const resources = this.resourceManager.getAllResources()
     this.state.resources.current = resources
 
@@ -342,5 +360,83 @@ export class GameStateManager {
         this.state.resources.multipliers[type] = multiplier
       }
     }
+  }
+
+  // Get current resources display
+  public getResourcesDisplay(): string {
+    const resourceManager = this.resourceManager
+    let display = '\n📦 RESOURCES:\n'
+
+    const resourceTypes: { type: keyof Resources; symbol: string; color: string }[] = [
+      { type: 'codeEnergy', symbol: '⚡', color: '\x1b[38;5;226m' },
+      { type: 'creativityPoints', symbol: '🎨', color: '\x1b[38;5;213m' },
+      { type: 'wisdomTokens', symbol: '📚', color: '\x1b[38;5;33m' },
+      { type: 'loveShards', symbol: '💝', color: '\x1b[38;5;211m' },
+      { type: 'consciousness', symbol: '🧠', color: '\x1b[38;5;141m' },
+      { type: 'harmony', symbol: '☯️', color: '\x1b[38;5;120m' },
+      { type: 'inspiration', symbol: '✨', color: '\x1b[38;5;228m' }
+    ]
+
+    for (const { type, symbol, color } of resourceTypes) {
+      const amount = Math.floor(resourceManager.getResource(type))
+      const cap = resourceManager.getCap(type)
+      const rate = resourceManager.getGenerationRate(type)
+
+      if (amount > 0 || rate > 0) {
+        display += `${color}${symbol} ${type}:${'\x1b[0m'} ${amount}/${cap}`
+        if (rate > 0) {
+          display += ` (+${rate.toFixed(2)}/min)`
+        }
+        display += '\n'
+      }
+    }
+
+    return display
+  }
+
+  // Get generation rates summary
+  public getGenerationRatesSummary(): string {
+    const rates = this.passiveGenerator.getCurrentRates(this.resourceManager, this.state)
+    let summary = '\n⚡ PASSIVE GENERATION RATES:\n'
+
+    for (const [resource, rate] of Object.entries(rates)) {
+      if (rate && rate > 0) {
+        summary += `   ${resource}: +${rate.toFixed(2)}/min\n`
+      }
+    }
+
+    return summary
+  }
+}
+
+// Helper function to migrate old state to extended state
+export function migrateToExtendedState(oldStatePath: string, newStatePath: string): boolean {
+  try {
+    if (!existsSync(oldStatePath)) {
+      return false
+    }
+
+    const oldData = JSON.parse(readFileSync(oldStatePath, 'utf-8'))
+    const extendedData: ExtendedGameState = {
+      ...DEFAULT_EXTENDED_STATE,
+      ...oldData,
+      resources: {
+        current: { ...DEFAULT_RESOURCES },
+        caps: { ...DEFAULT_CAPS },
+        generationRates: {},
+        multipliers: {}
+      },
+      passiveGeneration: {
+        lastUpdateTime: Date.now(),
+        maxOfflineTimeHours: 24
+      }
+    }
+
+    writeFileSync(newStatePath, JSON.stringify(extendedData, null, 2))
+    console.log('✅ Successfully migrated to extended state!')
+    return true
+  } catch (error) {
+    console.error('❌ Migration failed:', error)
+    return false
   }
 }
