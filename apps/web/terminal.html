@@ -2,7 +2,8 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="config/api-config.js"></script>
     <title>🖥️ Toobix Terminal GUI</title>
     <style>
         * {
@@ -476,7 +477,15 @@
     </div>
 
     <script>
-        const BRIDGE_URL = 'http://localhost:3337';
+        const __API = (typeof window !== 'undefined' && typeof window.getToobixApiConfig === 'function')
+          ? window.getToobixApiConfig()
+          : ((window.TOOBIX_CONFIG && window.TOOBIX_CONFIG.API) || {});
+        const BRIDGE_URL = (function(){
+          try {
+            const saved = localStorage.getItem('BRIDGE_URL');
+            return (saved && saved.trim()) ? saved.replace(/\/$/, '') : (__API.bridge || 'http://localhost:3337');
+          } catch { return (__API.bridge || 'http://localhost:3337'); }
+        })();
         let tools = new Map();
         let commandHistory = [];
         let historyIndex = -1;

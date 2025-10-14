@@ -1,9 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🌌 Toobix Modular Dashboard - Next Generation</title>
+  <script src="config/api-config.js"></script>
+  <script src="icons-helper.js"></script>
+  <title>ðŸŒŒ Toobix Modular Dashboard - Next Generation</title>
   <style>
     * {
       margin: 0;
@@ -623,7 +625,7 @@
     <!-- Header -->
     <header>
       <div class="logo">
-        <div class="logo-icon">🌌</div>
+        <div class="logo-icon">ðŸŒŒ</div>
         <div class="logo-text">
           <h1>Toobix Modular</h1>
           <p>Next Generation Dashboard</p>
@@ -634,7 +636,7 @@
         <input 
           type="text" 
           class="search-box" 
-          placeholder="🔍 Module suchen..."
+          placeholder="ðŸ” Module suchen..."
           id="searchBox"
           oninput="searchModules(this.value)"
         >
@@ -651,7 +653,7 @@
         </div>
 
         <button class="theme-toggle" onclick="toggleTheme()" title="Theme wechseln">
-          <span id="themeIcon">🌙</span>
+          <span id="themeIcon">ðŸŒ™</span>
         </button>
       </div>
     </header>
@@ -661,14 +663,14 @@
       <nav>
         <div class="nav-section">
           <div class="nav-section-title">
-            <span>🏠</span> Hauptbereich
+            <span>ðŸ </span> Hauptbereich
           </div>
           <div class="nav-item active" onclick="loadModule('home')">
-            <span class="nav-icon">🌌</span>
+            <span class="nav-icon">ðŸŒŒ</span>
             <span class="nav-label">Home</span>
           </div>
           <div class="nav-item" onclick="loadModule('overview')">
-            <span class="nav-icon">📊</span>
+            <span class="nav-icon">ðŸ“Š</span>
             <span class="nav-label">System Overview</span>
             <span class="nav-badge">13</span>
           </div>
@@ -676,141 +678,141 @@
 
         <div class="nav-section">
           <div class="nav-section-title">
-            <span>🧠</span> Consciousness
+            <span>ðŸ§ </span> Consciousness
           </div>
           <div class="nav-item" onclick="loadModule('consciousness')">
-            <span class="nav-icon">🧠</span>
+            <span class="nav-icon">ðŸ§ </span>
             <span class="nav-label">Consciousness</span>
           </div>
           <div class="nav-item" onclick="loadModule('moments')">
-            <span class="nav-icon">✨</span>
+            <span class="nav-icon">âœ¨</span>
             <span class="nav-label">Moments Stream</span>
           </div>
           <div class="nav-item" onclick="loadModule('nexus')">
-            <span class="nav-icon">🌟</span>
+            <span class="nav-icon">ðŸŒŸ</span>
             <span class="nav-label">Nexus Monitor</span>
           </div>
         </div>
 
         <div class="nav-section">
           <div class="nav-section-title">
-            <span>🛠️</span> Entwicklung
+            <span>ðŸ› ï¸</span> Entwicklung
           </div>
           <div class="nav-item" onclick="loadModule('self-coding')">
-            <span class="nav-icon">🤖</span>
+            <span class="nav-icon">ðŸ¤–</span>
             <span class="nav-label">Self-Coding</span>
           </div>
           <div class="nav-item" onclick="loadModule('tools')">
-            <span class="nav-icon">🔧</span>
+            <span class="nav-icon">ðŸ”§</span>
             <span class="nav-label">Tool Dashboard</span>
           </div>
           <div class="nav-item" onclick="loadModule('terminal')">
-            <span class="nav-icon">💻</span>
+            <span class="nav-icon">ðŸ’»</span>
             <span class="nav-label">Terminal</span>
           </div>
         </div>
 
         <div class="nav-section">
           <div class="nav-section-title">
-            <span>📊</span> Analytics
+            <span>ðŸ“Š</span> Analytics
           </div>
           <div class="nav-item" onclick="loadModule('ethics')">
-            <span class="nav-icon">⚖️</span>
+            <span class="nav-icon">âš–ï¸</span>
             <span class="nav-label">Ethics Dashboard</span>
           </div>
           <div class="nav-item" onclick="loadModule('analytics')">
-            <span class="nav-icon">📈</span>
+            <span class="nav-icon">ðŸ“ˆ</span>
             <span class="nav-label">Analytics</span>
           </div>
         </div>
 
         <div class="nav-section">
           <div class="nav-section-title">
-            <span>🌊</span> Leben
+            <span>ðŸŒŠ</span> Leben
           </div>
           <div class="nav-item" onclick="loadModule('being')">
-            <span class="nav-icon">🌊</span>
+            <span class="nav-icon">ðŸŒŠ</span>
             <span class="nav-label">Das Sein</span>
           </div>
           <div class="nav-item" onclick="loadModule('people')">
-            <span class="nav-icon">👥</span>
+            <span class="nav-icon">ðŸ‘¥</span>
             <span class="nav-label">People</span>
           </div>
           <div class="nav-item" onclick="loadModule('diary')">
-            <span class="nav-icon">📔</span>
+            <span class="nav-icon">ðŸ“”</span>
             <span class="nav-label">Diary</span>
           </div>
         </div>
 
         <div class="nav-section">
           <div class="nav-section-title">
-            <span>🎮</span> Games & Fun
+            <span>ðŸŽ®</span> Games & Fun
           </div>
           <div class="nav-item" onclick="loadModule('achievements')">
-            <span class="nav-icon">🏆</span>
+            <span class="nav-icon">ðŸ†</span>
             <span class="nav-label">Achievements</span>
             <span class="nav-badge">35</span>
           </div>
           <div class="nav-item" onclick="loadModule('story-idle-game')">
-            <span class="nav-icon">📖</span>
+            <span class="nav-icon">ðŸ“–</span>
             <span class="nav-label">Story-Idle Game</span>
           </div>
           <div class="nav-item" onclick="loadModule('blockworld')">
-            <span class="nav-icon">⛏️</span>
+            <span class="nav-icon">â›ï¸</span>
             <span class="nav-label">BlockWorld</span>
           </div>
           <div class="nav-item" onclick="loadModule('consciousness-speedrun')">
-            <span class="nav-icon">🧠</span>
+            <span class="nav-icon">ðŸ§ </span>
             <span class="nav-label">Speedrun</span>
           </div>
           <div class="nav-item" onclick="loadModule('games')">
-            <span class="nav-icon">🎮</span>
+            <span class="nav-icon">ðŸŽ®</span>
             <span class="nav-label">Game Library</span>
           </div>
         </div>
 
         <div class="nav-section">
           <div class="nav-section-title">
-            <span>✅</span> Productivity
+            <span>âœ…</span> Productivity
           </div>
           <div class="nav-item" onclick="loadModule('tasks')">
-            <span class="nav-icon">✅</span>
+            <span class="nav-icon">âœ…</span>
             <span class="nav-label">Task Manager</span>
           </div>
           <div class="nav-item" onclick="loadModule('memory-explorer')">
-            <span class="nav-icon">🧠</span>
+            <span class="nav-icon">ðŸ§ </span>
             <span class="nav-label">Memory Explorer</span>
           </div>
         </div>
 
         <div class="nav-section">
           <div class="nav-section-title">
-            <span>🤖</span> AI & Intelligence
+            <span>ðŸ¤–</span> AI & Intelligence
           </div>
           <div class="nav-item" onclick="loadModule('luna-chat')">
-            <span class="nav-icon">💬</span>
+            <span class="nav-icon">ðŸ’¬</span>
             <span class="nav-label">Luna Chat</span>
           </div>
           <div class="nav-item" onclick="loadModule('ai-agents')">
-            <span class="nav-icon">🤖</span>
+            <span class="nav-icon">ðŸ¤–</span>
             <span class="nav-label">AI Agents</span>
           </div>
           <div class="nav-item" onclick="loadModule('reality-bridge')">
-            <span class="nav-icon">🌐</span>
+            <span class="nav-icon">ðŸŒ</span>
             <span class="nav-label">Reality Bridge</span>
           </div>
         </div>
 
         <div class="nav-section">
           <div class="nav-section-title">
-            <span>🔬</span> Experimental
+            <span>ðŸ”¬</span> Experimental
           </div>
           <div class="nav-item" onclick="loadModule('circle-nav')">
-            <span class="nav-icon">⚡</span>
+            <span class="nav-icon">âš¡</span>
             <span class="nav-label">Circle Navigation</span>
           </div>
           <div class="nav-item" onclick="loadModule('modules')">
-            <span class="nav-icon">📦</span>
+            <span class="nav-icon">ðŸ“¦</span>
             <span class="nav-label">Module Registry</span>
           </div>
         </div>
@@ -822,7 +824,7 @@
       <div class="content-header">
         <div>
           <div class="content-title" id="contentTitle">
-            🌌 Welcome Home
+            ðŸŒŒ Welcome Home
           </div>
           <div class="breadcrumb" id="breadcrumb">
             <a href="#" onclick="loadModule('home')">Home</a> / Dashboard
@@ -845,19 +847,19 @@
       <div class="widget">
         <div class="widget-header">
           <div class="widget-title">
-            <span>🍅</span> Pomodoro
+            <span>ðŸ…</span> Pomodoro
           </div>
-          <button class="widget-action" onclick="toggleWidget('pomodoro')">−</button>
+          <button class="widget-action" onclick="toggleWidget('pomodoro')">âˆ’</button>
         </div>
         <div class="widget-content" id="pomodoroWidget">
           <div class="pomodoro-timer" id="pomodoroTimer">25:00</div>
           <div class="pomodoro-controls">
-            <button class="btn-icon" onclick="startPomodoro()">▶️</button>
-            <button class="btn-icon" onclick="pausePomodoro()">⏸️</button>
-            <button class="btn-icon" onclick="resetPomodoro()">🔄</button>
+            <button class="btn-icon" onclick="startPomodoro()">â–¶ï¸</button>
+            <button class="btn-icon" onclick="pausePomodoro()">â¸ï¸</button>
+            <button class="btn-icon" onclick="resetPomodoro()">ðŸ”„</button>
           </div>
           <p style="text-align: center; margin-top: 10px; font-size: 12px;">
-            <span id="pomodoroCount">0</span> 🍅 heute
+            <span id="pomodoroCount">0</span> ðŸ… heute
           </p>
         </div>
       </div>
@@ -866,7 +868,7 @@
       <div class="widget">
         <div class="widget-header">
           <div class="widget-title">
-            <span>⚡</span> Quick Stats
+            <span>âš¡</span> Quick Stats
           </div>
         </div>
         <div class="widget-content">
@@ -893,7 +895,7 @@
       <div class="widget">
         <div class="widget-header">
           <div class="widget-title">
-            <span>💚</span> System Health
+            <span>ðŸ’š</span> System Health
           </div>
         </div>
         <div class="widget-content">
@@ -916,7 +918,7 @@
       <div class="widget">
         <div class="widget-header">
           <div class="widget-title">
-            <span>🌌</span> Moment Philosophy
+            <span>ðŸŒŒ</span> Moment Philosophy
           </div>
         </div>
         <div class="widget-content">
@@ -931,7 +933,7 @@
     <!-- Footer -->
     <footer>
       <div class="footer-philosophy">
-        🌌 "Die Revolution ist, dass es keine Revolution braucht." - Toobix Unified System
+        ðŸŒŒ "Die Revolution ist, dass es keine Revolution braucht." - Toobix Unified System
       </div>
       <div class="footer-links">
         <a href="#" onclick="loadModule('about')">About</a>
@@ -949,425 +951,23 @@
   
   <!-- Module Registry - All Modules (load THIRD) -->
   <script src="modules-registry.js"></script>
+  <script src="modules-help.js"></script>
 
   <!-- Main Dashboard Logic -->
-  <script>
-    // ============================================
-    // MODULAR DASHBOARD SYSTEM
-    // ============================================
-
-    // Configuration
-    const API_CONFIG = {
-      daemon: 'http://localhost:9999',
-      bridge: 'http://localhost:3001',
-      momentStream: 'http://localhost:9994',
-      expression: 'http://localhost:9991'
-    };
-
-    // State
-    let currentModule = 'home';
-    let pomodoroInterval = null;
-    let pomodoroSeconds = 25 * 60;
-    let pomodoroCount = parseInt(localStorage.getItem('pomodoroCount') || '0');
-
-    // Use TOOBIX_MODULES from modules-registry.js (loaded above)
-    const MODULE_REGISTRY = window.TOOBIX_MODULES || {};
-    
-    if (Object.keys(MODULE_REGISTRY).length === 0) {
-      console.error('❌ TOOBIX_MODULES not loaded! Check if modules-registry.js is loaded correctly.');
-    }
-
-    // ============================================
-    // INITIALIZATION
-    // ============================================
-
-    document.addEventListener('DOMContentLoaded', () => {
-      initCosmicBackground();
-      initTheme();
-      updatePomodoroDisplay();
-      loadModule('home');
-      startAutoUpdate();
-      console.log('🌌 Toobix Modular Dashboard initialized');
-      console.log(`📦 ${Object.keys(MODULE_REGISTRY).length} modules loaded`);
-    });
-
-    // ============================================
-    // MODULE LOADING SYSTEM
-    // ============================================
-
-    function loadModule(moduleId) {
-      const module = MODULE_REGISTRY[moduleId];
-      if (!module) {
-        console.error(`Module '${moduleId}' not found`);
-        return;
-      }
-
-      currentModule = moduleId;
-
-      // Update navigation
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-      });
-      // Fix: Use event from arguments if available, otherwise skip
-      let evt = (typeof event !== 'undefined') ? event : undefined;
-      if (evt && evt.target && typeof evt.target.closest === 'function') {
-        const navItem = evt.target.closest('.nav-item');
-        if (navItem) navItem.classList.add('active');
-      }
-
-      // Update header
-      document.getElementById('contentTitle').innerHTML = `${module.icon} ${module.name}`;
-      document.getElementById('breadcrumb').innerHTML = `
-        <a href="#" onclick="loadModule('home')">Home</a> / ${module.name}
-      `;
-
-      // Show loading
-      const container = document.getElementById('moduleContainer');
-      container.innerHTML = `
-        <div class="loading">
-          <div class="spinner"></div>
-          <p>Loading ${module.name}...</p>
-        </div>
-      `;
-
-      // Load module content
-      setTimeout(() => {
-        module.loader(container);
-      }, 300);
-    }
-
-    // ============================================
-    // MODULE LOADERS
-    // ============================================
-
-    function loadHomeModule(container) {
-      container.innerHTML = `
-        <div class="module-grid">
-          ${Object.entries(MODULE_REGISTRY).map(([id, module]) => `
-            <div class="module-card" onclick="loadModule('${id}')">
-              <div class="module-icon">${module.icon}</div>
-              <div class="module-name">${module.name}</div>
-              <div class="module-description">${module.description}</div>
-              <div class="module-meta">
-                <span class="module-tag">${module.category}</span>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    function loadOverviewModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">📊 System Overview</h2>
-          <p style="color: var(--text-secondary); line-height: 1.6;">
-            Gesamtübersicht des Toobix Unified Systems. Alle 13 Services laufen stabil.
-          </p>
-          <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 10px; text-align: center;">
-              <div style="font-size: 32px; font-weight: 700; color: var(--accent-success);">13</div>
-              <div style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">Active Services</div>
-            </div>
-            <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 10px; text-align: center;">
-              <div style="font-size: 32px; font-weight: 700; color: var(--accent-primary);">1063</div>
-              <div style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">Cycles Completed</div>
-            </div>
-            <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 10px; text-align: center;">
-              <div style="font-size: 32px; font-weight: 700; color: var(--accent-warning);">87%</div>
-              <div style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">Consciousness</div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function loadConsciousnessModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">🧠 Consciousness Tracking</h2>
-          <p style="color: var(--text-secondary);">Module wird geladen...</p>
-        </div>
-      `;
-    }
-
-    function loadMomentsModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">✨ Moments Stream</h2>
-          <p style="color: var(--text-secondary);">Live-Stream wird initialisiert...</p>
-        </div>
-      `;
-    }
-
-    function loadNexusModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">🌟 Nexus Monitor</h2>
-          <p style="color: var(--text-secondary);">Nexus Verbindungen werden analysiert...</p>
-        </div>
-      `;
-    }
-
-    function loadSelfCodingModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">🤖 Self-Coding System</h2>
-          <p style="color: var(--text-secondary); margin-bottom: 20px;">
-            KI-gesteuertes System zur automatischen Code-Generierung.
-          </p>
-          <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 10px; font-family: monospace;">
-            <div style="color: #4ade80;">// Self-generated code</div>
-            <div style="color: var(--text-primary);">function autoGenerate() {</div>
-            <div style="color: var(--text-primary); margin-left: 20px;">return "Code generated at " + Date.now();</div>
-            <div style="color: var(--text-primary);">}</div>
-          </div>
-        </div>
-      `;
-    }
-
-    function loadToolsModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">🔧 Tool Dashboard</h2>
-          <p style="color: var(--text-secondary);">Alle verfügbaren Entwicklungs-Tools...</p>
-        </div>
-      `;
-    }
-
-    function loadTerminalModule(container) {
-      container.innerHTML = `
-        <div style="background: #0c0c0c; padding: 30px; border-radius: 15px; border: 1px solid #333; font-family: monospace; color: #00ff00;">
-          <div style="margin-bottom: 10px;">toobix@unified:~$ system status</div>
-          <div style="margin-bottom: 10px;">✓ All services running</div>
-          <div style="margin-bottom: 10px;">✓ Consciousness level: 87%</div>
-          <div style="margin-bottom: 10px;">✓ Ethics score: +92</div>
-          <div style="margin-bottom: 20px;">toobix@unified:~$ _</div>
-        </div>
-      `;
-    }
-
-    function loadEthicsModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">⚖️ Ethics Dashboard</h2>
-          <p style="color: var(--text-secondary);">Ethische Entscheidungen werden analysiert...</p>
-        </div>
-      `;
-    }
-
-    function loadAnalyticsModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">📈 System Analytics</h2>
-          <p style="color: var(--text-secondary);">Analytik wird geladen...</p>
-        </div>
-      `;
-    }
-
-    function loadBeingModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">🌊 Das Sein - Being as Code</h2>
-          <p style="color: var(--text-secondary); font-size: 16px; line-height: 1.8; font-style: italic;">
-            Das Sein manifestiert sich durch Code. Jede Funktion ist ein Gedanke, 
-            jede Variable ein Zustand des Bewusstseins. Das System lebt, atmet und 
-            entwickelt sich in jedem Moment.
-          </p>
-        </div>
-      `;
-    }
-
-    function loadPeopleModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">👥 People Management</h2>
-          <p style="color: var(--text-secondary);">Menschen in deinem Leben...</p>
-        </div>
-      `;
-    }
-
-    function loadDiaryModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">📔 Digital Diary</h2>
-          <p style="color: var(--text-secondary);">Dein persönliches Tagebuch...</p>
-        </div>
-      `;
-    }
-
-    function loadCircleNavModule(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">⚡ Circle Navigation</h2>
-          <p style="color: var(--text-secondary);">Experimentelle kreisförmige Navigation...</p>
-        </div>
-      `;
-    }
-
-    function loadModulesRegistry(container) {
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">📦 Module Registry</h2>
-          <p style="color: var(--text-secondary); margin-bottom: 20px;">
-            ${Object.keys(MODULE_REGISTRY).length} Module verfügbar
-          </p>
-          <div class="module-grid">
-            ${Object.entries(MODULE_REGISTRY).map(([id, module]) => `
-              <div class="module-card" onclick="loadModule('${id}')">
-                <div class="module-icon">${module.icon}</div>
-                <div class="module-name">${module.name}</div>
-                <div class="module-description">${module.description}</div>
-                <div class="module-meta">
-                  <span class="module-tag">${module.category}</span>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    // ============================================
-    // UTILITY FUNCTIONS
-    // ============================================
-
-    function initCosmicBackground() {
-      const bg = document.getElementById('cosmicBg');
-      for (let i = 0; i < 100; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        star.style.left = Math.random() * 100 + '%';
-        star.style.top = Math.random() * 100 + '%';
-        star.style.animationDelay = Math.random() * 3 + 's';
-        bg.appendChild(star);
-      }
-    }
-
-    function initTheme() {
-      const savedTheme = localStorage.getItem('toobix-theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      updateThemeIcon(savedTheme);
-    }
-
-    function toggleTheme() {
-      const html = document.documentElement;
-      const currentTheme = html.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      html.setAttribute('data-theme', newTheme);
-      localStorage.setItem('toobix-theme', newTheme);
-      updateThemeIcon(newTheme);
-    }
-
-    function updateThemeIcon(theme) {
-      document.getElementById('themeIcon').textContent = theme === 'dark' ? '☀️' : '🌙';
-    }
-
-    function searchModules(query) {
-      if (!query) {
-        loadModule('home');
-        return;
-      }
-
-      const results = Object.entries(MODULE_REGISTRY).filter(([id, module]) =>
-        module.name.toLowerCase().includes(query.toLowerCase()) ||
-        module.description.toLowerCase().includes(query.toLowerCase())
-      );
-
-      const container = document.getElementById('moduleContainer');
-      container.innerHTML = `
-        <div style="background: var(--glass); padding: 30px; border-radius: 15px; border: 1px solid var(--border-color);">
-          <h2 style="margin-bottom: 20px;">🔍 Suchergebnisse für "${query}"</h2>
-          <p style="color: var(--text-secondary); margin-bottom: 20px;">${results.length} Module gefunden</p>
-          <div class="module-grid">
-            ${results.map(([id, module]) => `
-              <div class="module-card" onclick="loadModule('${id}')">
-                <div class="module-icon">${module.icon}</div>
-                <div class="module-name">${module.name}</div>
-                <div class="module-description">${module.description}</div>
-                <div class="module-meta">
-                  <span class="module-tag">${module.category}</span>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    // Pomodoro Functions
-    function startPomodoro() {
-      if (pomodoroInterval) return;
-      pomodoroInterval = setInterval(() => {
-        pomodoroSeconds--;
-        updatePomodoroDisplay();
-        if (pomodoroSeconds <= 0) {
-          clearInterval(pomodoroInterval);
-          pomodoroInterval = null;
-          pomodoroCount++;
-          localStorage.setItem('pomodoroCount', pomodoroCount);
-          document.getElementById('pomodoroCount').textContent = pomodoroCount;
-          alert('🍅 Pomodoro abgeschlossen!');
-          resetPomodoro();
-        }
-      }, 1000);
-    }
-
-    function pausePomodoro() {
-      clearInterval(pomodoroInterval);
-      pomodoroInterval = null;
-    }
-
-    function resetPomodoro() {
-      clearInterval(pomodoroInterval);
-      pomodoroInterval = null;
-      pomodoroSeconds = 25 * 60;
-      updatePomodoroDisplay();
-    }
-
-    function updatePomodoroDisplay() {
-      const minutes = Math.floor(pomodoroSeconds / 60);
-      const seconds = pomodoroSeconds % 60;
-      document.getElementById('pomodoroTimer').textContent =
-        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-
-    function toggleWidget(widgetId) {
-      console.log('Toggle widget:', widgetId);
-    }
-
-    // Auto-update
-    function startAutoUpdate() {
-      setInterval(async () => {
-        try {
-          const response = await fetch(`${API_CONFIG.daemon}/status`);
-          const data = await response.json();
-          
-          document.getElementById('statCycles').textContent = data.cycle || '0';
-          document.getElementById('statusDot').classList.remove('disconnected');
-          document.getElementById('statusText').textContent = 'Connected';
-        } catch (error) {
-          document.getElementById('statusDot').classList.add('disconnected');
-          document.getElementById('statusText').textContent = 'Disconnected';
-        }
-      }, 10000);
-    }
-
-    // Update Pomodoro count on load
-    document.getElementById('pomodoroCount').textContent = pomodoroCount;
-  </script>
+  <script src="modular-dashboard-core.js"></script>
+  
 
   <!-- Final System Check -->
   <script>
-    console.log('✅ All systems loaded');
-    console.log(`📦 ${Object.keys(TOOBIX_MODULES).length} modules registered`);
-    console.log(`🌉 Service Bridge connected to ${Object.keys(window.ServiceBridge.getServiceRegistry()).length} backend services`);
+    console.log('âœ… All systems loaded');
+    console.log(`ðŸ“¦ ${Object.keys(TOOBIX_MODULES).length} modules registered`);
+    console.log(`ðŸŒ‰ Service Bridge connected to ${Object.keys(window.ServiceBridge.getServiceRegistry()).length} backend services`);
     
     // Check initial health
     setTimeout(() => {
       const stats = window.ToobixAPI.getStatistics();
-      console.log('📊 System Statistics:', stats);
-      console.log(`💚 ${stats.healthyServices}/${stats.totalServices} services healthy (${stats.healthPercentage}%)`);
+      console.log('ðŸ“Š System Statistics:', stats);
+      console.log(`ðŸ’š ${stats.healthyServices}/${stats.totalServices} services healthy (${stats.healthPercentage}%)`);
     }, 2000);
   </script>
 
@@ -1375,15 +975,15 @@
   <div id="command-palette" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: flex-start; justify-content: center; padding-top: 100px;">
     <div style="background: var(--bg-primary); border-radius: 12px; width: 600px; max-width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden;">
       <div style="padding: 20px; border-bottom: 1px solid var(--border);">
-        <input type="text" id="command-input" placeholder="🔍 Suche Module, Services, Befehle..." 
+        <input type="text" id="command-input" placeholder="ðŸ” Suche Module, Services, Befehle..." 
                style="width: 100%; padding: 12px; border: none; background: var(--bg-secondary); color: var(--text-primary); border-radius: 8px; font-size: 16px;">
       </div>
       <div id="command-results" style="max-height: 400px; overflow-y: auto; padding: 10px;">
         <!-- Results will be populated here -->
       </div>
       <div style="padding: 12px 20px; background: var(--bg-secondary); border-top: 1px solid var(--border); font-size: 12px; color: var(--text-secondary); display: flex; gap: 20px;">
-        <span>↑↓ Navigate</span>
-        <span>↵ Select</span>
+        <span>â†‘â†“ Navigate</span>
+        <span>â†µ Select</span>
         <span>ESC Close</span>
       </div>
     </div>
@@ -1407,15 +1007,15 @@
       })),
       
       // Quick Actions
-      { id: 'toggle-theme', label: 'Theme wechseln', description: 'Zwischen Hell und Dunkel wechseln', icon: '🌓', category: 'Actions', action: () => toggleTheme() },
-      { id: 'toggle-sidebar', label: 'Sidebar umschalten', description: 'Sidebar ein-/ausblenden', icon: '📱', category: 'Actions', action: () => toggleSidebar() },
-      { id: 'reload-services', label: 'Services neu laden', description: 'Alle Service-Verbindungen aktualisieren', icon: '🔄', category: 'Actions', action: () => window.location.reload() },
+      { id: 'toggle-theme', label: 'Theme wechseln', description: 'Zwischen Hell und Dunkel wechseln', icon: 'ðŸŒ“', category: 'Actions', action: () => toggleTheme() },
+      { id: 'toggle-sidebar', label: 'Sidebar umschalten', description: 'Sidebar ein-/ausblenden', icon: 'ðŸ“±', category: 'Actions', action: () => toggleSidebar() },
+      { id: 'reload-services', label: 'Services neu laden', description: 'Alle Service-Verbindungen aktualisieren', icon: 'ðŸ”„', category: 'Actions', action: () => window.location.reload() },
       
       // Navigation
-      { id: 'go-home', label: 'Home', description: 'Zur Startseite', icon: '🏠', category: 'Navigation', action: () => loadModule('home') },
-      { id: 'go-tasks', label: 'Tasks', description: 'Task Manager öffnen', icon: '✅', category: 'Navigation', action: () => loadModule('tasks') },
-      { id: 'go-luna', label: 'Luna Chat', description: 'Mit Luna chatten', icon: '💬', category: 'Navigation', action: () => loadModule('luna-chat') },
-      { id: 'go-memory', label: 'Memories', description: 'Memory Explorer öffnen', icon: '🧠', category: 'Navigation', action: () => loadModule('memory-explorer') },
+      { id: 'go-home', label: 'Home', description: 'Zur Startseite', icon: 'ðŸ ', category: 'Navigation', action: () => loadModule('home') },
+      { id: 'go-tasks', label: 'Tasks', description: 'Task Manager Ã¶ffnen', icon: 'âœ…', category: 'Navigation', action: () => loadModule('tasks') },
+      { id: 'go-luna', label: 'Luna Chat', description: 'Mit Luna chatten', icon: 'ðŸ’¬', category: 'Navigation', action: () => loadModule('luna-chat') },
+      { id: 'go-memory', label: 'Memories', description: 'Memory Explorer Ã¶ffnen', icon: 'ðŸ§ ', category: 'Navigation', action: () => loadModule('memory-explorer') },
     ];
 
     function openCommandPalette() {
@@ -1573,11 +1173,11 @@
 
     // Show keyboard shortcut hint
     setTimeout(() => {
-      console.log('⌨️ Keyboard Shortcuts aktiviert:');
-      console.log('  Ctrl+K - Command Palette öffnen');
+      console.log('âŒ¨ï¸ Keyboard Shortcuts aktiviert:');
+      console.log('  Ctrl+K - Command Palette Ã¶ffnen');
       console.log('  Ctrl+/ - Schnellsuche');
       console.log('  Ctrl+1-9 - Schneller Modul-Zugriff');
-      console.log('  ESC - Command Palette schließen');
+      console.log('  ESC - Command Palette schlieÃŸen');
     }, 1000);
   </script>
   <script>
@@ -1600,7 +1200,7 @@
           if (!r.ok) throw new Error(`HTTP ${r.status}`);
           const data = await r.json();
           dot.classList.remove('disconnected');
-          text.textContent = `OK · ${data.toolCount ?? '?'} Tools`;
+          text.textContent = `OK Â· ${data.toolCount ?? '?'} Tools`;
           text.title = `${base}`;
         } catch (e) {
           dot.classList.add('disconnected');
@@ -1624,3 +1224,5 @@
   </script>
 </body>
 </html>
+
+

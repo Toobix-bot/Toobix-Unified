@@ -1,17 +1,28 @@
 // Toobix Unified Dashboard - Complete JavaScript
-// API Base URLs
-const API = {
-  daemon: 'http://localhost:9999',
-  bridge: 'http://localhost:3001',
-  moments: 'http://localhost:9994',
-  reality: 'http://localhost:9992',
-  expression: 'http://localhost:9991',
-  memory: 'http://localhost:9995',
-  analytics: 'http://localhost:9996',
-  tasks: 'http://localhost:9997',
-  sandbox: 'http://localhost:3003',
-  storyIdle: 'http://localhost:3004'
-};
+// API Base URLs (sourced from config/api-config.js)
+const API = (typeof window !== 'undefined' && typeof window.getToobixApiConfig === 'function')
+  ? window.getToobixApiConfig()
+  : (() => {
+      const defaults = {
+        daemon: 'http://localhost:9999',
+        bridge: 'http://localhost:3001',
+        moments: 'http://localhost:9994',
+        momentStream: 'http://localhost:9994',
+        reality: 'http://localhost:9992',
+        expression: 'http://localhost:9991',
+        memory: 'http://localhost:9995',
+        analytics: 'http://localhost:9996',
+        tasks: 'http://localhost:9997',
+        sandbox: 'http://localhost:3003',
+        storyIdle: 'http://localhost:3004'
+      };
+      if (typeof window !== 'undefined') {
+        window.TOOBIX_CONFIG = window.TOOBIX_CONFIG || {};
+        window.TOOBIX_CONFIG.API = window.TOOBIX_CONFIG.API || defaults;
+      }
+      console.warn('[Toobix] Fallback API-Konfiguration aktiv – config/api-config.js wurde nicht geladen.');
+      return defaults;
+    })();
 
 // Global State
 let currentView = 'dashboard';
@@ -122,7 +133,7 @@ function navigateTo(view) {
 // Achievement Tracking Helper
 async function trackAchievement(eventType, value = 1) {
   try {
-    await fetch('http://localhost:9998/track', {
+    await fetch(`${API.achievements}/track`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ event: eventType, value })
@@ -2593,8 +2604,8 @@ async function renderAchievements() {
   
   try {
     const [achResponse, statsResponse] = await Promise.all([
-      fetch('http://localhost:9998/achievements'),
-      fetch('http://localhost:9998/stats')
+      fetch(`${API.achievements}/achievements`),
+      fetch(`${API.achievements}/stats`)
     ]);
     
     if (achResponse.ok) {
@@ -3697,14 +3708,14 @@ async function renderBlockWorld() {
 
 async function loadBlockWorld() {
   try {
-    const response = await fetch('http://localhost:9993/world');
+    const response = await fetch(`${API.blockworld}/world`);
     if (!response.ok) throw new Error('Failed to load world');
     
     blockWorldData = await response.json();
     console.log('✅ BlockWorld loaded:', blockWorldData.size);
     
     // Load AI player
-    const playerResponse = await fetch('http://localhost:9993/player/ai-agent');
+    const playerResponse = await fetch(`${API.blockworld}/player/ai-agent`);
     if (playerResponse.ok) {
       const player = await playerResponse.json();
       document.getElementById('aiPosition').textContent = `${Math.floor(player.x)}, ${Math.floor(player.y)}, ${Math.floor(player.z)}`;
@@ -3958,7 +3969,7 @@ function setupBlockWorldControls() {
 
 async function breakBlockAt(x, y, z) {
   try {
-    const response = await fetch(`http://localhost:9993/block/${x}/${y}/${z}`);
+    const response = await fetch(`${API.blockworld}/block/${x}/${y}/${z}`);
     if (!response.ok) return;
     
     const data = await response.json();
@@ -3968,7 +3979,7 @@ async function breakBlockAt(x, y, z) {
     }
     
     // Break block
-    await fetch('http://localhost:9993/block', {
+    await fetch(`${API.blockworld}/block`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ x, y, z, type: 0, playerId: 'human-player' })
@@ -3988,7 +3999,7 @@ async function breakBlockAt(x, y, z) {
 
 async function placeBlockAt(x, y, z, type) {
   try {
-    const response = await fetch(`http://localhost:9993/block/${x}/${y}/${z}`);
+    const response = await fetch(`${API.blockworld}/block/${x}/${y}/${z}`);
     if (!response.ok) return;
     
     const data = await response.json();
@@ -3998,7 +4009,7 @@ async function placeBlockAt(x, y, z, type) {
     }
     
     // Place block
-    await fetch('http://localhost:9993/block', {
+    await fetch(`${API.blockworld}/block`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ x, y, z, type, playerId: 'human-player' })
@@ -4027,7 +4038,7 @@ async function startBlockWorldAI() {
     showToast('🤖 AI Agent wird gestartet...', 'info');
     document.getElementById('aiGoal').textContent = 'Initializing...';
     
-    const response = await fetch('http://localhost:9990/start', {
+    const response = await fetch(`${API.blockworldAI}/start`, {
       method: 'POST'
     });
     
@@ -4050,7 +4061,7 @@ async function pollAIStatus() {
   if (currentView !== 'blockworld') return;
   
   try {
-    const response = await fetch('http://localhost:9990/status');
+    const response = await fetch(`${API.blockworldAI}/status`);
     if (response.ok) {
       const status = await response.json();
       
@@ -4071,7 +4082,7 @@ async function pollAIStatus() {
 
 async function loadBlockUpdatesLog() {
   try {
-    const response = await fetch('http://localhost:9993/updates?limit=20');
+    const response = await fetch(`${API.blockworld}/updates?limit=20`);
     if (!response.ok) return;
     
     const updates = await response.json();

@@ -1,4 +1,4 @@
-// ========================================
+﻿// ========================================
 // TOOBIX UNIVERSE - APP LOGIC
 // Vanilla JS SPA with routing & state
 // ========================================
@@ -100,7 +100,7 @@ class GameStore {
       seed,
       day: 1,
       stats: this.getDefaultStats(),
-      log: [`🎮 Run gestartet (seed: ${seed.substring(0, 8)})`]
+      log: [`ðŸŽ® Run gestartet (seed: ${seed.substring(0, 8)})`]
     }
     
     this.save.runs.push(run)
@@ -118,7 +118,7 @@ class GameStore {
     if (!run) return
     
     run.day += 1
-    run.log.push(decision || '⏭️ Weiter')
+    run.log.push(decision || 'â­ï¸ Weiter')
     
     // Random stat drift (-0.5 to +0.5)
     Object.keys(run.stats).forEach(key => {
@@ -271,7 +271,7 @@ class Router {
       // Show loading state
       document.getElementById('pageContent').innerHTML = `
         <div style="text-align: center; padding: 4rem; color: var(--text-secondary)">
-          <div style="font-size: 3rem; margin-bottom: 1rem">⏳</div>
+          <div style="font-size: 3rem; margin-bottom: 1rem">â³</div>
           <p>Laden...</p>
         </div>
       `
@@ -333,14 +333,14 @@ class Router {
    */
   async checkSystemStatus() {
     try {
-      const res = await fetch('http://localhost:3337/health')
+      const res = await fetch(${getBridgeBase()}/health)
       const data = await res.json()
       
       const badge = document.getElementById('systemStatus')
       if (badge) {
         badge.innerHTML = `
           <span class="status-dot"></span>
-          <span>System OK · ${data.tools || 0} Tools</span>
+          <span>System OK Â· ${data.tools || 0} Tools</span>
         `
       }
     } catch (err) {
@@ -367,7 +367,7 @@ class Router {
  */
 function renderStatBar(stat, value) {
   const labels = {
-    qualitaet: 'Qualität',
+    qualitaet: 'QualitÃ¤t',
     dauer: 'Dauer',
     freude: 'Freude',
     sinn: 'Sinn',
@@ -406,8 +406,8 @@ function renderDashboard() {
       <!-- ECHO-REALM Stats Card -->
       <div class="card" style="grid-column: span 2">
         <div class="card-header">
-          <h3 class="card-title">⚡ ECHO-REALM</h3>
-          <span class="badge">8 Kräfte</span>
+          <h3 class="card-title">âš¡ ECHO-REALM</h3>
+          <span class="badge">8 KrÃ¤fte</span>
         </div>
         <div class="card-body">
           ${Object.entries(stats).map(([key, val]) => 
@@ -419,13 +419,13 @@ function renderDashboard() {
       <!-- Quests heute -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">⚔️ Quests Heute</h3>
+          <h3 class="card-title">âš”ï¸ Quests Heute</h3>
         </div>
         <div class="card-body">
           ${quests.map(q => `
             <div class="flex justify-between items-center mb-1">
               <span style="color: var(--text-secondary); font-size: 0.9rem">
-                ${q.done ? '✅' : '⬜'} ${q.title}
+                ${q.done ? 'âœ…' : 'â¬œ'} ${q.title}
               </span>
               <span class="badge badge-info">${q.xp} XP</span>
             </div>
@@ -440,7 +440,7 @@ function renderDashboard() {
       ${run ? `
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">🎮 Aktueller Run</h3>
+            <h3 class="card-title">ðŸŽ® Aktueller Run</h3>
             <span class="badge badge-success">Tag ${run.day}</span>
           </div>
           <div class="card-body">
@@ -458,7 +458,7 @@ function renderDashboard() {
       ` : `
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">🎮 Kein Run aktiv</h3>
+            <h3 class="card-title">ðŸŽ® Kein Run aktiv</h3>
           </div>
           <div class="card-body">
             <p style="color: var(--text-secondary)">
@@ -474,7 +474,7 @@ function renderDashboard() {
       <!-- Story Status Widget -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">📖 Story</h3>
+          <h3 class="card-title">ðŸ“– Story</h3>
         </div>
         <div class="card-body">
           <div class="flex justify-between mb-1">
@@ -498,7 +498,7 @@ function renderDashboard() {
       <!-- System Status -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">⚙️ System</h3>
+          <h3 class="card-title">âš™ï¸ System</h3>
         </div>
         <div class="card-body">
           <div class="flex justify-between mb-1">
@@ -530,7 +530,7 @@ function renderRuns() {
     return `
       <div class="card text-center" style="max-width: 600px; margin: 2rem auto">
         <div class="card-body">
-          <h2 style="font-size: 2rem; margin-bottom: 1rem">🎮</h2>
+          <h2 style="font-size: 2rem; margin-bottom: 1rem">ðŸŽ®</h2>
           <h3 class="card-title">Kein aktiver Run</h3>
           <p style="color: var(--text-secondary); margin: 1rem 0">
             Starte einen neuen Run um deine endlose Reise zu beginnen.
@@ -547,7 +547,7 @@ function renderRuns() {
       <!-- Run Control -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">🎮 Run Control</h3>
+          <h3 class="card-title">ðŸŽ® Run Control</h3>
           <span class="badge badge-success">Tag ${run.day}</span>
         </div>
         <div class="card-body">
@@ -555,8 +555,8 @@ function renderRuns() {
             Seed: <code>${run.seed}</code>
           </p>
           <div class="flex gap-1">
-            <button id="tickBtn" class="btn btn-primary">⏭️ Nächster Tick</button>
-            <button class="btn">⏸️ Pause</button>
+            <button id="tickBtn" class="btn btn-primary">â­ï¸ NÃ¤chster Tick</button>
+            <button class="btn">â¸ï¸ Pause</button>
           </div>
         </div>
       </div>
@@ -564,7 +564,7 @@ function renderRuns() {
       <!-- Run Stats -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">📊 Stats</h3>
+          <h3 class="card-title">ðŸ“Š Stats</h3>
         </div>
         <div class="card-body">
           ${Object.entries(run.stats).slice(0, 4).map(([key, val]) =>
@@ -576,7 +576,7 @@ function renderRuns() {
       <!-- Event Log -->
       <div class="card" style="grid-column: span 2">
         <div class="card-header">
-          <h3 class="card-title">📜 Event Log</h3>
+          <h3 class="card-title">ðŸ“œ Event Log</h3>
         </div>
         <div class="card-body">
           ${run.log.slice(-10).reverse().map(entry => `
@@ -602,7 +602,7 @@ function renderQuests() {
       ${quests.map(q => `
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">${q.done ? '✅' : '⚔️'} ${q.title}</h3>
+            <h3 class="card-title">${q.done ? 'âœ…' : 'âš”ï¸'} ${q.title}</h3>
             <span class="badge badge-${q.kind === 'fokus' ? 'info' : q.kind === 'pflege' ? 'success' : 'warning'}">
               ${q.kind}
             </span>
@@ -615,7 +615,7 @@ function renderQuests() {
           </div>
           ${!q.done ? `
             <div class="card-footer">
-              <button data-quest-complete="${q.id}" class="btn btn-sm btn-success">Abschließen</button>
+              <button data-quest-complete="${q.id}" class="btn btn-sm btn-success">AbschlieÃŸen</button>
             </div>
           ` : ''}
         </div>
@@ -635,12 +635,12 @@ async function renderStory() {
   
   try {
     // Fetch stats
-    const statsRes = await fetch('http://localhost:3337/stats')
+    const statsRes = await fetch(${getBridgeBase()}/stats)
     const stats = await statsRes.json()
     storyStats = stats.story
     
     // Fetch story state
-    const stateRes = await fetch('http://localhost:3337/mcp', {
+    const stateRes = await fetch(${getBridgeBase()}/mcp, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -659,7 +659,7 @@ async function renderStory() {
     }
     
     // Fetch story events
-    const eventsRes = await fetch('http://localhost:3337/mcp', {
+    const eventsRes = await fetch(${getBridgeBase()}/mcp, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -685,7 +685,7 @@ async function renderStory() {
     return `
       <div class="card text-center" style="max-width: 600px; margin: 2rem auto">
         <div class="card-body">
-          <h2 style="font-size: 3rem; margin-bottom: 1rem">📖</h2>
+          <h2 style="font-size: 3rem; margin-bottom: 1rem">ðŸ“–</h2>
           <h3 class="card-title">Story Engine Offline</h3>
           <p style="color: var(--text-secondary); margin-top: 1rem">
             Bridge Service nicht erreichbar.
@@ -706,8 +706,8 @@ async function renderStory() {
       <!-- Story Status with XP Progress -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">📖 Story Progress</h3>
-          <button class="btn btn-sm" onclick="window.location.reload()" title="Refresh">🔄</button>
+          <h3 class="card-title">ðŸ“– Story Progress</h3>
+          <button class="btn btn-sm" onclick="window.location.reload()" title="Refresh">ðŸ”„</button>
         </div>
         <div class="card-body">
           <div class="flex justify-between mb-1">
@@ -739,7 +739,7 @@ async function renderStory() {
       <!-- Resources with Progress Bars -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">💎 Resources</h3>
+          <h3 class="card-title">ðŸ’Ž Resources</h3>
         </div>
         <div class="card-body">
           ${Object.entries(storyState.resources || {})
@@ -769,7 +769,7 @@ async function renderStory() {
       <!-- Companions & Buffs -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">👥 Begleiter & Buffs</h3>
+          <h3 class="card-title">ðŸ‘¥ Begleiter & Buffs</h3>
         </div>
         <div class="card-body">
           ${(storyState.companions || []).length > 0 ? `
@@ -786,7 +786,7 @@ async function renderStory() {
               <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem">Aktive Buffs:</p>
               ${storyState.buffs.map(buff => `
                 <div style="background: var(--bg-secondary); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.25rem; font-size: 0.85rem">
-                  <span style="color: var(--success)">✨ ${buff.name || buff}</span>
+                  <span style="color: var(--success)">âœ¨ ${buff.name || buff}</span>
                 </div>
               `).join('')}
             </div>
@@ -807,7 +807,7 @@ async function renderStory() {
       ${(storyState.options || []).length > 0 ? `
         <div class="card" style="grid-column: span 3">
           <div class="card-header">
-            <h3 class="card-title">🎯 Nächste Schritte</h3>
+            <h3 class="card-title">ðŸŽ¯ NÃ¤chste Schritte</h3>
             <span class="badge">${storyState.options.length} Options</span>
           </div>
           <div class="card-body">
@@ -822,7 +822,7 @@ async function renderStory() {
                   </div>
                   <div class="card-body">
                     <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.75rem">
-                      ${opt.rationale || opt.description || 'Wähle diese Option'}
+                      ${opt.rationale || opt.description || 'WÃ¤hle diese Option'}
                     </p>
                     ${opt.expected ? `
                       <div style="font-size: 0.75rem; color: var(--text-tertiary)">
@@ -860,7 +860,7 @@ async function renderStory() {
       ${storyEvents.length > 0 ? `
         <div class="card" style="grid-column: span 3">
           <div class="card-header">
-            <h3 class="card-title">📜 Event Timeline</h3>
+            <h3 class="card-title">ðŸ“œ Event Timeline</h3>
             <span class="badge">${storyEvents.length} Events</span>
           </div>
           <div class="card-body">
@@ -870,7 +870,7 @@ async function renderStory() {
               
               ${storyEvents.map((evt, idx) => {
                 const timeAgo = evt.timestamp ? new Date(evt.timestamp).toLocaleString('de-DE') : 'Vor kurzem'
-                const icon = evt.type === 'choice' ? '🎯' : evt.type === 'level_up' ? '⭐' : evt.type === 'resource' ? '💎' : '📝'
+                const icon = evt.type === 'choice' ? 'ðŸŽ¯' : evt.type === 'level_up' ? 'â­' : evt.type === 'resource' ? 'ðŸ’Ž' : 'ðŸ“'
                 const color = evt.type === 'choice' ? 'var(--primary)' : evt.type === 'level_up' ? 'var(--success)' : 'var(--info)'
                 
                 return `
@@ -939,11 +939,11 @@ document.addEventListener('DOMContentLoaded', () => {
   router.route('#/runs', renderRuns)
   router.route('#/quests', renderQuests)
   router.route('#/story', renderStory)
-  router.route('#/skills', () => renderPlaceholder('Skills', '🌟'))
-  router.route('#/items', () => renderPlaceholder('Items', '🎒'))
-  router.route('#/allies', () => renderPlaceholder('Allies', '👥'))
-  router.route('#/archive', () => renderPlaceholder('Archive', '📦'))
-  router.route('#/settings', () => renderPlaceholder('Settings', '⚙️'))
+  router.route('#/skills', () => renderPlaceholder('Skills', 'ðŸŒŸ'))
+  router.route('#/items', () => renderPlaceholder('Items', 'ðŸŽ’'))
+  router.route('#/allies', () => renderPlaceholder('Allies', 'ðŸ‘¥'))
+  router.route('#/archive', () => renderPlaceholder('Archive', 'ðŸ“¦'))
+  router.route('#/settings', () => renderPlaceholder('Settings', 'âš™ï¸'))
   
   // Theme toggle
   document.getElementById('themeToggle')?.addEventListener('click', () => {
@@ -951,7 +951,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const current = html.dataset.theme
     const next = current === 'dark' ? 'light' : 'dark'
     html.dataset.theme = next
-    document.getElementById('themeToggle').textContent = next === 'dark' ? '🌙' : '☀️'
+    document.getElementById('themeToggle').textContent = next === 'dark' ? 'ðŸŒ™' : 'â˜€ï¸'
   })
   
   // Quick action button
@@ -977,7 +977,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Story interaction functions (global)
 window.chooseStoryOption = async function(optionId) {
   try {
-    const res = await fetch('http://localhost:3337/mcp', {
+    const res = await fetch(${getBridgeBase()}/mcp, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -993,18 +993,18 @@ window.chooseStoryOption = async function(optionId) {
     const data = await res.json()
     if (data.result?.content?.[0]?.text) {
       const result = JSON.parse(data.result.content[0].text)
-      alert(`✨ ${result.message || 'Auswahl getroffen!'}`)
+      alert(`âœ¨ ${result.message || 'Auswahl getroffen!'}`)
       window.location.reload() // Refresh to show new state
     }
   } catch (err) {
     console.error('Story choice failed:', err)
-    alert('❌ Fehler beim Speichern der Auswahl')
+    alert('âŒ Fehler beim Speichern der Auswahl')
   }
 }
 
 window.refreshStoryOptions = async function() {
   try {
-    const res = await fetch('http://localhost:3337/mcp', {
+    const res = await fetch(${getBridgeBase()}/mcp, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1020,11 +1020,26 @@ window.refreshStoryOptions = async function() {
     const data = await res.json()
     if (data.result?.content?.[0]?.text) {
       const result = JSON.parse(data.result.content[0].text)
-      alert(`✨ ${result.generated || 0} neue Optionen generiert!`)
+      alert(`âœ¨ ${result.generated || 0} neue Optionen generiert!`)
       window.location.reload()
     }
   } catch (err) {
     console.error('Story refresh failed:', err)
-    alert('❌ Fehler beim Generieren von Optionen')
+    alert('âŒ Fehler beim Generieren von Optionen')
   }
 }
+// Central API accessor (injected by config/api-config.js)
+const API = (typeof window !== 'undefined' && typeof window.getToobixApiConfig === 'function')
+  ? window.getToobixApiConfig()
+  : ((typeof window !== 'undefined' && window.TOOBIX_CONFIG && window.TOOBIX_CONFIG.API) || {});
+
+function getBridgeBase() {
+  try {
+    const saved = (typeof localStorage !== 'undefined') ? localStorage.getItem('BRIDGE_URL') : '';
+    const base = (saved && saved.trim()) ? saved.replace(/\/$/, '') : (API.bridge || 'http://localhost:3337');
+    return String(base).replace(/\/$/, '');
+  } catch {
+    return (API.bridge || 'http://localhost:3337');
+  }
+}
+

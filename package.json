@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "bun run dev:all",
     "dev:all": "bun run --filter=@toobix/bridge dev",
-    "dev:web": "cd apps/web && python -m http.server 3000",
+    "dev:web": "bun run --cwd apps/web dev",
     "dev:bridge": "bun run packages/bridge/src/index.ts",
     "dev:api": "bun run scripts/api-server.ts",
     "dev:diary": "bun run scripts/luna-chatbot.ts",
@@ -25,9 +25,9 @@
     
     "build": "bun run build:packages && bun run build:apps",
     "build:packages": "bun run --filter='./packages/*' build",
-    "build:apps": "echo 'Apps built (static HTML)'",
+    "build:apps": "bun run --cwd apps/web build",
     "build:core": "bun run --cwd packages/core build",
-    "build:web": "echo 'Web app is static HTML'",
+    "build:web": "bun run --cwd apps/web build",
     
     "test": "bun test",
     "test:watch": "bun test --watch",

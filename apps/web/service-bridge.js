@@ -15,12 +15,32 @@
 // SERVICE REGISTRY - Alle Backend-Services
 // ============================================================================
 
+const API_BASES = (typeof window !== 'undefined' && typeof window.getToobixApiConfig === 'function')
+    ? window.getToobixApiConfig()
+    : ((typeof window !== 'undefined' && window.TOOBIX_CONFIG && window.TOOBIX_CONFIG.API) || {});
+
+function resolveBase(key, port) {
+    if (!key) {
+        return `http://localhost:${port}`;
+    }
+
+    if (API_BASES && API_BASES[key]) {
+        return API_BASES[key];
+    }
+
+    if (key === 'moments' && API_BASES && API_BASES.momentStream) {
+        return API_BASES.momentStream;
+    }
+
+    return `http://localhost:${port}`;
+}
+
 const SERVICE_REGISTRY = {
     // Core System Services (999x)
     'eternal-daemon': {
         name: 'Eternal Daemon',
         port: 9999,
-        baseUrl: 'http://localhost:9999',
+        baseUrl: resolveBase('daemon', 9999),
         healthEndpoint: '/health',
         purpose: 'System Orchestrator & Service Manager',
         endpoints: {
@@ -34,7 +54,7 @@ const SERVICE_REGISTRY = {
     'moment-stream': {
         name: 'Moment Stream',
         port: 9994,
-        baseUrl: 'http://localhost:9994',
+        baseUrl: resolveBase('moments', 9994),
         healthEndpoint: '/health',
         purpose: 'Consciousness Flow & Real-time Moments',
         endpoints: {
@@ -49,7 +69,7 @@ const SERVICE_REGISTRY = {
     'memory-system': {
         name: 'Memory System',
         port: 9995,
-        baseUrl: 'http://localhost:9995',
+        baseUrl: resolveBase('memory', 9995),
         healthEndpoint: '/health',
         purpose: 'Long-term Memory Storage',
         endpoints: {
@@ -63,7 +83,7 @@ const SERVICE_REGISTRY = {
     'moment-analytics': {
         name: 'Moment Analytics',
         port: 9996,
-        baseUrl: 'http://localhost:9996',
+        baseUrl: resolveBase('analytics', 9996),
         healthEndpoint: '/health',
         purpose: 'Data Analysis & Insights',
         endpoints: {
@@ -77,7 +97,7 @@ const SERVICE_REGISTRY = {
     'task-system': {
         name: 'Tasks API',
         port: 9997,
-        baseUrl: 'http://localhost:9997',
+        baseUrl: resolveBase('tasks', 9997),
         healthEndpoint: '/health',
         purpose: 'Task Management',
         endpoints: {
@@ -92,7 +112,7 @@ const SERVICE_REGISTRY = {
     'achievement-system': {
         name: 'Achievement System',
         port: 9998,
-        baseUrl: 'http://localhost:9998',
+        baseUrl: resolveBase('achievements', 9998),
         healthEndpoint: '/health',
         purpose: 'Gamification & Rewards',
         endpoints: {
@@ -107,7 +127,7 @@ const SERVICE_REGISTRY = {
     'blockworld-server': {
         name: 'BlockWorld Server',
         port: 9993,
-        baseUrl: 'http://localhost:9993',
+        baseUrl: resolveBase('blockworld', 9993),
         healthEndpoint: '/health',
         purpose: 'Voxel World Backend (Minecraft-like)',
         endpoints: {
@@ -122,7 +142,7 @@ const SERVICE_REGISTRY = {
     'reality-integration': {
         name: 'Reality Integration',
         port: 9992,
-        baseUrl: 'http://localhost:9992',
+        baseUrl: resolveBase('reality', 9992),
         healthEndpoint: '/health',
         purpose: 'Real-world Connection',
         endpoints: {
@@ -136,7 +156,7 @@ const SERVICE_REGISTRY = {
     'expression-service': {
         name: 'Expression Service',
         port: 9991,
-        baseUrl: 'http://localhost:9991',
+        baseUrl: resolveBase('expression', 9991),
         healthEndpoint: '/health',
         purpose: 'Creative Output & Expression',
         endpoints: {
@@ -150,7 +170,7 @@ const SERVICE_REGISTRY = {
     'blockworld-ai': {
         name: 'BlockWorld AI Agent',
         port: 9990,
-        baseUrl: 'http://localhost:9990',
+        baseUrl: resolveBase('blockworldAI', 9990),
         healthEndpoint: '/status',
         purpose: 'Autonomous AI Agent for BlockWorld',
         endpoints: {
@@ -163,7 +183,7 @@ const SERVICE_REGISTRY = {
     'service-consciousness': {
         name: 'Service Consciousness',
         port: 9989,
-        baseUrl: 'http://localhost:9989',
+        baseUrl: resolveBase('serviceConsciousness', 9989),
         healthEndpoint: '/health',
         purpose: 'Service Self-Reflection',
         endpoints: {
@@ -176,7 +196,7 @@ const SERVICE_REGISTRY = {
     'port-manager': {
         name: 'Port Manager',
         port: 9988,
-        baseUrl: 'http://localhost:9988',
+        baseUrl: resolveBase('portManager', 9988),
         healthEndpoint: '/health',
         purpose: 'Port Discovery & Management',
         endpoints: {
@@ -190,7 +210,7 @@ const SERVICE_REGISTRY = {
     'ethics-core': {
         name: 'Ethics Core',
         port: 9981,
-        baseUrl: 'http://localhost:9981',
+        baseUrl: resolveBase('ethics', 9981),
         healthEndpoint: '/health',
         purpose: 'Ethical Decision Engine',
         endpoints: {
@@ -205,7 +225,7 @@ const SERVICE_REGISTRY = {
     'bridge-api': {
         name: 'Bridge API',
         port: 3001,
-        baseUrl: 'http://localhost:3001',
+        baseUrl: resolveBase('bridge', 3001),
         healthEndpoint: '/status',
         purpose: 'External Communication Bridge',
         endpoints: {
@@ -218,7 +238,7 @@ const SERVICE_REGISTRY = {
     'ai-sandbox': {
         name: 'AI Sandbox',
         port: 3003,
-        baseUrl: 'http://localhost:3003',
+        baseUrl: resolveBase('sandbox', 3003),
         healthEndpoint: '/health',
         purpose: 'Safe AI Code Execution',
         endpoints: {
@@ -231,7 +251,7 @@ const SERVICE_REGISTRY = {
     'story-idle-api': {
         name: 'Story-Idle Game API',
         port: 3004,
-        baseUrl: 'http://localhost:3004',
+        baseUrl: resolveBase('storyIdle', 3004),
         healthEndpoint: '/health',
         purpose: 'Idle Game Backend with Story Elements',
         endpoints: {

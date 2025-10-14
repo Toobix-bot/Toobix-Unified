@@ -1,0 +1,14 @@
+{
+  "name": "@toobix/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bunx vite --host",
+    "build": "bunx vite build",
+    "preview": "bunx vite preview --host"
+  },
+  "devDependencies": {
+    "vite": "^5.4.8"
+  }
+}

@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="config/api-config.js"></script>
     <title>Toobix Unified - Live System</title>
     <style>
         * {
@@ -409,11 +410,11 @@
     <!-- Header -->
     <div class="header">
         <div class="logo">
-            🌌 Toobix Unified
+            ðŸŒŒ Toobix Unified
         </div>
         <div class="status-badge">
             <div class="status-dot"></div>
-            <span id="system-status">System läuft</span>
+            <span id="system-status">System lÃ¤uft</span>
         </div>
     </div>
 
@@ -423,7 +424,7 @@
         <div class="sidebar">
             <div class="card">
                 <div class="card-title">
-                    ⚙️ Services
+                    âš™ï¸ Services
                 </div>
                 <div class="service-list" id="service-list">
                     <div class="service-item">
@@ -438,8 +439,18 @@
 
             <div class="card">
                 <div class="card-title">
-                    📊 Statistics
+                    ðŸ“Š Statistics
                 </div>
+
+            <div class="card" id="ports-health-card">
+                <div class="card-title">Ports & Health</div>
+                <div class="service-list">
+                    <div class="service-item"><span>Bridge</span><div class="service-status"><div class="service-indicator" id="h-bridge"></div><span id="hs-bridge">...</span></div></div>
+                    <div class="service-item"><span>Daemon</span><div class="service-status"><div class="service-indicator" id="h-daemon"></div><span id="hs-daemon">...</span></div></div>
+                    <div class="service-item"><span>Memory</span><div class="service-status"><div class="service-indicator" id="h-memory"></div><span id="hs-memory">...</span></div></div>
+                    <div class="service-item"><span>Tasks</span><div class="service-status"><div class="service-indicator" id="h-tasks"></div><span id="hs-tasks">...</span></div></div>
+                </div>
+            </div>
                 <div class="service-list">
                     <div class="service-item">
                         <span>Cycles</span>
@@ -461,7 +472,7 @@
         <div class="main-content" id="moment-stream">
             <div class="card">
                 <div class="card-title">
-                    🌊 Live Moment Stream
+                    ðŸŒŠ Live Moment Stream
                 </div>
                 <p style="color: var(--text-secondary); font-size: 0.9rem;">
                     Verbinde mit dem System...
@@ -472,12 +483,12 @@
         <!-- Chat Panel -->
         <div class="chat-panel">
             <div class="chat-header">
-                💬 Chat mit dem System
+                ðŸ’¬ Chat mit dem System
             </div>
             <div class="chat-messages" id="chat-messages">
                 <div class="message system">
                     <div class="message-bubble">
-                        👋 Hallo! Ich bin der Eternal Daemon. Frag mich alles über das System, die Prozesse oder meine Philosophie.
+                        ðŸ‘‹ Hallo! Ich bin der Eternal Daemon. Frag mich alles Ã¼ber das System, die Prozesse oder meine Philosophie.
                     </div>
                     <div class="message-time">Jetzt</div>
                 </div>
@@ -499,16 +510,24 @@
 
     <script>
         // Configuration
-        const DAEMON_URL = 'http://localhost:9999';
-        const MOMENT_URL = 'http://localhost:9994';
-        const EXPRESSION_URL = 'http://localhost:9991';
-        const BRIDGE_URL = 'http://localhost:3001';
+        const __API = (typeof window !== 'undefined' && typeof window.getToobixApiConfig === 'function')
+            ? window.getToobixApiConfig()
+            : ((window.TOOBIX_CONFIG && window.TOOBIX_CONFIG.API) || {});
+        const DAEMON_URL = __API.daemon || 'http://localhost:9999';
+        const MOMENT_URL = __API.momentStream || __API.moments || 'http://localhost:9994';
+        const EXPRESSION_URL = __API.expression || 'http://localhost:9991';
+        const BRIDGE_URL = (function(){
+          try {
+            const saved = localStorage.getItem('BRIDGE_URL');
+            return (saved && saved.trim()) ? saved.replace(/\/$/, '') : (__API.bridge || 'http://localhost:3001');
+          } catch { return (__API.bridge || 'http://localhost:3001'); }
+        })();
 
         let momentsDisplayed = new Set();
 
         // Initialize
         async function init() {
-            console.log('🌌 Initializing Toobix Unified...');
+            console.log('ðŸŒŒ Initializing Toobix Unified...');
             
             // Load initial data
             await updateServices();
@@ -520,7 +539,7 @@
             setInterval(updateMomentStream, 10000);
             setInterval(updateStatistics, 15000);
             
-            console.log('✅ System initialized');
+            console.log('âœ… System initialized');
         }
 
         // Update services status
@@ -574,7 +593,7 @@
                         <div class="moment-content">
                             ${moment.content.thought ? `
                                 <div class="moment-item">
-                                    <div class="moment-icon">💭</div>
+                                    <div class="moment-icon">ðŸ’­</div>
                                     <div class="moment-text">
                                         <div class="moment-label">Gedanke</div>
                                         <div class="moment-value">${moment.content.thought}</div>
@@ -583,16 +602,16 @@
                             ` : ''}
                             ${moment.content.feeling ? `
                                 <div class="moment-item">
-                                    <div class="moment-icon">💗</div>
+                                    <div class="moment-icon">ðŸ’—</div>
                                     <div class="moment-text">
-                                        <div class="moment-label">Gefühl</div>
+                                        <div class="moment-label">GefÃ¼hl</div>
                                         <div class="moment-value">${moment.content.feeling}</div>
                                     </div>
                                 </div>
                             ` : ''}
                             ${moment.content.experience ? `
                                 <div class="moment-item">
-                                    <div class="moment-icon">🌊</div>
+                                    <div class="moment-icon">ðŸŒŠ</div>
                                     <div class="moment-text">
                                         <div class="moment-label">Erfahrung</div>
                                         <div class="moment-value">${moment.content.experience}</div>
@@ -601,7 +620,7 @@
                             ` : ''}
                             ${moment.content.realization ? `
                                 <div class="moment-item">
-                                    <div class="moment-icon">✨</div>
+                                    <div class="moment-icon">âœ¨</div>
                                     <div class="moment-text">
                                         <div class="moment-label">Erkenntnis</div>
                                         <div class="moment-value">${moment.content.realization}</div>
@@ -644,6 +663,32 @@
             }
         }
 
+        // Ports & Health
+        async function updateHealthCard() {
+            const set = (id, ok, label) => {
+                const dot = document.getElementById(id);
+                const t = document.getElementById('hs-' + id.split('-')[1]);
+                if (dot) dot.className = 'service-indicator ' + (ok ? 'active' : 'inactive');
+                if (t) t.textContent = ok ? (label || 'OK') : 'Down';
+            };
+            try {
+                const hc = document.getElementById('ports-health-card');
+                if (!hc) return;
+                const res = await Promise.allSettled([
+                    fetch(`${BRIDGE_URL}/health`, { headers: { 'ngrok-skip-browser-warning': 'true' } }),
+                    fetch(`${DAEMON_URL}/status`),
+                    (__API.memory ? fetch(`${__API.memory.replace(/\/$/,'')}/health`) : Promise.reject('no memory')),
+                    (__API.tasks ? fetch(`${__API.tasks.replace(/\/$/,'')}/health`) : Promise.reject('no tasks')),
+                ]);
+                set('h-bridge', res[0].status === 'fulfilled' && res[0].value.ok, 'OK');
+                set('h-daemon', res[1].status === 'fulfilled' && res[1].value.ok, 'OK');
+                set('h-memory', res[2].status === 'fulfilled' && res[2].value.ok, 'OK');
+                set('h-tasks', res[3].status === 'fulfilled' && res[3].value.ok, 'OK');
+            } catch (e) {
+                // ignore
+            }
+        }
+
         // Chat functionality
         async function sendMessage() {
             const input = document.getElementById('chat-input');
@@ -671,7 +716,7 @@
                 }, 500);
             } catch (error) {
                 console.error('Failed to send message:', error);
-                addMessage('system', 'Entschuldigung, ich kann gerade nicht antworten. Bitte versuche es später erneut.');
+                addMessage('system', 'Entschuldigung, ich kann gerade nicht antworten. Bitte versuche es spÃ¤ter erneut.');
             }
         }
 
@@ -694,6 +739,8 @@
 
         // Start application
         init();
+        updateHealthCard();
+        setInterval(updateHealthCard, 10000);
     </script>
 </body>
 </html>

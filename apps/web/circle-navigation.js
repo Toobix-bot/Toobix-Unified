@@ -1,6 +1,21 @@
 // ⚡ TOOBIX CIRCLE NAVIGATION - Fractal System
 // "Each point can become its own universe"
 
+// Central API accessor (injected by config/api-config.js)
+const API = (typeof window !== 'undefined' && typeof window.getToobixApiConfig === 'function')
+  ? window.getToobixApiConfig()
+  : ((typeof window !== 'undefined' && window.TOOBIX_CONFIG && window.TOOBIX_CONFIG.API) || {});
+
+function getBridgeBase() {
+  try {
+    const saved = (typeof localStorage !== 'undefined') ? localStorage.getItem('BRIDGE_URL') : '';
+    const base = (saved && saved.trim()) ? saved.replace(/\/$/, '') : (API.bridge || 'http://localhost:3337');
+    return String(base).replace(/\/$/, '');
+  } catch {
+    return (API.bridge || 'http://localhost:3337');
+  }
+}
+
 // ================== CIRCLE CONFIGURATIONS ==================
 
 const circleConfigs = {
@@ -443,7 +458,7 @@ function handleKeyboard(e) {
 async function loadSystemStats() {
   try {
     console.log('📡 Loading system stats from Bridge...');
-    const response = await fetch('http://localhost:3337/health');
+    const response = await fetch(`${getBridgeBase()}/health`);
     const data = await response.json();
     
     document.getElementById('statTools').textContent = data.toolCount || 72;
@@ -451,7 +466,7 @@ async function loadSystemStats() {
     
     // Try to get network stats
     try {
-      const networkResponse = await fetch('http://localhost:3337/', {
+      const networkResponse = await fetch(`${getBridgeBase()}/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
