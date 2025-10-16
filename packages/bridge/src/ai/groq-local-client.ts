@@ -69,8 +69,8 @@ export class GroqLocalClient {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: prompt,
-          context: systemPrompt || '',
+          prompt: prompt,
+          systemPrompt: systemPrompt || undefined,
           temperature: 0.8,
           maxTokens: 2000,
         }),

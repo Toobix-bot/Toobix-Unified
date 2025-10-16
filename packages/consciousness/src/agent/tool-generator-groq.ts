@@ -250,7 +250,7 @@ Reasoning: ${reasoning || 'Not provided'}
 Design a NEW tool that fills this gap.
     `;
 
-    const design = await groqLocalClient.generateTool(capability, context);
+    const design = await groqLocalClient.generateTool({ description: capability, context });
 
     return {
       name: design.name,
@@ -363,7 +363,8 @@ Generate ONLY the function code, no explanations.`;
       spec.category,
       spec.useCase,
       code,
-      filePath
+      filePath,
+      now
     );
 
     const tool: GeneratedTool = {
