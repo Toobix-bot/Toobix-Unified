@@ -115,6 +115,30 @@ class MemorySystem {
                     return new Response(null, { headers: corsHeaders });
                 }
 
+                // GET /health - Service health
+                if (url.pathname === '/health') {
+                    return new Response(JSON.stringify({
+                        status: 'ok',
+                        service: 'memory-system',
+                        port: self.port,
+                        counts: {
+                            memories: self.memories.size,
+                            patterns: self.patterns.size,
+                            learnings: self.learnings.size,
+                        }
+                    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+                }
+
+                // GET /stats - Quick stats
+                if (url.pathname === '/stats') {
+                    return new Response(JSON.stringify({
+                        memories: self.memories.size,
+                        patterns: self.patterns.size,
+                        learnings: self.learnings.size,
+                        uptimeSeconds: Math.floor(process.uptime()),
+                    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+                }
+
                 // GET /memories - Get all memories
                 if (url.pathname === '/memories') {
                     const limit = parseInt(url.searchParams.get('limit') || '50');
@@ -216,9 +240,20 @@ class MemorySystem {
                     });
                 }
 
-                // Default
-                return new Response('Memory System API\n\nEndpoints:\n  GET /memories\n  GET /patterns\n  GET /learnings\n  POST /remember\n  GET /search?q=...', {
-                    headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
+                // Default - JSON index
+                return new Response(JSON.stringify({
+                    service: 'memory-system',
+                    endpoints: {
+                        health: 'GET /health',
+                        stats: 'GET /stats',
+                        memories: 'GET /memories?limit=&type=',
+                        patterns: 'GET /patterns',
+                        learnings: 'GET /learnings',
+                        remember: 'POST /remember { content, type?, importance?, tags? }',
+                        search: 'GET /search?q=...'
+                    }
+                }), {
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 });
             },
         });

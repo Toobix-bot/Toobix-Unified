@@ -240,6 +240,216 @@ export const settings = sqliteTable('settings', {
   updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 });
 
+/**
+ * ============================================================================
+ * LIFE GAME CHAT - Game Layer
+ * ============================================================================
+ */
+
+/**
+ * Player Profile - Your character in the game
+ */
+export const playerProfile = sqliteTable('player_profile', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  level: integer('level').notNull().default(1),
+  xp: integer('xp').notNull().default(0),
+  xp_to_next_level: integer('xp_to_next_level').notNull().default(100),
+
+  // Core Stats
+  creativity: integer('creativity').notNull().default(50),
+  wisdom: integer('wisdom').notNull().default(50),
+  love: integer('love').notNull().default(50),
+  energy: integer('energy').notNull().default(50),
+  focus: integer('focus').notNull().default(50),
+
+  // Meta
+  class: text('class').default('Seeker'), // 'Seeker' | 'Builder' | 'Philosopher' | 'Artist'
+  current_run_id: text('current_run_id'),
+  total_runs: integer('total_runs').default(0),
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+});
+
+/**
+ * Game Sessions / Runs - Finite runs in infinite story
+ */
+export const gameSessions = sqliteTable('game_sessions', {
+  id: text('id').primaryKey(),
+  player_id: text('player_id').notNull().references(() => playerProfile.id, { onDelete: 'cascade' }),
+
+  run_number: integer('run_number').notNull(),
+  title: text('title').notNull(), // "The Command Center Saga"
+  description: text('description'),
+  status: text('status').notNull(), // 'active' | 'completed' | 'paused'
+  mode: text('mode').notNull(), // 'builder' | 'creative' | 'reflection' | 'play'
+
+  // Progress
+  day: integer('day').default(1),
+  total_days: integer('total_days').default(7),
+
+  // Rewards
+  xp_gained: integer('xp_gained').default(0),
+  items_gained: integer('items_gained').default(0),
+  quests_completed: integer('quests_completed').default(0),
+
+  started_at: integer('started_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  completed_at: integer('completed_at', { mode: 'timestamp' }),
+
+  // Permanent rewards on completion
+  permanent_rewards: text('permanent_rewards'), // JSON
+}, (table) => ({
+  playerIdx: index('game_sessions_player_idx').on(table.player_id),
+  statusIdx: index('game_sessions_status_idx').on(table.status),
+}));
+
+/**
+ * Game Rewards - Items, Achievements, Artifacts
+ */
+export const gameRewards = sqliteTable('game_rewards', {
+  id: text('id').primaryKey(),
+  player_id: text('player_id').notNull().references(() => playerProfile.id, { onDelete: 'cascade' }),
+
+  type: text('type').notNull(), // 'item' | 'achievement' | 'artifact'
+  name: text('name').notNull(),
+  description: text('description'),
+  rarity: text('rarity').notNull(), // 'common' | 'rare' | 'legendary'
+
+  // Effects
+  effects: text('effects'), // JSON - stat buffs, abilities, etc.
+
+  // Metadata
+  icon: text('icon'), // Emoji or icon name
+  quantity: integer('quantity').default(1),
+  is_equipped: integer('is_equipped', { mode: 'boolean' }).default(false),
+  is_permanent: integer('is_permanent', { mode: 'boolean' }).default(false),
+
+  gained_at: integer('gained_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  gained_from: text('gained_from'), // Session ID or event
+}, (table) => ({
+  playerIdx: index('game_rewards_player_idx').on(table.player_id),
+  typeIdx: index('game_rewards_type_idx').on(table.type),
+  rarityIdx: index('game_rewards_rarity_idx').on(table.rarity),
+}));
+
+/**
+ * Game Quests - Active missions and goals
+ */
+export const gameQuests = sqliteTable('game_quests', {
+  id: text('id').primaryKey(),
+  player_id: text('player_id').notNull().references(() => playerProfile.id, { onDelete: 'cascade' }),
+  session_id: text('session_id').references(() => gameSessions.id, { onDelete: 'set null' }),
+
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  category: text('category').notNull(), // 'coding' | 'design' | 'learning' | 'social' | 'creative'
+
+  status: text('status').notNull(), // 'pending' | 'in_progress' | 'completed' | 'failed'
+  progress: integer('progress').default(0), // 0-100
+
+  // Rewards
+  xp_reward: integer('xp_reward').default(0),
+  item_rewards: text('item_rewards'), // JSON array
+
+  // Requirements
+  requirements: text('requirements'), // JSON
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  completed_at: integer('completed_at', { mode: 'timestamp' }),
+}, (table) => ({
+  playerIdx: index('game_quests_player_idx').on(table.player_id),
+  sessionIdx: index('game_quests_session_idx').on(table.session_id),
+  statusIdx: index('game_quests_status_idx').on(table.status),
+  categoryIdx: index('game_quests_category_idx').on(table.category),
+}));
+
+/**
+ * Companion Relationships - Luna, Blaze, Harmony, etc.
+ */
+export const companionRelationships = sqliteTable('companion_relationships', {
+  id: text('id').primaryKey(),
+  player_id: text('player_id').notNull().references(() => playerProfile.id, { onDelete: 'cascade' }),
+
+  companion_id: text('companion_id').notNull(), // 'luna' | 'blaze' | 'harmony' | 'sage' | 'nova'
+  companion_name: text('companion_name').notNull(),
+
+  // Relationship
+  level: integer('level').default(1),
+  points: integer('points').default(0),
+  tier: text('tier').default('new'), // 'new' | 'known' | 'trusting' | 'close' | 'devoted' | 'soulmate'
+
+  // State
+  mood: text('mood').default('neutral'), // 'happy' | 'excited' | 'neutral' | 'thoughtful' | 'concerned'
+  is_unlocked: integer('is_unlocked', { mode: 'boolean' }).default(false),
+  dialogues_unlocked: integer('dialogues_unlocked').default(0),
+
+  // Special
+  special_ability: text('special_ability'),
+  last_interaction: integer('last_interaction', { mode: 'timestamp' }),
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  playerIdx: index('companion_relationships_player_idx').on(table.player_id),
+  companionIdx: index('companion_relationships_companion_idx').on(table.companion_id),
+}));
+
+/**
+ * Player Skills - Coding, Planning, Design, etc.
+ */
+export const playerSkills = sqliteTable('player_skills', {
+  id: text('id').primaryKey(),
+  player_id: text('player_id').notNull().references(() => playerProfile.id, { onDelete: 'cascade' }),
+
+  skill_id: text('skill_id').notNull(), // 'typescript' | 'react' | 'planning' | 'ideation'
+  skill_name: text('skill_name').notNull(),
+  category: text('category').notNull(), // 'coding' | 'design' | 'life' | 'creative'
+
+  level: integer('level').default(1),
+  xp: integer('xp').default(0),
+  xp_to_next_level: integer('xp_to_next_level').default(100),
+
+  // Progress
+  times_used: integer('times_used').default(0),
+  mastery: text('mastery').default('beginner'), // 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'master'
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  playerIdx: index('player_skills_player_idx').on(table.player_id),
+  skillIdx: index('player_skills_skill_idx').on(table.skill_id),
+  categoryIdx: index('player_skills_category_idx').on(table.category),
+}));
+
+/**
+ * Game Events - Log of all game-related events
+ */
+export const gameEvents = sqliteTable('game_events', {
+  id: text('id').primaryKey(),
+  player_id: text('player_id').notNull().references(() => playerProfile.id, { onDelete: 'cascade' }),
+  session_id: text('session_id').references(() => gameSessions.id, { onDelete: 'set null' }),
+
+  type: text('type').notNull(), // 'xp_gain' | 'level_up' | 'item_drop' | 'quest_complete' | 'achievement'
+  description: text('description').notNull(),
+
+  // Context
+  related_quest_id: text('related_quest_id'),
+  related_companion_id: text('related_companion_id'),
+
+  // Rewards
+  xp_change: integer('xp_change').default(0),
+  stat_changes: text('stat_changes'), // JSON
+  rewards: text('rewards'), // JSON
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  playerIdx: index('game_events_player_idx').on(table.player_id),
+  sessionIdx: index('game_events_session_idx').on(table.session_id),
+  typeIdx: index('game_events_type_idx').on(table.type),
+  createdIdx: index('game_events_created_idx').on(table.created_at),
+}));
+
 // Type exports
 export type Person = typeof people.$inferSelect;
 export type NewPerson = typeof people.$inferInsert;
@@ -252,3 +462,19 @@ export type NewCircle = typeof circles.$inferInsert;
 export type Chunk = typeof chunks.$inferSelect;
 export type StoryArc = typeof storyArcs.$inferSelect;
 export type StoryEvent = typeof storyEvents.$inferSelect;
+
+// Game Layer Type Exports
+export type PlayerProfile = typeof playerProfile.$inferSelect;
+export type NewPlayerProfile = typeof playerProfile.$inferInsert;
+export type GameSession = typeof gameSessions.$inferSelect;
+export type NewGameSession = typeof gameSessions.$inferInsert;
+export type GameReward = typeof gameRewards.$inferSelect;
+export type NewGameReward = typeof gameRewards.$inferInsert;
+export type GameQuest = typeof gameQuests.$inferSelect;
+export type NewGameQuest = typeof gameQuests.$inferInsert;
+export type CompanionRelationship = typeof companionRelationships.$inferSelect;
+export type NewCompanionRelationship = typeof companionRelationships.$inferInsert;
+export type PlayerSkill = typeof playerSkills.$inferSelect;
+export type NewPlayerSkill = typeof playerSkills.$inferInsert;
+export type GameEvent = typeof gameEvents.$inferSelect;
+export type NewGameEvent = typeof gameEvents.$inferInsert;

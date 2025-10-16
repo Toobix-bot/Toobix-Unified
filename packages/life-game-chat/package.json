@@ -1,0 +1,19 @@
+{
+  "name": "@toobix/life-game-chat",
+  "version": "0.1.0",
+  "description": "Life Game Chat - Where every conversation is an adventure",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@toobix/core": "workspace:*",
+    "nanoid": "^5.1.6",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.23"
+  }
+}

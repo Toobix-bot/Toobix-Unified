@@ -1,0 +1,20 @@
+{
+  "name": "@toobix/life-game",
+  "version": "0.1.0",
+  "description": "Life Game Chat - Game layer for chat interactions",
+  "type": "module",
+  "main": "src/life-game-api.ts",
+  "scripts": {
+    "dev": "bun run src/server.ts",
+    "start": "bun run src/server.ts"
+  },
+  "dependencies": {
+    "@toobix/core": "workspace:*",
+    "hono": "^4.0.0",
+    "nanoid": "^5.1.6",
+    "drizzle-orm": "^0.44.6"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.23"
+  }
+}

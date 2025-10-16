@@ -44,6 +44,59 @@ const CHUNK_HEIGHT = 64
 const WORLD_SIZE = 4 // 4x4 chunks = 64x64 blocks
 const SEA_LEVEL = 32
 
+// ============ LRU CACHE (for chunks) ============
+class LRUCache<K, V> {
+  private store = new Map<K, { value: V; ts: number }>()
+  private capacity: number
+  private ttlMs?: number
+  public hits = 0
+  public misses = 0
+  public evictions = 0
+
+  constructor(capacity: number, ttlMs?: number) {
+    this.capacity = Math.max(1, capacity)
+    this.ttlMs = ttlMs
+  }
+
+  private isExpired(ts: number): boolean {
+    if (!this.ttlMs) return false
+    return (Date.now() - ts) > this.ttlMs
+  }
+
+  get(key: K): V | undefined {
+    const entry = this.store.get(key)
+    if (!entry) {
+      this.misses++
+      return undefined
+    }
+    if (this.isExpired(entry.ts)) {
+      this.store.delete(key)
+      this.misses++
+      return undefined
+    }
+    // refresh recency
+    this.store.delete(key)
+    this.store.set(key, { value: entry.value, ts: Date.now() })
+    this.hits++
+    return entry.value
+  }
+
+  set(key: K, value: V) {
+    if (this.store.has(key)) this.store.delete(key)
+    this.store.set(key, { value, ts: Date.now() })
+    // Evict least-recently used
+    if (this.store.size > this.capacity) {
+      const oldestKey = this.store.keys().next().value as K
+      if (oldestKey !== undefined) {
+        this.store.delete(oldestKey)
+        this.evictions++
+      }
+    }
+  }
+
+  size(): number { return this.store.size }
+}
+
 // ============ PERLIN NOISE (Simple) ============
 class PerlinNoise {
   private permutation: number[] = []
@@ -316,7 +369,15 @@ class BlockWorldDatabase {
 class WorldManager {
   private generator: WorldGenerator
   private db: BlockWorldDatabase
-  private chunks = new Map<string, Uint8Array>()
+  private chunkCache = new LRUCache<string, Uint8Array>(128, 5 * 60 * 1000) // 128 entries, 5m TTL
+  public cacheStats() {
+    return {
+      size: this.chunkCache.size(),
+      hits: this.chunkCache.hits,
+      misses: this.chunkCache.misses,
+      evictions: this.chunkCache.evictions,
+    }
+  }
   
   constructor() {
     this.generator = new WorldGenerator()
@@ -330,10 +391,9 @@ class WorldManager {
   getChunk(chunkX: number, chunkZ: number): Uint8Array {
     const key = this.getChunkKey(chunkX, chunkZ)
     
-    // Check memory cache
-    if (this.chunks.has(key)) {
-      return this.chunks.get(key)!
-    }
+    // Check LRU cache
+    const cached = this.chunkCache.get(key)
+    if (cached) return cached
     
     // Try load from database
     let chunk = this.db.loadChunk(chunkX, chunkZ)
@@ -345,7 +405,7 @@ class WorldManager {
       this.db.saveChunk(chunkX, chunkZ, chunk)
     }
     
-    this.chunks.set(key, chunk)
+    this.chunkCache.set(key, chunk)
     return chunk
   }
   
@@ -546,6 +606,11 @@ const server = Bun.serve({
       if (path === '/blocks' && req.method === 'GET') {
         return Response.json(BLOCK_INFO, { headers })
       }
+
+      // GET /cache - Cache stats
+      if (path === '/cache' && req.method === 'GET') {
+        return Response.json({ cache: world.cacheStats() }, { headers })
+      }
       
       // Health check
       if (path === '/health' && req.method === 'GET') {
@@ -553,7 +618,8 @@ const server = Bun.serve({
           status: 'ok',
           service: 'BlockWorld Server',
           port: PORT,
-          worldSize: `${WORLD_SIZE * CHUNK_SIZE}x${CHUNK_HEIGHT}x${WORLD_SIZE * CHUNK_SIZE}`
+          worldSize: `${WORLD_SIZE * CHUNK_SIZE}x${CHUNK_HEIGHT}x${WORLD_SIZE * CHUNK_SIZE}`,
+          cache: world.cacheStats()
         }, { headers })
       }
       

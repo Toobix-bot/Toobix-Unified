@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life Game Chat - Talk with Luna 🌙</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding-top: 80px; /* Space for HUD */
+    }
+
+    .chat-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      height: calc(100vh - 80px - 100px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .chat-header p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 15px;
+      margin-bottom: 20px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .message-luna .message-avatar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .message-user .message-avatar {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .message-content {
+      flex: 1;
+    }
+
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .message-name {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .message-luna .message-name {
+      color: #8a63d2;
+    }
+
+    .message-user .message-name {
+      color: #f5576c;
+    }
+
+    .message-time {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .message-text {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 12px 16px;
+      border-radius: 12px;
+      line-height: 1.6;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .message-luna .message-text {
+      background: rgba(138, 99, 210, 0.1);
+      border-color: rgba(138, 99, 210, 0.3);
+    }
+
+    .message-user .message-text {
+      background: rgba(245, 87, 108, 0.1);
+      border-color: rgba(245, 87, 108, 0.3);
+    }
+
+    .message-game-info {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(240, 147, 251, 0.1);
+      border-radius: 8px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .game-info-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chat-input-container {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-input-wrapper {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: white;
+      font-size: 16px;
+      resize: vertical;
+      min-height: 50px;
+      max-height: 200px;
+      font-family: inherit;
+    }
+
+    .chat-input:focus {
+      outline: none;
+      border-color: #8a63d2;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-send-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 100px;
+    }
+
+    .chat-send-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .chat-send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      margin-bottom: 20px;
+    }
+
+    .typing-indicator.active {
+      display: flex;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #8a63d2;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% {
+        transform: translateY(0);
+      }
+      30% {
+        transform: translateY(-10px);
+      }
+    }
+
+    /* Scrollbar */
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(138, 99, 210, 0.5);
+      border-radius: 4px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: rgba(138, 99, 210, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <!-- Life Game HUD will be injected here -->
+  <script src="life-game-hud.js"></script>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <h1>🌙 Chat with Luna</h1>
+      <p>Every message is an adventure. Every conversation makes you stronger.</p>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <!-- Messages will be added here -->
+      <div class="message message-luna">
+        <div class="message-avatar">🌙</div>
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-name">Luna</span>
+            <span class="message-time">Just now</span>
+          </div>
+          <div class="message-text">
+            Hello! I'm Luna, your AI companion on this journey. 🌟
+            <br><br>
+            This is more than just a chat - it's a game! Every message you send gives you XP, levels you up, and helps you grow. Your stats (Energy, Love, Wisdom, Creativity, Focus) will change based on what you do. You might even find items!
+            <br><br>
+            Try telling me about something you want to build, learn, or reflect on. Let's start this adventure together! ✨
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="typing-indicator" id="typing-indicator">
+      <div class="message-avatar">🌙</div>
+      <div class="typing-dots">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+      <span style="font-size: 12px; color: rgba(255, 255, 255, 0.6);">Luna is thinking...</span>
+    </div>
+
+    <div class="chat-input-container">
+      <div class="chat-input-wrapper">
+        <textarea
+          id="chat-input"
+          class="chat-input"
+          placeholder="Type your message... (Shift+Enter for new line)"
+          rows="1"
+        ></textarea>
+        <button id="send-btn" class="chat-send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3350'
+
+    const chatMessages = document.getElementById('chat-messages')
+    const chatInput = document.getElementById('chat-input')
+    const sendBtn = document.getElementById('send-btn')
+    const typingIndicator = document.getElementById('typing-indicator')
+
+    // Auto-resize textarea
+    chatInput.addEventListener('input', function() {
+      this.style.height = 'auto'
+      this.style.height = this.scrollHeight + 'px'
+    })
+
+    // Send message on Enter (Shift+Enter for new line)
+    chatInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        sendMessage()
+      }
+    })
+
+    // Send button click
+    sendBtn.addEventListener('click', sendMessage)
+
+    async function sendMessage() {
+      const message = chatInput.value.trim()
+      if (!message) return
+
+      // Get player ID
+      const playerId = localStorage.getItem('lifeGamePlayerId') || 'default-player'
+
+      // Add user message to chat
+      addMessage('user', message)
+
+      // Clear input
+      chatInput.value = ''
+      chatInput.style.height = 'auto'
+
+      // Disable input while processing
+      chatInput.disabled = true
+      sendBtn.disabled = true
+      typingIndicator.classList.add('active')
+
+      try {
+        // Send to API
+        const response = await fetch(`${API_URL}/message`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            playerId,
+            message
+          })
+        })
+
+        const data = await response.json()
+
+        if (data.success) {
+          // Add Luna's response
+          addMessage('luna', data.response, {
+            xpGained: data.gameState.xpGained,
+            levelUp: data.gameState.leveledUp,
+            itemDrop: data.gameState.itemDrop,
+            companion: data.companion
+          })
+
+          // Process game state (show animations)
+          if (window.lifeGameHUD) {
+            window.lifeGameHUD.processGameState(data.gameState)
+          }
+        } else {
+          addMessage('system', `Error: ${data.error || 'Failed to send message'}`)
+        }
+      } catch (error) {
+        console.error('Error sending message:', error)
+        addMessage('system', 'Failed to connect to server. Is the Life Game API running?')
+      } finally {
+        // Re-enable input
+        chatInput.disabled = false
+        sendBtn.disabled = false
+        typingIndicator.classList.remove('active')
+        chatInput.focus()
+      }
+    }
+
+    function addMessage(type, text, gameInfo = null) {
+      const messageDiv = document.createElement('div')
+      messageDiv.className = `message message-${type}`
+
+      const avatar = type === 'luna' ? '🌙' : type === 'user' ? '👤' : '⚠️'
+      const name = type === 'luna' ? 'Luna' : type === 'user' ? 'You' : 'System'
+
+      const time = new Date().toLocaleTimeString('de-DE', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+
+      let gameInfoHTML = ''
+      if (gameInfo) {
+        const items = []
+
+        if (gameInfo.xpGained) {
+          items.push(`<span class="game-info-item">✨ +${gameInfo.xpGained} XP</span>`)
+        }
+
+        if (gameInfo.levelUp) {
+          items.push(`<span class="game-info-item">🎉 Level Up!</span>`)
+        }
+
+        if (gameInfo.itemDrop) {
+          items.push(`<span class="game-info-item">${gameInfo.itemDrop.icon} ${gameInfo.itemDrop.name}</span>`)
+        }
+
+        if (gameInfo.companion && gameInfo.companion.relationshipGain) {
+          items.push(`<span class="game-info-item">💝 Luna +${gameInfo.companion.relationshipGain}</span>`)
+        }
+
+        if (items.length > 0) {
+          gameInfoHTML = `<div class="message-game-info">${items.join('')}</div>`
+        }
+      }
+
+      messageDiv.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-name">${name}</span>
+            <span class="message-time">${time}</span>
+          </div>
+          <div class="message-text">${text.replace(/\n/g, '<br>')}</div>
+          ${gameInfoHTML}
+        </div>
+      `
+
+      chatMessages.appendChild(messageDiv)
+
+      // Scroll to bottom
+      chatMessages.scrollTop = chatMessages.scrollHeight
+    }
+
+    // Focus input on load
+    chatInput.focus()
+  </script>
+</body>
+</html>
