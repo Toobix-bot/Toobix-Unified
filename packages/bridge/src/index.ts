@@ -4879,6 +4879,67 @@ export class BridgeService {
       }
     })
 
+    // Life Game Chat API proxy (optional convenience through Bridge)
+    const LIFE_GAME_BASE = process.env.LIFE_GAME_URL || 'http://localhost:3350'
+
+    // Proxy: POST /api/life-game/message -> Life Game /message
+    this.mcp.registerRoute('POST', '/api/life-game/message', async (req: any) => {
+      try {
+        const body = await req.json()
+        const res = await fetch(`${LIFE_GAME_BASE}/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        })
+        const data = await res.json().catch(() => ({ ok: false, error: 'Invalid JSON from Life Game API' }))
+        return data
+      } catch (err: any) {
+        return { ok: false, error: 'Life Game proxy failed', detail: err?.message || String(err) }
+      }
+    })
+
+    // Proxy: GET /api/life-game/state -> Life Game /state?playerId=...
+    this.mcp.registerRoute('GET', '/api/life-game/state', async (req: any) => {
+      try {
+        const url = new URL(req.url)
+        const qs = url.search || ''
+        const res = await fetch(`${LIFE_GAME_BASE}/state${qs}`)
+        const data = await res.json().catch(() => ({ ok: false, error: 'Invalid JSON from Life Game API' }))
+        return data
+      } catch (err: any) {
+        return { ok: false, error: 'Life Game proxy failed', detail: err?.message || String(err) }
+      }
+    })
+
+    // Proxy: GET /api/life-game/history -> Life Game /history?playerId=...
+    this.mcp.registerRoute('GET', '/api/life-game/history', async (req: any) => {
+      try {
+        const url = new URL(req.url)
+        const qs = url.search || ''
+        const res = await fetch(`${LIFE_GAME_BASE}/history${qs}`)
+        const data = await res.json().catch(() => ({ ok: false, error: 'Invalid JSON from Life Game API' }))
+        return data
+      } catch (err: any) {
+        return { ok: false, error: 'Life Game proxy failed', detail: err?.message || String(err) }
+      }
+    })
+
+    // Proxy: POST /api/life-game/companion/interact -> Life Game /companion/interact
+    this.mcp.registerRoute('POST', '/api/life-game/companion/interact', async (req: any) => {
+      try {
+        const body = await req.json().catch(() => ({}))
+        const res = await fetch(`${LIFE_GAME_BASE}/companion/interact`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        })
+        const data = await res.json().catch(() => ({ ok: false, error: 'Invalid JSON from Life Game API' }))
+        return data
+      } catch (err: any) {
+        return { ok: false, error: 'Life Game proxy failed', detail: err?.message || String(err) }
+      }
+    })
+
     console.log('âœ… Routes configured')
   }
 

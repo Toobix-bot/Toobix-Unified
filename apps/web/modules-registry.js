@@ -1890,6 +1890,52 @@ const TOOBIX_MODULES = {
     }
   },
 
+  'life-game-chat': {
+    name: 'Life Game Chat',
+    icon: '🎮✨',
+    description: 'Chat with Luna • earn XP, level up',
+    category: 'Games',
+    version: '0.1.0',
+    author: 'Toobix Games',
+    dependencies: ['life-game-api'],
+    loader: async (container) => {
+      // Load standalone Life Game Chat page and mount inside module container
+      try {
+        const response = await fetch('/life-game-chat.html');
+        const html = await response.text();
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const bodyContent = doc.body.innerHTML;
+
+        container.innerHTML = bodyContent;
+
+        // Execute inline and external scripts (e.g., life-game-hud.js)
+        const scripts = doc.body.querySelectorAll('script');
+        scripts.forEach(script => {
+          const newScript = document.createElement('script');
+          const src = script.getAttribute('src');
+          if (src) {
+            newScript.src = src;
+          } else {
+            newScript.textContent = script.textContent || '';
+          }
+          document.body.appendChild(newScript);
+        });
+      } catch (error) {
+        console.error('Failed to load life-game-chat:', error);
+        container.innerHTML = `
+          <div class="card">
+            <h2>🎮 Life Game Chat</h2>
+            <p style="color: var(--text-secondary);">
+              Konnte nicht geladen werden. <a href="/life-game-chat.html" target="_blank">Hier direkt öffnen →</a>
+            </p>
+          </div>
+        `;
+      }
+    }
+  },
+
   'games': {
     name: 'Spielebibliothek',
     icon: 'ðŸŽ®',
