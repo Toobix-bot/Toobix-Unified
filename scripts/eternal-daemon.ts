@@ -801,9 +801,10 @@ The daemon is listening on port 9999.
                 lastActive: Date.now(),
                 purpose: config.purpose
             });
-            
-            this.systemState.totalProcesses++;
         }
+
+        // Set totalProcesses to actual count (including eternal-daemon)
+        this.systemState.totalProcesses = this.processes.size;
         
         // Start essential services immediately
         await this.startProcess('bridge-server');
@@ -1006,9 +1007,11 @@ The daemon is listening on port 9999.
         try {
             const data = await readFile(this.statePath, 'utf-8');
             const state = JSON.parse(data);
-            
+
             this.systemState = state.systemState;
-            
+            // Reset totalProcesses - will be set correctly after process registration
+            this.systemState.totalProcesses = 0;
+
             console.log(`📖 Loaded state from previous session (Cycle ${state.systemState.cycleCount})`);
         } catch (error) {
             // No previous state - this is fine

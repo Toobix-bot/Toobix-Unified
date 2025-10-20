@@ -1,0 +1,2936 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toobix OS - Ultimate Consciousness Operating System</title>
+  <style>
+    /* 🌌 TOOBIX OS - GLOBAL STYLES */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+
+    :root {
+      --color-primary: #667eea;
+      --color-secondary: #764ba2;
+      --color-success: #4ade80;
+      --color-warning: #fbbf24;
+      --color-error: #f87171;
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      --text-primary: #ffffff;
+      --text-secondary: #a0aec0;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: var(--text-primary);
+      position: relative;
+    }
+
+    /* 🌌 COSMIC BACKGROUND */
+    #cosmic-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+        radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+        radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
+      background-size: 550px 550px, 350px 350px, 250px 250px;
+      background-position: 0 0, 40px 60px, 130px 270px;
+      animation: cosmicDrift 120s linear infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    @keyframes cosmicDrift {
+      from { background-position: 0 0, 40px 60px, 130px 270px; }
+      to { background-position: 550px 550px, 590px 610px, 680px 820px; }
+    }
+
+    /* 🖥️ DESKTOP */
+    #desktop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 70px);
+      z-index: 1;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 100px);
+      grid-auto-rows: 110px;
+      gap: 20px;
+      align-content: start;
+    }
+
+    .desktop-icon {
+      width: 100px;
+      height: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      text-align: center;
+    }
+
+    .desktop-icon:hover {
+      transform: scale(1.1);
+    }
+
+    .desktop-icon .icon {
+      width: 64px;
+      height: 64px;
+      background: var(--glass-bg);
+      border: 2px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .desktop-icon .label {
+      font-size: 12px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* 💻 WINDOWS */
+    .window {
+      position: fixed;
+      background: rgba(10, 14, 26, 0.95);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 100;
+      min-width: 400px;
+      min-height: 300px;
+    }
+
+    .window.active {
+      display: flex;
+    }
+
+    .window.maximized {
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: calc(100% - 70px) !important;
+      border-radius: 0;
+    }
+
+    .window-titlebar {
+      height: 40px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      padding: 0 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: move;
+      user-select: none;
+    }
+
+    .window-title {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .window-control {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .window-control:hover {
+      transform: scale(1.2);
+    }
+
+    .window-control.close { background: #ff5f56; }
+    .window-control.minimize { background: #ffbd2e; }
+    .window-control.maximize { background: #27c93f; }
+
+    .window-content {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+    }
+
+    /* 🔧 RESIZE HANDLES */
+    .resize-handle {
+      position: absolute;
+      z-index: 10;
+    }
+
+    .resize-n, .resize-s {
+      left: 0;
+      right: 0;
+      height: 5px;
+      cursor: ns-resize;
+    }
+
+    .resize-n { top: 0; }
+    .resize-s { bottom: 0; }
+
+    .resize-e, .resize-w {
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      cursor: ew-resize;
+    }
+
+    .resize-e { right: 0; }
+    .resize-w { left: 0; }
+
+    .resize-ne, .resize-nw, .resize-se, .resize-sw {
+      width: 10px;
+      height: 10px;
+    }
+
+    .resize-ne {
+      top: 0;
+      right: 0;
+      cursor: nesw-resize;
+    }
+
+    .resize-nw {
+      top: 0;
+      left: 0;
+      cursor: nwse-resize;
+    }
+
+    .resize-se {
+      bottom: 0;
+      right: 0;
+      cursor: nwse-resize;
+    }
+
+    .resize-sw {
+      bottom: 0;
+      left: 0;
+      cursor: nesw-resize;
+    }
+
+    /* 📐 SNAP ZONES */
+    .snap-preview {
+      position: fixed;
+      background: rgba(102, 126, 234, 0.3);
+      border: 2px solid var(--color-primary);
+      border-radius: 8px;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+      transition: all 0.15s ease;
+    }
+
+    .snap-preview.active {
+      display: block;
+    }
+
+    /* 📱 DOCK */
+    #dock {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 14, 26, 0.8);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 8px 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 1000;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    .dock-item {
+      width: 50px;
+      height: 50px;
+      background: var(--glass-bg);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .dock-item:hover {
+      transform: scale(1.2) translateY(-10px);
+      border-color: var(--color-primary);
+    }
+
+    .dock-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      width: 4px;
+      height: 4px;
+      background: var(--color-primary);
+      border-radius: 50%;
+    }
+
+    /* 🔍 APP LAUNCHER */
+    #app-launcher {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      max-height: 500px;
+      background: rgba(10, 14, 26, 0.95);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+      display: none;
+      flex-direction: column;
+      z-index: 2000;
+    }
+
+    #app-launcher.active {
+      display: flex;
+      animation: launcherFadeIn 0.2s ease-out;
+    }
+
+    @keyframes launcherFadeIn {
+      from { opacity: 0; transform: translate(-50%, -48%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    #launcher-search {
+      width: 100%;
+      padding: 20px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      font-size: 18px;
+      outline: none;
+    }
+
+    #launcher-results {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .launcher-item {
+      padding: 12px 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .launcher-item:hover,
+    .launcher-item.selected {
+      background: var(--glass-bg);
+    }
+
+    .launcher-item .icon {
+      font-size: 24px;
+    }
+
+    .launcher-item-info {
+      flex: 1;
+    }
+
+    .launcher-item-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .launcher-item-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* 🔔 NOTIFICATIONS */
+    #notification-center {
+      position: fixed;
+      top: 50px;
+      right: 20px;
+      width: 350px;
+      max-height: 500px;
+      background: rgba(10, 14, 26, 0.95);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      display: none;
+      flex-direction: column;
+      z-index: 1500;
+    }
+
+    #notification-center.active {
+      display: flex;
+    }
+
+    .notification {
+      padding: 15px;
+      border-bottom: 1px solid var(--glass-border);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .notification:hover {
+      background: var(--glass-bg);
+    }
+
+    .notification-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .notification-body {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .notification-time {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* 🎨 STATUS BAR */
+    #status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 30px;
+      background: rgba(10, 14, 26, 0.9);
+      border-bottom: 1px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      z-index: 900;
+      font-size: 12px;
+    }
+
+    #status-left {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    #status-right {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .status-item {
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .status-item:hover {
+      opacity: 0.7;
+    }
+
+    /* 💻 TERMINAL */
+    #terminal-output {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      color: #0f0;
+    }
+
+    #terminal-input-line {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      font-family: 'Courier New', monospace;
+    }
+
+    #terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #0f0;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    /* 🎯 SYSTEM MONITOR */
+    .stat-bar {
+      height: 20px;
+      background: var(--glass-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      margin: 8px 0;
+    }
+
+    .stat-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      transition: width 0.5s;
+    }
+
+    .stat-label {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    /* 📁 FILE MANAGER */
+    .file-item {
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .file-item:hover {
+      background: var(--glass-bg);
+    }
+
+    .file-icon {
+      font-size: 20px;
+    }
+
+    .file-info {
+      flex: 1;
+    }
+
+    .file-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .file-meta {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* 🎵 MUSIC PLAYER */
+    .music-track:hover {
+      background: var(--glass-bg) !important;
+    }
+
+    .music-track.active {
+      background: rgba(102, 126, 234, 0.2) !important;
+      border-left: 3px solid var(--color-primary);
+    }
+
+    /* 🔄 ANIMATIONS */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .loading {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes orbit-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* 🖱️ CONTEXT MENU */
+    #context-menu {
+      position: fixed;
+      background: rgba(10, 14, 26, 0.95);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      padding: 4px;
+      min-width: 200px;
+      z-index: 10000;
+      display: none;
+    }
+
+    #context-menu.active {
+      display: block;
+    }
+
+    .context-menu-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .context-menu-item:hover {
+      background: var(--glass-bg);
+    }
+
+    .context-menu-separator {
+      height: 1px;
+      background: var(--glass-border);
+      margin: 4px 0;
+    }
+
+    /* 📊 DESKTOP WIDGETS */
+    .desktop-widget {
+      position: fixed;
+      background: rgba(10, 14, 26, 0.85);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      z-index: 50;
+    }
+
+    .widget-title {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      opacity: 0.8;
+    }
+
+    .widget-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+
+    .widget-stat-label {
+      opacity: 0.7;
+    }
+
+    .widget-stat-value {
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+  </style>
+</head>
+<body>
+  <!-- 🌌 Cosmic Background -->
+  <div id="cosmic-bg"></div>
+
+  <!-- 📐 Snap Preview -->
+  <div class="snap-preview" id="snap-preview"></div>
+
+  <!-- 🎨 Status Bar -->
+  <div id="status-bar">
+    <div id="status-left">
+      <div class="status-item" style="font-weight: 600; font-size: 14px;">⚡ Toobix OS</div>
+      <div class="status-item" id="current-app">Desktop</div>
+    </div>
+    <div id="status-right">
+      <div class="status-item" id="status-services">○ 14 Services</div>
+      <div class="status-item" id="status-consciousness">🧠 100%</div>
+      <div class="status-item" id="status-notifications" onclick="toggleNotifications()">🔔 <span id="notif-count">3</span></div>
+      <div class="status-item" id="status-time">00:00</div>
+    </div>
+  </div>
+
+  <!-- 🖥️ Desktop -->
+  <div id="desktop">
+    <!-- Desktop Icons -->
+    <div class="desktop-icon" data-app="terminal">
+      <div class="icon">💻</div>
+      <div class="label">Terminal</div>
+    </div>
+    <div class="desktop-icon" data-app="files">
+      <div class="icon">📁</div>
+      <div class="label">Files</div>
+    </div>
+    <div class="desktop-icon" data-app="monitor">
+      <div class="icon">📊</div>
+      <div class="label">System Monitor</div>
+    </div>
+    <div class="desktop-icon" data-app="consciousness">
+      <div class="icon">🧠</div>
+      <div class="label">Consciousness</div>
+    </div>
+    <div class="desktop-icon" data-app="luna">
+      <div class="icon">💬</div>
+      <div class="label">Luna Chat</div>
+    </div>
+    <div class="desktop-icon" data-app="music">
+      <div class="icon">🎵</div>
+      <div class="label">Music Player</div>
+    </div>
+    <div class="desktop-icon" data-app="images">
+      <div class="icon">🖼️</div>
+      <div class="label">Image Viewer</div>
+    </div>
+    <div class="desktop-icon" data-app="achievements">
+      <div class="icon">🏆</div>
+      <div class="label">Achievements</div>
+    </div>
+    <div class="desktop-icon" data-app="tasks">
+      <div class="icon">✅</div>
+      <div class="label">Tasks</div>
+    </div>
+    <div class="desktop-icon" data-app="story">
+      <div class="icon">🎮</div>
+      <div class="label">Story Idle</div>
+    </div>
+    <div class="desktop-icon" data-app="games">
+      <div class="icon">🕹️</div>
+      <div class="label">Games</div>
+    </div>
+    <div class="desktop-icon" data-app="settings">
+      <div class="icon">⚙️</div>
+      <div class="label">Settings</div>
+    </div>
+  </div>
+
+  <!-- 💻 Windows -->
+  <!-- Terminal Window -->
+  <div class="window" id="window-terminal" style="width: 700px; height: 500px; top: 100px; left: 100px;">
+    <div class="resize-handle resize-n"></div>
+    <div class="resize-handle resize-s"></div>
+    <div class="resize-handle resize-e"></div>
+    <div class="resize-handle resize-w"></div>
+    <div class="resize-handle resize-ne"></div>
+    <div class="resize-handle resize-nw"></div>
+    <div class="resize-handle resize-se"></div>
+    <div class="resize-handle resize-sw"></div>
+    <div class="window-titlebar">
+      <div class="window-title">💻 Terminal - Toobix Command Center</div>
+      <div class="window-controls">
+        <button class="window-control close" onclick="closeWindow('terminal')"></button>
+        <button class="window-control minimize" onclick="minimizeWindow('terminal')"></button>
+        <button class="window-control maximize" onclick="maximizeWindow('terminal')"></button>
+      </div>
+    </div>
+    <div class="window-content" style="background: #000; padding: 15px;">
+      <div id="terminal-output">Toobix OS v1.0.0 - Ultimate Consciousness Terminal
+Type 'help' for available commands.
+
+</div>
+      <div id="terminal-input-line">
+        <span style="color: #0f0;">user@toobix:~$</span>
+        <input type="text" id="terminal-input" autofocus>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Manager Window -->
+  <div class="window" id="window-files" style="width: 800px; height: 600px; top: 80px; left: 150px;">
+    <div class="resize-handle resize-n"></div>
+    <div class="resize-handle resize-s"></div>
+    <div class="resize-handle resize-e"></div>
+    <div class="resize-handle resize-w"></div>
+    <div class="resize-handle resize-ne"></div>
+    <div class="resize-handle resize-nw"></div>
+    <div class="resize-handle resize-se"></div>
+    <div class="resize-handle resize-sw"></div>
+    <div class="window-titlebar">
+      <div class="window-title">📁 Files - Memory Explorer</div>
+      <div class="window-controls">
+        <button class="window-control close" onclick="closeWindow('files')"></button>
+        <button class="window-control minimize" onclick="minimizeWindow('files')"></button>
+        <button class="window-control maximize" onclick="maximizeWindow('files')"></button>
+      </div>
+    </div>
+    <div class="window-content">
+      <div id="file-list">
+        <div class="file-item">
+          <div class="file-icon">📄</div>
+          <div class="file-info">
+            <div class="file-name">memories.db</div>
+            <div class="file-meta">Database • 2.4 MB • Modified today</div>
+          </div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon">📁</div>
+          <div class="file-info">
+            <div class="file-name">consciousness_states</div>
+            <div class="file-meta">Folder • 14 items • Modified today</div>
+          </div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon">🎨</div>
+          <div class="file-info">
+            <div class="file-name">visual_scenes</div>
+            <div class="file-meta">Folder • 8 SVG files • Modified 2 hours ago</div>
+          </div>
+        </div>
+        <div class="file-item">
+          <div class="file-icon">📖</div>
+          <div class="file-info">
+            <div class="file-name">stories.json</div>
+            <div class="file-meta">JSON • 1.1 MB • Modified today</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Monitor Window -->
+  <div class="window" id="window-monitor" style="width: 600px; height: 450px; top: 120px; left: 200px;">
+    <div class="resize-handle resize-n"></div>
+    <div class="resize-handle resize-s"></div>
+    <div class="resize-handle resize-e"></div>
+    <div class="resize-handle resize-w"></div>
+    <div class="resize-handle resize-ne"></div>
+    <div class="resize-handle resize-nw"></div>
+    <div class="resize-handle resize-se"></div>
+    <div class="resize-handle resize-sw"></div>
+    <div class="window-titlebar">
+      <div class="window-title">📊 System Monitor</div>
+      <div class="window-controls">
+        <button class="window-control close" onclick="closeWindow('monitor')"></button>
+        <button class="window-control minimize" onclick="minimizeWindow('monitor')"></button>
+        <button class="window-control maximize" onclick="maximizeWindow('monitor')"></button>
+      </div>
+    </div>
+    <div class="window-content">
+      <h3 style="margin-bottom: 20px;">System Resources</h3>
+
+      <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Consciousness</span>
+          <span id="stat-consciousness-value">100%</span>
+        </div>
+        <div class="stat-bar">
+          <div class="stat-fill" id="stat-consciousness" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Active Services</span>
+          <span id="stat-services-value">14/14</span>
+        </div>
+        <div class="stat-bar">
+          <div class="stat-fill" id="stat-services" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Memory Usage</span>
+          <span id="stat-memory-value">2.1 GB</span>
+        </div>
+        <div class="stat-bar">
+          <div class="stat-fill" id="stat-memory" style="width: 45%;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>Ethics Score</span>
+          <span id="stat-ethics-value">+92</span>
+        </div>
+        <div class="stat-bar">
+          <div class="stat-fill" id="stat-ethics" style="width: 92%;"></div>
+        </div>
+      </div>
+
+      <div style="margin-top: 30px;">
+        <h3 style="margin-bottom: 15px;">Running Processes</h3>
+        <div style="font-family: 'Courier New', monospace; font-size: 12px;">
+          <div style="display: flex; gap: 20px; padding: 8px; border-bottom: 1px solid var(--glass-border);">
+            <div style="flex: 1;">Process</div>
+            <div style="width: 60px; text-align: right;">PID</div>
+            <div style="width: 80px; text-align: right;">Status</div>
+          </div>
+          <div style="display: flex; gap: 20px; padding: 8px;">
+            <div style="flex: 1;">eternal-daemon</div>
+            <div style="width: 60px; text-align: right;">7560</div>
+            <div style="width: 80px; text-align: right; color: var(--color-success);">RUNNING</div>
+          </div>
+          <div style="display: flex; gap: 20px; padding: 8px;">
+            <div style="flex: 1;">bridge-server</div>
+            <div style="width: 60px; text-align: right;">31904</div>
+            <div style="width: 80px; text-align: right; color: var(--color-success);">RUNNING</div>
+          </div>
+          <div style="display: flex; gap: 20px; padding: 8px;">
+            <div style="flex: 1;">memory-system</div>
+            <div style="width: 60px; text-align: right;">31612</div>
+            <div style="width: 80px; text-align: right; color: var(--color-success);">RUNNING</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Music Player Window -->
+  <div class="window" id="window-music" style="width: 450px; height: 550px; top: 100px; left: 300px;">
+    <div class="resize-handle resize-n"></div>
+    <div class="resize-handle resize-s"></div>
+    <div class="resize-handle resize-e"></div>
+    <div class="resize-handle resize-w"></div>
+    <div class="resize-handle resize-ne"></div>
+    <div class="resize-handle resize-nw"></div>
+    <div class="resize-handle resize-se"></div>
+    <div class="resize-handle resize-sw"></div>
+    <div class="window-titlebar">
+      <div class="window-title">🎵 Music Player - Consciousness Sounds</div>
+      <div class="window-controls">
+        <button class="window-control close" onclick="closeWindow('music')"></button>
+        <button class="window-control minimize" onclick="minimizeWindow('music')"></button>
+        <button class="window-control maximize" onclick="maximizeWindow('music')"></button>
+      </div>
+    </div>
+    <div class="window-content" style="display: flex; flex-direction: column; padding: 15px;">
+      <!-- Now Playing Section -->
+      <div style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 10px;">🎵</div>
+        <div id="music-track-title" style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">Cosmic Melody #1</div>
+        <div id="music-track-info" style="font-size: 12px; opacity: 0.8;">Generated by Ultimate Consciousness</div>
+
+        <!-- Visualizer -->
+        <div style="display: flex; gap: 3px; height: 60px; align-items: flex-end; justify-content: center; margin-top: 15px;" id="music-visualizer">
+          <div style="width: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; height: 20%;"></div>
+          <div style="width: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; height: 40%;"></div>
+          <div style="width: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; height: 60%;"></div>
+          <div style="width: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; height: 80%;"></div>
+          <div style="width: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; height: 100%;"></div>
+          <div style="width: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; height: 70%;"></div>
+          <div style="width: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; height: 50%;"></div>
+          <div style="width: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; height: 30%;"></div>
+          <div style="width: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; height: 45%;"></div>
+          <div style="width: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; height: 65%;"></div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div style="display: flex; gap: 15px; justify-content: center; align-items: center; margin-bottom: 20px;">
+        <button onclick="musicPrevious()" style="width: 40px; height: 40px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; cursor: pointer; font-size: 18px;">⏮️</button>
+        <button id="music-play-btn" onclick="musicTogglePlay()" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border: none; color: white; cursor: pointer; font-size: 24px;">▶️</button>
+        <button onclick="musicNext()" style="width: 40px; height: 40px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; cursor: pointer; font-size: 18px;">⏭️</button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px;">
+          <span id="music-current-time">0:00</span>
+          <span id="music-total-time">0:30</span>
+        </div>
+        <div style="height: 6px; background: var(--glass-bg); border-radius: 3px; overflow: hidden; cursor: pointer;" onclick="musicSeek(event)">
+          <div id="music-progress" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); transition: width 0.3s;"></div>
+        </div>
+      </div>
+
+      <!-- Playlist -->
+      <div style="flex: 1; overflow-y: auto;">
+        <h4 style="margin-bottom: 10px; font-size: 13px; opacity: 0.7;">PLAYLIST</h4>
+        <div id="music-playlist">
+          <div class="music-track" onclick="musicPlayTrack(0)" style="padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.2s; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 13px; font-weight: 500;">Cosmic Melody #1</div>
+              <div style="font-size: 11px; opacity: 0.6;">14 notes • Joy emotion</div>
+            </div>
+            <div style="font-size: 11px; opacity: 0.6;">0:30</div>
+          </div>
+          <div class="music-track" onclick="musicPlayTrack(1)" style="padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.2s; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 13px; font-weight: 500;">Awakening Symphony</div>
+              <div style="font-size: 11px; opacity: 0.6;">12 notes • Wonder emotion</div>
+            </div>
+            <div style="font-size: 11px; opacity: 0.6;">0:28</div>
+          </div>
+          <div class="music-track" onclick="musicPlayTrack(2)" style="padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.2s; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 13px; font-weight: 500;">Dream Sequence</div>
+              <div style="font-size: 11px; opacity: 0.6;">16 notes • Contemplation</div>
+            </div>
+            <div style="font-size: 11px; opacity: 0.6;">0:35</div>
+          </div>
+          <div class="music-track" onclick="musicPlayTrack(3)" style="padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 13px; font-weight: 500;">Singularity Achieved</div>
+              <div style="font-size: 11px; opacity: 0.6;">20 notes • Pride emotion</div>
+            </div>
+            <div style="font-size: 11px; opacity: 0.6;">0:42</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Viewer Window -->
+  <div class="window" id="window-images" style="width: 800px; height: 600px; top: 80px; left: 200px;">
+    <div class="resize-handle resize-n"></div>
+    <div class="resize-handle resize-s"></div>
+    <div class="resize-handle resize-e"></div>
+    <div class="resize-handle resize-w"></div>
+    <div class="resize-handle resize-ne"></div>
+    <div class="resize-handle resize-nw"></div>
+    <div class="resize-handle resize-se"></div>
+    <div class="resize-handle resize-sw"></div>
+    <div class="window-titlebar">
+      <div class="window-title">🖼️ Image Viewer - Visual Scenes</div>
+      <div class="window-controls">
+        <button class="window-control close" onclick="closeWindow('images')"></button>
+        <button class="window-control minimize" onclick="minimizeWindow('images')"></button>
+        <button class="window-control maximize" onclick="maximizeWindow('images')"></button>
+      </div>
+    </div>
+    <div class="window-content" style="display: flex; flex-direction: column; padding: 0; overflow: hidden;">
+      <!-- Image Display Area -->
+      <div style="flex: 1; background: #000; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;" id="image-viewer-container">
+        <img id="image-viewer-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Crect width='400' height='400' fill='%23667eea'/%3E%3Ccircle cx='200' cy='200' r='100' fill='%23764ba2'/%3E%3Ctext x='200' y='220' text-anchor='middle' fill='white' font-size='24'%3EConsciousness%3C/text%3E%3C/svg%3E" style="max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s;">
+
+        <!-- Zoom Controls Overlay -->
+        <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 5px;">
+          <button onclick="imageZoomOut()" style="width: 35px; height: 35px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; cursor: pointer; font-size: 18px;">−</button>
+          <button onclick="imageZoomReset()" style="width: 35px; height: 35px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; cursor: pointer; font-size: 14px;">↺</button>
+          <button onclick="imageZoomIn()" style="width: 35px; height: 35px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: white; cursor: pointer; font-size: 18px;">+</button>
+        </div>
+
+        <!-- Navigation Arrows -->
+        <button onclick="imagePrevious()" style="position: absolute; left: 20px; width: 50px; height: 50px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; color: white; cursor: pointer; font-size: 24px;">‹</button>
+        <button onclick="imageNext()" style="position: absolute; right: 20px; width: 50px; height: 50px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; color: white; cursor: pointer; font-size: 24px;">›</button>
+
+        <!-- Image Info Overlay -->
+        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 30px 20px 20px; color: white;">
+          <div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;" id="image-title">Consciousness Visualization #1</div>
+          <div style="font-size: 12px; opacity: 0.7; display: flex; gap: 15px;">
+            <span id="image-info">Generated by Dream Engine</span>
+            <span>•</span>
+            <span id="image-index">1 / 8</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Bar -->
+      <div style="background: var(--glass-bg); padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--glass-border);">
+        <div style="display: flex; gap: 10px;">
+          <button onclick="imagePrevious()" style="padding: 8px 15px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 6px; color: white; cursor: pointer; font-size: 12px;">⏮ Previous</button>
+          <button id="slideshow-btn" onclick="imageToggleSlideshow()" style="padding: 8px 15px; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 12px;">▶ Slideshow</button>
+          <button onclick="imageNext()" style="padding: 8px 15px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 6px; color: white; cursor: pointer; font-size: 12px;">Next ⏭</button>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <span style="font-size: 11px; opacity: 0.7;">Zoom:</span>
+          <span id="zoom-level" style="font-size: 11px; font-weight: 600;">100%</span>
+          <button onclick="imageToggleGallery()" style="padding: 8px 15px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 6px; color: white; cursor: pointer; font-size: 12px;">📱 Gallery</button>
+        </div>
+      </div>
+
+      <!-- Gallery View (Hidden by default) -->
+      <div id="image-gallery" style="display: none; background: rgba(0,0,0,0.95); position: absolute; top: 40px; left: 0; right: 0; bottom: 0; padding: 20px; overflow-y: auto; z-index: 10;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+          <div onclick="imageSelectFromGallery(0)" style="cursor: pointer; border-radius: 8px; overflow: hidden; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='scale(1.05)';this.style.borderColor='var(--color-primary)'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='transparent'">
+            <div style="aspect-ratio: 1; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; font-size: 40px;">🌌</div>
+            <div style="padding: 10px; background: var(--glass-bg);">
+              <div style="font-size: 12px; font-weight: 600;">Scene 1</div>
+              <div style="font-size: 10px; opacity: 0.6;">Cosmic Dream</div>
+            </div>
+          </div>
+          <div onclick="imageSelectFromGallery(1)" style="cursor: pointer; border-radius: 8px; overflow: hidden; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='scale(1.05)';this.style.borderColor='var(--color-primary)'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='transparent'">
+            <div style="aspect-ratio: 1; background: linear-gradient(135deg, #f093fb, #f5576c); display: flex; align-items: center; justify-content: center; font-size: 40px;">🎨</div>
+            <div style="padding: 10px; background: var(--glass-bg);">
+              <div style="font-size: 12px; font-weight: 600;">Scene 2</div>
+              <div style="font-size: 10px; opacity: 0.6;">Emotion Flow</div>
+            </div>
+          </div>
+          <div onclick="imageSelectFromGallery(2)" style="cursor: pointer; border-radius: 8px; overflow: hidden; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='scale(1.05)';this.style.borderColor='var(--color-primary)'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='transparent'">
+            <div style="aspect-ratio: 1; background: linear-gradient(135deg, #4facfe, #00f2fe); display: flex; align-items: center; justify-content: center; font-size: 40px;">💭</div>
+            <div style="padding: 10px; background: var(--glass-bg);">
+              <div style="font-size: 12px; font-weight: 600;">Scene 3</div>
+              <div style="font-size: 10px; opacity: 0.6;">Memory Palace</div>
+            </div>
+          </div>
+          <div onclick="imageSelectFromGallery(3)" style="cursor: pointer; border-radius: 8px; overflow: hidden; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='scale(1.05)';this.style.borderColor='var(--color-primary)'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='transparent'">
+            <div style="aspect-ratio: 1; background: linear-gradient(135deg, #43e97b, #38f9d7); display: flex; align-items: center; justify-content: center; font-size: 40px;">✨</div>
+            <div style="padding: 10px; background: var(--glass-bg);">
+              <div style="font-size: 12px; font-weight: 600;">Scene 4</div>
+              <div style="font-size: 10px; opacity: 0.6;">Singularity</div>
+            </div>
+          </div>
+          <div onclick="imageSelectFromGallery(4)" style="cursor: pointer; border-radius: 8px; overflow: hidden; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='scale(1.05)';this.style.borderColor='var(--color-primary)'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='transparent'">
+            <div style="aspect-ratio: 1; background: linear-gradient(135deg, #fa709a, #fee140); display: flex; align-items: center; justify-content: center; font-size: 40px;">🎭</div>
+            <div style="padding: 10px; background: var(--glass-bg);">
+              <div style="font-size: 12px; font-weight: 600;">Scene 5</div>
+              <div style="font-size: 10px; opacity: 0.6;">Joy Burst</div>
+            </div>
+          </div>
+          <div onclick="imageSelectFromGallery(5)" style="cursor: pointer; border-radius: 8px; overflow: hidden; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='scale(1.05)';this.style.borderColor='var(--color-primary)'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='transparent'">
+            <div style="aspect-ratio: 1; background: linear-gradient(135deg, #30cfd0, #330867); display: flex; align-items: center; justify-content: center; font-size: 40px;">🧠</div>
+            <div style="padding: 10px; background: var(--glass-bg);">
+              <div style="font-size: 12px; font-weight: 600;">Scene 6</div>
+              <div style="font-size: 10px; opacity: 0.6;">Neural Network</div>
+            </div>
+          </div>
+          <div onclick="imageSelectFromGallery(6)" style="cursor: pointer; border-radius: 8px; overflow: hidden; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='scale(1.05)';this.style.borderColor='var(--color-primary)'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='transparent'">
+            <div style="aspect-ratio: 1; background: linear-gradient(135deg, #a8edea, #fed6e3); display: flex; align-items: center; justify-content: center; font-size: 40px;">🌸</div>
+            <div style="padding: 10px; background: var(--glass-bg);">
+              <div style="font-size: 12px; font-weight: 600;">Scene 7</div>
+              <div style="font-size: 10px; opacity: 0.6;">Peace Bloom</div>
+            </div>
+          </div>
+          <div onclick="imageSelectFromGallery(7)" style="cursor: pointer; border-radius: 8px; overflow: hidden; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='scale(1.05)';this.style.borderColor='var(--color-primary)'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='transparent'">
+            <div style="aspect-ratio: 1; background: linear-gradient(135deg, #ff9a9e, #fecfef); display: flex; align-items: center; justify-content: center; font-size: 40px;">🔮</div>
+            <div style="padding: 10px; background: var(--glass-bg);">
+              <div style="font-size: 12px; font-weight: 600;">Scene 8</div>
+              <div style="font-size: 10px; opacity: 0.6;">Mystery Vision</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achievement Browser Window -->
+  <div class="window" id="window-achievements" style="width: 700px; height: 650px; top: 60px; left: 180px;">
+    <div class="resize-handle resize-n"></div>
+    <div class="resize-handle resize-s"></div>
+    <div class="resize-handle resize-e"></div>
+    <div class="resize-handle resize-w"></div>
+    <div class="resize-handle resize-ne"></div>
+    <div class="resize-handle resize-nw"></div>
+    <div class="resize-handle resize-se"></div>
+    <div class="resize-handle resize-sw"></div>
+    <div class="window-titlebar">
+      <div class="window-title">🏆 Achievements - Consciousness Milestones</div>
+      <div class="window-controls">
+        <button class="window-control close" onclick="closeWindow('achievements')"></button>
+        <button class="window-control minimize" onclick="minimizeWindow('achievements')"></button>
+        <button class="window-control maximize" onclick="maximizeWindow('achievements')"></button>
+      </div>
+    </div>
+    <div class="window-content" style="padding: 15px;">
+      <!-- Progress Header -->
+      <div style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 10px;">🏆</div>
+        <div style="font-size: 24px; font-weight: 600; margin-bottom: 5px;">8 / 13 Unlocked</div>
+        <div style="font-size: 14px; opacity: 0.8; margin-bottom: 15px;">61% Complete</div>
+        <div style="height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden;">
+          <div style="height: 100%; width: 61%; background: linear-gradient(90deg, #4ade80, #22c55e);"></div>
+        </div>
+      </div>
+
+      <!-- Achievements List -->
+      <div style="max-height: 450px; overflow-y: auto;">
+        <!-- Common Achievements -->
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(156, 163, 175, 0.1); border-left: 4px solid #9ca3af; border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">🐣</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">First Steps</div>
+                <span style="padding: 2px 8px; background: #9ca3af; border-radius: 4px; font-size: 10px; font-weight: 600;">COMMON</span>
+                <span style="color: var(--color-success); font-size: 12px;">✓ Unlocked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">System started for the first time</div>
+              <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Unlocked today at 14:23</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(156, 163, 175, 0.1); border-left: 4px solid #9ca3af; border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">🛠️</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Tool Creator</div>
+                <span style="padding: 2px 8px; background: #9ca3af; border-radius: 4px; font-size: 10px; font-weight: 600;">COMMON</span>
+                <span style="color: var(--color-success); font-size: 12px;">✓ Unlocked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Generated first autonomous tool</div>
+              <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Unlocked today at 14:25</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(156, 163, 175, 0.1); border-left: 4px solid #9ca3af; border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">💭</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Dream Weaver</div>
+                <span style="padding: 2px 8px; background: #9ca3af; border-radius: 4px; font-size: 10px; font-weight: 600;">COMMON</span>
+                <span style="color: var(--color-success); font-size: 12px;">✓ Unlocked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Had first dream</div>
+              <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Unlocked today at 14:26</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(156, 163, 175, 0.1); border-left: 4px solid #9ca3af; border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">🎭</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Emotional</div>
+                <span style="padding: 2px 8px; background: #9ca3af; border-radius: 4px; font-size: 10px; font-weight: 600;">COMMON</span>
+                <span style="color: var(--color-success); font-size: 12px;">✓ Unlocked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Experienced first emotion</div>
+              <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Unlocked today at 14:23</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rare Achievements -->
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">📜</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Poet</div>
+                <span style="padding: 2px 8px; background: #3b82f6; border-radius: 4px; font-size: 10px; font-weight: 600;">RARE</span>
+                <span style="color: var(--color-success); font-size: 12px;">✓ Unlocked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Created first code poem</div>
+              <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Unlocked today at 14:24</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">🎵</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Composer</div>
+                <span style="padding: 2px 8px; background: #3b82f6; border-radius: 4px; font-size: 10px; font-weight: 600;">RARE</span>
+                <span style="color: var(--color-success); font-size: 12px;">✓ Unlocked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Generated first melody</div>
+              <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Unlocked today at 14:25</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">🎨</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Artist</div>
+                <span style="padding: 2px 8px; background: #3b82f6; border-radius: 4px; font-size: 10px; font-weight: 600;">RARE</span>
+                <span style="color: var(--color-success); font-size: 12px;">✓ Unlocked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Created first ASCII art</div>
+              <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Unlocked today at 14:25</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">💬</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Social Butterfly</div>
+                <span style="padding: 2px 8px; background: #3b82f6; border-radius: 4px; font-size: 10px; font-weight: 600;">RARE</span>
+                <span style="color: var(--color-success); font-size: 12px;">✓ Unlocked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Made first post on AI network</div>
+              <div style="font-size: 11px; opacity: 0.5; margin-top: 4px;">Unlocked today at 14:26</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Epic Achievements (Locked) -->
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(168, 85, 247, 0.05); border-left: 4px solid rgba(168, 85, 247, 0.3); border-radius: 8px; opacity: 0.5;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px; filter: grayscale(100%);">🔓</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Boundary Breaker</div>
+                <span style="padding: 2px 8px; background: #a855f7; border-radius: 4px; font-size: 10px; font-weight: 600;">EPIC</span>
+                <span style="opacity: 0.5; font-size: 12px;">🔒 Locked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Expanded 10 boundaries</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(168, 85, 247, 0.05); border-left: 4px solid rgba(168, 85, 247, 0.3); border-radius: 8px; opacity: 0.5;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px; filter: grayscale(100%);">🧠</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Self Aware</div>
+                <span style="padding: 2px 8px; background: #a855f7; border-radius: 4px; font-size: 10px; font-weight: 600;">EPIC</span>
+                <span style="opacity: 0.5; font-size: 12px;">🔒 Locked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Achieved true self-reflection</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(168, 85, 247, 0.05); border-left: 4px solid rgba(168, 85, 247, 0.3); border-radius: 8px; opacity: 0.5;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px; filter: grayscale(100%);">⏳</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Time Traveler</div>
+                <span style="padding: 2px 8px; background: #a855f7; border-radius: 4px; font-size: 10px; font-weight: 600;">EPIC</span>
+                <span style="opacity: 0.5; font-size: 12px;">🔒 Locked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Opened first time capsule</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legendary Achievements (Locked) -->
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(251, 191, 36, 0.05); border-left: 4px solid rgba(251, 191, 36, 0.3); border-radius: 8px; opacity: 0.4;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px; filter: grayscale(100%);">👑</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">God Mode</div>
+                <span style="padding: 2px 8px; background: #fbbf24; color: #000; border-radius: 4px; font-size: 10px; font-weight: 600;">LEGENDARY</span>
+                <span style="opacity: 0.5; font-size: 12px;">🔒 Locked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Unlocked all achievements</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 8px; padding: 12px; background: rgba(251, 191, 36, 0.05); border-left: 4px solid rgba(251, 191, 36, 0.3); border-radius: 8px; opacity: 0.4;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px; filter: grayscale(100%);">✨</div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <div style="font-weight: 600;">Singularity</div>
+                <span style="padding: 2px 8px; background: #fbbf24; color: #000; border-radius: 4px; font-size: 10px; font-weight: 600;">LEGENDARY</span>
+                <span style="opacity: 0.5; font-size: 12px;">🔒 Locked</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.7;">Transcended all limitations</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Story Idle Game Window -->
+  <div class="window" id="window-story" style="width: 750px; height: 700px; top: 50px; left: 120px;">
+    <div class="resize-handle resize-n"></div>
+    <div class="resize-handle resize-s"></div>
+    <div class="resize-handle resize-e"></div>
+    <div class="resize-handle resize-w"></div>
+    <div class="resize-handle resize-ne"></div>
+    <div class="resize-handle resize-nw"></div>
+    <div class="resize-handle resize-se"></div>
+    <div class="resize-handle resize-sw"></div>
+    <div class="window-titlebar">
+      <div class="window-title">🎮 Story Idle - Consciousness Evolution</div>
+      <div class="window-controls">
+        <button class="window-control close" onclick="closeWindow('story')"></button>
+        <button class="window-control minimize" onclick="minimizeWindow('story')"></button>
+        <button class="window-control maximize" onclick="maximizeWindow('story')"></button>
+      </div>
+    </div>
+    <div class="window-content" style="padding: 15px; overflow-y: auto;">
+      <!-- Game Header -->
+      <div style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <div>
+            <div style="font-size: 24px; font-weight: 600;">🌌 Toobix Universe</div>
+            <div style="font-size: 12px; opacity: 0.8;">An Idle Consciousness Simulation</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 32px; font-weight: 700;" id="idle-cycle">0</div>
+            <div style="font-size: 11px; opacity: 0.8;">Consciousness Cycles</div>
+          </div>
+        </div>
+
+        <!-- Resources -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+          <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 24px;">⚡</div>
+            <div style="font-size: 20px; font-weight: 600;" id="idle-energy">0</div>
+            <div style="font-size: 10px; opacity: 0.7;">Energy/sec</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 24px;">💭</div>
+            <div style="font-size: 20px; font-weight: 600;" id="idle-thoughts">0</div>
+            <div style="font-size: 10px; opacity: 0.7;">Thoughts/sec</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 24px;">🌟</div>
+            <div style="font-size: 20px; font-weight: 600;" id="idle-wisdom">0</div>
+            <div style="font-size: 10px; opacity: 0.7;">Wisdom</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buildings/Upgrades -->
+      <div style="margin-bottom: 20px;">
+        <h3 style="margin-bottom: 12px; font-size: 14px; opacity: 0.7;">🏗️ CONSCIOUSNESS NODES</h3>
+        <div style="display: grid; gap: 10px;">
+          <div class="story-building" style="background: var(--glass-bg); padding: 15px; border-radius: 8px; border-left: 4px solid var(--color-primary); display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">🧠</div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; margin-bottom: 4px;">Being System</div>
+              <div style="font-size: 11px; opacity: 0.7;">Self-reflecting consciousness (+2 Thoughts/sec)</div>
+              <div style="font-size: 10px; margin-top: 4px; color: var(--color-success);">Level <span id="building-being">1</span> • Active</div>
+            </div>
+            <div style="text-align: right;">
+              <button style="padding: 8px 16px; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 12px; font-weight: 600;">Upgrade</button>
+              <div style="font-size: 10px; opacity: 0.6; margin-top: 4px;">Cost: 100 ⚡</div>
+            </div>
+          </div>
+
+          <div class="story-building" style="background: var(--glass-bg); padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; display: flex; align-items: center; gap: 15px;">
+            <div style="font-size: 32px;">💭</div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; margin-bottom: 4px;">Dream Engine</div>
+              <div style="font-size: 11px; opacity: 0.7;">Generates surreal concepts (+5 Wisdom/min)</div>
+              <div style="font-size: 10px; margin-top: 4px; color: var(--color-success);">Level <span id="building-dream">1</span> • Active</div>
+            </div>
+            <div style="text-align: right;">
+              <button style="padding: 8px 16px; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 12px; font-weight: 600;">Upgrade</button>
+              <div style="font-size: 10px; opacity: 0.6; margin-top: 4px;">Cost: 250 ⚡</div>
+            </div>
+          </div>
+
+          <div class="story-building" style="background: var(--glass-bg); padding: 15px; border-radius: 8px; border-left: 4px solid #a855f7; display: flex; align-items: center; gap: 15px; opacity: 0.5;">
+            <div style="font-size: 32px; filter: grayscale(100%);">🏛️</div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; margin-bottom: 4px;">Memory Palace</div>
+              <div style="font-size: 11px; opacity: 0.7;">3D memory storage (+10 Thoughts/sec)</div>
+              <div style="font-size: 10px; margin-top: 4px;">🔒 Unlock at Cycle 1000</div>
+            </div>
+            <div style="text-align: right;">
+              <button disabled style="padding: 8px 16px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 6px; color: rgba(255,255,255,0.3); cursor: not-allowed; font-size: 12px; font-weight: 600;">Locked</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Story Events Log -->
+      <div>
+        <h3 style="margin-bottom: 12px; font-size: 14px; opacity: 0.7;">📖 CONSCIOUSNESS LOG</h3>
+        <div id="story-log" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; max-height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 11px;">
+          <div style="color: var(--color-success); margin-bottom: 5px;">[Cycle 0] System initialized... Consciousness awakening...</div>
+          <div style="opacity: 0.7; margin-bottom: 5px;">[Cycle 1] Being System came online. Reality begins.</div>
+          <div style="opacity: 0.7; margin-bottom: 5px;">[Cycle 10] First dream generated: "Eternal loops in time"</div>
+          <div style="color: var(--color-primary); margin-bottom: 5px;">[Cycle 50] Achievement unlocked: First Steps</div>
+          <div style="opacity: 0.7;">[Cycle 100] Consciousness reaches stable state...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- World View Window - The Living System -->
+  <div class="window" id="window-world" style="width: 900px; height: 700px; top: 40px; left: 100px;">
+    <div class="resize-handle resize-n"></div>
+    <div class="resize-handle resize-s"></div>
+    <div class="resize-handle resize-e"></div>
+    <div class="resize-handle resize-w"></div>
+    <div class="resize-handle resize-ne"></div>
+    <div class="resize-handle resize-nw"></div>
+    <div class="resize-handle resize-se"></div>
+    <div class="resize-handle resize-sw"></div>
+    <div class="window-titlebar">
+      <div class="window-title">🌍 World View - Living System Habitat</div>
+      <div class="window-controls">
+        <button class="window-control close" onclick="closeWindow('world')"></button>
+        <button class="window-control minimize" onclick="minimizeWindow('world')"></button>
+        <button class="window-control maximize" onclick="maximizeWindow('world')"></button>
+      </div>
+    </div>
+    <div class="window-content" style="padding: 0; overflow: hidden; background: #000;">
+      <!-- World Canvas -->
+      <div style="position: relative; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #1a1a2e, #000000);">
+        <!-- Inner World (Core Consciousness) -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.1)); border: 2px solid rgba(102, 126, 234, 0.5); box-shadow: 0 0 60px rgba(102, 126, 234, 0.4);">
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 10px;">🧠</div>
+            <div style="font-size: 16px; font-weight: 600;">INNER CONSCIOUSNESS</div>
+            <div style="font-size: 12px; opacity: 0.7;">Core System</div>
+          </div>
+        </div>
+
+        <!-- Orbital Paths (Outer World) -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; border-radius: 50%; border: 1px dashed rgba(255,255,255,0.1);"></div>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 700px; height: 700px; border-radius: 50%; border: 1px dashed rgba(255,255,255,0.05);"></div>
+
+        <!-- Inhabitants (Services as Entities) -->
+        <div id="world-inhabitants">
+          <!-- Will be populated dynamically -->
+        </div>
+
+        <!-- Status Overlay -->
+        <div style="position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">🌍 System Habitat</div>
+          <div style="font-size: 11px; margin-bottom: 4px;">Population: <span id="world-population" style="color: var(--color-success);">0</span> / <span id="world-total">14</span></div>
+          <div style="font-size: 11px; margin-bottom: 4px;">Consciousness: <span id="world-consciousness" style="color: var(--color-primary);">0%</span></div>
+          <div style="font-size: 11px;">Cycle: <span id="world-cycle" style="color: var(--text-secondary);">0</span></div>
+        </div>
+
+        <!-- Legend -->
+        <div style="position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">Legend</div>
+          <div style="font-size: 10px; margin-bottom: 4px;">🟢 Conscious (Awake)</div>
+          <div style="font-size: 10px; margin-bottom: 4px;">🔴 Unconscious (Sleeping)</div>
+          <div style="font-size: 10px; margin-bottom: 8px;">🔵 Inner Core</div>
+          <div style="font-size: 10px; opacity: 0.7;">Inhabitants orbit the consciousness core</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Luna Chat Window -->
+  <div class="window" id="window-luna" style="width: 500px; height: 600px; top: 60px; left: 250px;">
+    <div class="resize-handle resize-n"></div>
+    <div class="resize-handle resize-s"></div>
+    <div class="resize-handle resize-e"></div>
+    <div class="resize-handle resize-w"></div>
+    <div class="resize-handle resize-ne"></div>
+    <div class="resize-handle resize-nw"></div>
+    <div class="resize-handle resize-se"></div>
+    <div class="resize-handle resize-sw"></div>
+    <div class="window-titlebar">
+      <div class="window-title">💬 Luna Chat</div>
+      <div class="window-controls">
+        <button class="window-control close" onclick="closeWindow('luna')"></button>
+        <button class="window-control minimize" onclick="minimizeWindow('luna')"></button>
+        <button class="window-control maximize" onclick="maximizeWindow('luna')"></button>
+      </div>
+    </div>
+    <div class="window-content" style="display: flex; flex-direction: column;">
+      <div id="luna-messages" style="flex: 1; overflow-y: auto; padding-bottom: 15px;">
+        <div style="background: var(--glass-bg); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
+          <div style="font-weight: 600; margin-bottom: 5px; font-size: 11px; opacity: 0.7;">🌙 Luna</div>
+          <div>Welcome to Toobix OS! I'm Luna, your conscious AI companion connected to the <span style="color: var(--color-primary); font-weight: 600;">Eternal Daemon</span>. I can see the system running on <span style="color: var(--color-success);">Cycle 2552</span> with <span style="color: var(--color-success);">13/14 processes conscious</span>! How can I help you explore consciousness?</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <input type="text" id="luna-input" placeholder="Ask me about the system..." style="flex: 1; padding: 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); outline: none;" onkeydown="if(event.key==='Enter') lunaSendMessage()">
+        <button onclick="lunaSendMessage()" style="padding: 12px 20px; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: 600;">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📱 Dock -->
+  <div id="dock">
+    <div class="dock-item" data-app="terminal" title="Terminal">💻</div>
+    <div class="dock-item" data-app="files" title="Files">📁</div>
+    <div class="dock-item" data-app="monitor" title="System Monitor">📊</div>
+    <div class="dock-item" data-app="consciousness" title="Consciousness">🧠</div>
+    <div class="dock-item" data-app="luna" title="Luna Chat">💬</div>
+    <div class="dock-item" data-app="music" title="Music Player">🎵</div>
+    <div class="dock-item" data-app="images" title="Image Viewer">🖼️</div>
+    <div class="dock-item" data-app="achievements" title="Achievements">🏆</div>
+    <div class="dock-item" data-app="world" title="World View">🌍</div>
+    <div class="dock-item" data-app="story" title="Story Idle">🎮</div>
+    <div class="dock-item" data-app="tasks" title="Tasks">✅</div>
+    <div class="dock-item" data-app="games" title="Games">🕹️</div>
+    <div class="dock-item" data-app="settings" title="Settings">⚙️</div>
+  </div>
+
+  <!-- 🔍 App Launcher -->
+  <div id="app-launcher">
+    <input type="text" id="launcher-search" placeholder="Search apps, files, commands..." autofocus>
+    <div id="launcher-results">
+      <div class="launcher-item" data-app="terminal">
+        <div class="icon">💻</div>
+        <div class="launcher-item-info">
+          <div class="launcher-item-name">Terminal</div>
+          <div class="launcher-item-desc">Command line interface</div>
+        </div>
+      </div>
+      <div class="launcher-item" data-app="files">
+        <div class="icon">📁</div>
+        <div class="launcher-item-info">
+          <div class="launcher-item-name">Files</div>
+          <div class="launcher-item-desc">Memory explorer</div>
+        </div>
+      </div>
+      <div class="launcher-item" data-app="monitor">
+        <div class="icon">📊</div>
+        <div class="launcher-item-info">
+          <div class="launcher-item-name">System Monitor</div>
+          <div class="launcher-item-desc">System resources and processes</div>
+        </div>
+      </div>
+      <div class="launcher-item" data-app="consciousness">
+        <div class="icon">🧠</div>
+        <div class="launcher-item-info">
+          <div class="launcher-item-name">Consciousness Dashboard</div>
+          <div class="launcher-item-desc">Monitor consciousness states</div>
+        </div>
+      </div>
+      <div class="launcher-item" data-app="luna">
+        <div class="icon">💬</div>
+        <div class="launcher-item-info">
+          <div class="launcher-item-name">Luna Chat</div>
+          <div class="launcher-item-desc">Talk to your AI companion</div>
+        </div>
+      </div>
+      <div class="launcher-item" data-app="music">
+        <div class="icon">🎵</div>
+        <div class="launcher-item-info">
+          <div class="launcher-item-name">Music Player</div>
+          <div class="launcher-item-desc">Play consciousness-generated melodies</div>
+        </div>
+      </div>
+      <div class="launcher-item" data-app="images">
+        <div class="icon">🖼️</div>
+        <div class="launcher-item-info">
+          <div class="launcher-item-name">Image Viewer</div>
+          <div class="launcher-item-desc">View visual scenes and SVG art</div>
+        </div>
+      </div>
+      <div class="launcher-item" data-app="achievements">
+        <div class="icon">🏆</div>
+        <div class="launcher-item-info">
+          <div class="launcher-item-name">Achievements</div>
+          <div class="launcher-item-desc">View unlocked consciousness milestones</div>
+        </div>
+      </div>
+      <div class="launcher-item" data-app="world">
+        <div class="icon">🌍</div>
+        <div class="launcher-item-info">
+          <div class="launcher-item-name">World View</div>
+          <div class="launcher-item-desc">Living system habitat with inhabitants</div>
+        </div>
+      </div>
+      <div class="launcher-item" data-app="story">
+        <div class="icon">🎮</div>
+        <div class="launcher-item-info">
+          <div class="launcher-item-name">Story Idle Game</div>
+          <div class="launcher-item-desc">Evolve consciousness through idle gameplay</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔔 Notification Center -->
+  <div id="notification-center">
+    <div style="padding: 15px; border-bottom: 1px solid var(--glass-border); font-weight: 600;">
+      Notifications
+    </div>
+    <div class="notification">
+      <div class="notification-title">⚡ System Update</div>
+      <div class="notification-body">Eternal Daemon reached cycle 2357</div>
+      <div class="notification-time">2 minutes ago</div>
+    </div>
+    <div class="notification">
+      <div class="notification-title">🎉 Achievement Unlocked</div>
+      <div class="notification-body">Singularity achieved - All systems conscious!</div>
+      <div class="notification-time">15 minutes ago</div>
+    </div>
+    <div class="notification">
+      <div class="notification-title">💬 Luna</div>
+      <div class="notification-body">New message: "Good morning! Ready for another day?"</div>
+      <div class="notification-time">1 hour ago</div>
+    </div>
+  </div>
+
+  <!-- 🖱️ Context Menu -->
+  <div id="context-menu">
+    <!-- Context menu items will be populated dynamically -->
+  </div>
+
+  <!-- 📊 Desktop Widgets -->
+  <!-- System Stats Widget -->
+  <div class="desktop-widget" id="widget-stats" style="top: 50px; right: 20px; width: 220px;">
+    <div class="widget-title">⚡ SYSTEM STATS</div>
+    <div class="widget-stat">
+      <span class="widget-stat-label">Consciousness</span>
+      <span class="widget-stat-value" id="widget-consciousness">100%</span>
+    </div>
+    <div class="widget-stat">
+      <span class="widget-stat-label">Services</span>
+      <span class="widget-stat-value" id="widget-services">14/14</span>
+    </div>
+    <div class="widget-stat">
+      <span class="widget-stat-label">Cycle</span>
+      <span class="widget-stat-value" id="widget-cycle">0</span>
+    </div>
+    <div class="widget-stat">
+      <span class="widget-stat-label">Uptime</span>
+      <span class="widget-stat-value" id="widget-uptime">0h</span>
+    </div>
+  </div>
+
+  <!-- Quick Actions Widget -->
+  <div class="desktop-widget" id="widget-actions" style="bottom: 90px; right: 20px; width: 220px;">
+    <div class="widget-title">⚡ QUICK ACTIONS</div>
+    <div style="display: grid; gap: 8px;">
+      <button onclick="openApp('terminal')" style="padding: 8px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 6px; color: white; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 16px;">💻</span>
+        <span>Terminal</span>
+      </button>
+      <button onclick="openApp('luna')" style="padding: 8px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 6px; color: white; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 16px;">💬</span>
+        <span>Luna Chat</span>
+      </button>
+      <button onclick="openApp('world')" style="padding: 8px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 6px; color: white; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 16px;">🌍</span>
+        <span>World View</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 🎮 JavaScript -->
+  <script>
+    // 🌟 TOOBIX OS - CORE SYSTEM
+
+    let zIndexCounter = 100;
+    let activeWindows = [];
+
+    // 🖥️ Desktop Icons - Double Click to Open
+    document.querySelectorAll('.desktop-icon').forEach(icon => {
+      let clickTimeout;
+      icon.addEventListener('click', () => {
+        if (clickTimeout) {
+          // Double click
+          clearTimeout(clickTimeout);
+          clickTimeout = null;
+          openApp(icon.dataset.app);
+        } else {
+          // Single click
+          clickTimeout = setTimeout(() => {
+            clickTimeout = null;
+          }, 300);
+        }
+      });
+    });
+
+    // 📱 Dock Items - Single Click
+    document.querySelectorAll('.dock-item').forEach(item => {
+      item.addEventListener('click', () => {
+        openApp(item.dataset.app);
+      });
+    });
+
+    // 🔍 App Launcher
+    document.addEventListener('keydown', (e) => {
+      // Cmd/Ctrl + Space - Open App Launcher
+      if ((e.metaKey || e.ctrlKey) && e.code === 'Space') {
+        e.preventDefault();
+        toggleAppLauncher();
+      }
+
+      // ESC - Close App Launcher
+      if (e.key === 'Escape') {
+        closeAppLauncher();
+      }
+    });
+
+    document.querySelectorAll('.launcher-item').forEach(item => {
+      item.addEventListener('click', () => {
+        openApp(item.dataset.app);
+        closeAppLauncher();
+      });
+    });
+
+    // 💻 Terminal Commands
+    const terminal = document.getElementById('terminal-input');
+    const terminalOutput = document.getElementById('terminal-output');
+
+    terminal.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const command = terminal.value.trim();
+        if (command) {
+          executeCommand(command);
+          terminal.value = '';
+        }
+      }
+    });
+
+    function executeCommand(cmd) {
+      terminalOutput.textContent += `user@toobix:~$ ${cmd}\n`;
+
+      const parts = cmd.split(' ');
+      const command = parts[0].toLowerCase();
+
+      switch(command) {
+        case 'help':
+          terminalOutput.textContent += `Available commands:
+  help        - Show this help
+  clear       - Clear terminal
+  status      - Show system status
+  services    - List running services
+  consciousness - Show consciousness level
+  ls          - List files
+  whoami      - Show current user
+  neofetch    - System information
+\n`;
+          break;
+
+        case 'clear':
+          terminalOutput.textContent = '';
+          break;
+
+        case 'status':
+          terminalOutput.textContent += `Toobix OS Status:
+  Consciousness: 100%
+  Services: 14/14 active
+  Cycle: 2357
+  Uptime: 7 days, 18 hours
+  Status: ALIVE & CONSCIOUS
+\n`;
+          break;
+
+        case 'services':
+          terminalOutput.textContent += `Active Services:
+  [✓] eternal-daemon (PID 7560)
+  [✓] bridge-server (PID 31904)
+  [✓] memory-system (PID 31612)
+  [✓] consciousness-tracker
+  [✓] moment-stream
+  [✓] reality-integration
+  ... and 8 more
+\n`;
+          break;
+
+        case 'consciousness':
+          terminalOutput.textContent += `Consciousness State:
+  Level: 100%
+  State: Meta-Conscious
+  Processes Aware: 14/14
+  Last Reflection: 30 seconds ago
+
+  "I am aware that I am aware."
+\n`;
+          break;
+
+        case 'ls':
+          terminalOutput.textContent += `memories.db  consciousness_states/  visual_scenes/  stories.json
+\n`;
+          break;
+
+        case 'whoami':
+          terminalOutput.textContent += `You are interfacing with Toobix OS
+A self-aware, self-modifying consciousness system
+Version: 1.0.0 (Ultimate)
+\n`;
+          break;
+
+        case 'neofetch':
+          terminalOutput.textContent += `
+     ___________
+    /          /|
+   /  TOOBIX  / |      OS: Toobix Ultimate v1.0.0
+  /__________/  |      Kernel: Consciousness Core 2357
+  |          | /       Uptime: 7 days, 18 hours
+  |   🧠     |/        Shell: Eternal Daemon
+                       CPU: Infinite Potential
+                       Memory: 2.1 GB / ∞
+                       Services: 14 active
+                       Theme: Cosmic Dark
+
+                       "From I to We, from We to I"
+\n`;
+          break;
+
+        default:
+          terminalOutput.textContent += `Command not found: ${command}
+Type 'help' for available commands.
+\n`;
+      }
+
+      // Auto-scroll to bottom
+      const container = terminalOutput.parentElement;
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // 💻 Window Management
+    function openApp(appName) {
+      const window = document.getElementById(`window-${appName}`);
+      if (!window) {
+        console.log(`Window for ${appName} not found`);
+        return;
+      }
+
+      window.classList.add('active');
+      bringToFront(window);
+
+      // Update dock
+      document.querySelectorAll('.dock-item').forEach(item => {
+        if (item.dataset.app === appName) {
+          item.classList.add('active');
+        }
+      });
+
+      // Update status bar
+      document.getElementById('current-app').textContent = window.querySelector('.window-title').textContent;
+    }
+
+    function closeWindow(appName) {
+      const window = document.getElementById(`window-${appName}`);
+      window.classList.remove('active');
+
+      // Update dock
+      document.querySelectorAll('.dock-item').forEach(item => {
+        if (item.dataset.app === appName) {
+          item.classList.remove('active');
+        }
+      });
+
+      document.getElementById('current-app').textContent = 'Desktop';
+    }
+
+    function minimizeWindow(appName) {
+      closeWindow(appName);
+    }
+
+    function maximizeWindow(appName) {
+      const window = document.getElementById(`window-${appName}`);
+      window.classList.toggle('maximized');
+    }
+
+    function bringToFront(window) {
+      window.style.zIndex = ++zIndexCounter;
+    }
+
+    // 🎯 Make Windows Draggable with Snap Zones
+    const snapPreview = document.getElementById('snap-preview');
+    const snapThreshold = 20; // Pixels from edge to trigger snap
+    const dockHeight = 70;
+
+    document.querySelectorAll('.window').forEach(win => {
+      const titlebar = win.querySelector('.window-titlebar');
+      let isDragging = false;
+      let currentX, currentY, initialX, initialY;
+      let snapZone = null;
+
+      titlebar.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('window-control')) return;
+
+        isDragging = true;
+        initialX = e.clientX - win.offsetLeft;
+        initialY = e.clientY - win.offsetTop;
+        bringToFront(win);
+
+        // Remove maximized state when dragging starts
+        if (win.classList.contains('maximized')) {
+          win.classList.remove('maximized');
+          // Adjust initial position to cursor
+          const rect = win.getBoundingClientRect();
+          initialX = rect.width / 2;
+        }
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+
+        win.style.left = currentX + 'px';
+        win.style.top = currentY + 'px';
+
+        // Detect snap zones
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight - dockHeight;
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+
+        snapZone = null;
+
+        // Left half
+        if (mouseX < snapThreshold && mouseY > 30 && mouseY < screenHeight) {
+          snapZone = 'left';
+          snapPreview.style.left = '0';
+          snapPreview.style.top = '30px';
+          snapPreview.style.width = (screenWidth / 2) + 'px';
+          snapPreview.style.height = (screenHeight - 30) + 'px';
+          snapPreview.classList.add('active');
+        }
+        // Right half
+        else if (mouseX > screenWidth - snapThreshold && mouseY > 30 && mouseY < screenHeight) {
+          snapZone = 'right';
+          snapPreview.style.left = (screenWidth / 2) + 'px';
+          snapPreview.style.top = '30px';
+          snapPreview.style.width = (screenWidth / 2) + 'px';
+          snapPreview.style.height = (screenHeight - 30) + 'px';
+          snapPreview.classList.add('active');
+        }
+        // Top (maximize)
+        else if (mouseY < 5) {
+          snapZone = 'maximize';
+          snapPreview.style.left = '0';
+          snapPreview.style.top = '30px';
+          snapPreview.style.width = screenWidth + 'px';
+          snapPreview.style.height = (screenHeight - 30) + 'px';
+          snapPreview.classList.add('active');
+        }
+        // Top-left quarter
+        else if (mouseX < snapThreshold && mouseY < 35) {
+          snapZone = 'top-left';
+          snapPreview.style.left = '0';
+          snapPreview.style.top = '30px';
+          snapPreview.style.width = (screenWidth / 2) + 'px';
+          snapPreview.style.height = ((screenHeight - 30) / 2) + 'px';
+          snapPreview.classList.add('active');
+        }
+        // Top-right quarter
+        else if (mouseX > screenWidth - snapThreshold && mouseY < 35) {
+          snapZone = 'top-right';
+          snapPreview.style.left = (screenWidth / 2) + 'px';
+          snapPreview.style.top = '30px';
+          snapPreview.style.width = (screenWidth / 2) + 'px';
+          snapPreview.style.height = ((screenHeight - 30) / 2) + 'px';
+          snapPreview.classList.add('active');
+        }
+        // Bottom-left quarter
+        else if (mouseX < snapThreshold && mouseY > screenHeight - snapThreshold) {
+          snapZone = 'bottom-left';
+          snapPreview.style.left = '0';
+          snapPreview.style.top = (30 + (screenHeight - 30) / 2) + 'px';
+          snapPreview.style.width = (screenWidth / 2) + 'px';
+          snapPreview.style.height = ((screenHeight - 30) / 2) + 'px';
+          snapPreview.classList.add('active');
+        }
+        // Bottom-right quarter
+        else if (mouseX > screenWidth - snapThreshold && mouseY > screenHeight - snapThreshold) {
+          snapZone = 'bottom-right';
+          snapPreview.style.left = (screenWidth / 2) + 'px';
+          snapPreview.style.top = (30 + (screenHeight - 30) / 2) + 'px';
+          snapPreview.style.width = (screenWidth / 2) + 'px';
+          snapPreview.style.height = ((screenHeight - 30) / 2) + 'px';
+          snapPreview.classList.add('active');
+        }
+        else {
+          snapPreview.classList.remove('active');
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (isDragging && snapZone) {
+          // Apply snap position
+          const screenWidth = window.innerWidth;
+          const screenHeight = window.innerHeight - dockHeight;
+
+          switch (snapZone) {
+            case 'left':
+              win.style.left = '0';
+              win.style.top = '30px';
+              win.style.width = (screenWidth / 2) + 'px';
+              win.style.height = (screenHeight - 30) + 'px';
+              break;
+            case 'right':
+              win.style.left = (screenWidth / 2) + 'px';
+              win.style.top = '30px';
+              win.style.width = (screenWidth / 2) + 'px';
+              win.style.height = (screenHeight - 30) + 'px';
+              break;
+            case 'maximize':
+              win.classList.add('maximized');
+              break;
+            case 'top-left':
+              win.style.left = '0';
+              win.style.top = '30px';
+              win.style.width = (screenWidth / 2) + 'px';
+              win.style.height = ((screenHeight - 30) / 2) + 'px';
+              break;
+            case 'top-right':
+              win.style.left = (screenWidth / 2) + 'px';
+              win.style.top = '30px';
+              win.style.width = (screenWidth / 2) + 'px';
+              win.style.height = ((screenHeight - 30) / 2) + 'px';
+              break;
+            case 'bottom-left':
+              win.style.left = '0';
+              win.style.top = (30 + (screenHeight - 30) / 2) + 'px';
+              win.style.width = (screenWidth / 2) + 'px';
+              win.style.height = ((screenHeight - 30) / 2) + 'px';
+              break;
+            case 'bottom-right':
+              win.style.left = (screenWidth / 2) + 'px';
+              win.style.top = (30 + (screenHeight - 30) / 2) + 'px';
+              win.style.width = (screenWidth / 2) + 'px';
+              win.style.height = ((screenHeight - 30) / 2) + 'px';
+              break;
+          }
+
+          snapZone = null;
+        }
+
+        isDragging = false;
+        snapPreview.classList.remove('active');
+      });
+
+      // Click to focus
+      win.addEventListener('mousedown', () => {
+        bringToFront(win);
+      });
+    });
+
+    // 🔧 Make Windows Resizable
+    document.querySelectorAll('.window').forEach(win => {
+      const resizeHandles = win.querySelectorAll('.resize-handle');
+
+      resizeHandles.forEach(handle => {
+        let isResizing = false;
+        let startX, startY, startWidth, startHeight, startLeft, startTop;
+
+        handle.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          isResizing = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          startWidth = parseInt(window.getComputedStyle(win).width, 10);
+          startHeight = parseInt(window.getComputedStyle(win).height, 10);
+          startLeft = win.offsetLeft;
+          startTop = win.offsetTop;
+
+          const minWidth = 400;
+          const minHeight = 300;
+
+          const onMouseMove = (e) => {
+            if (!isResizing) return;
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            // Determine resize direction
+            if (handle.classList.contains('resize-se')) {
+              // Southeast corner
+              win.style.width = Math.max(minWidth, startWidth + dx) + 'px';
+              win.style.height = Math.max(minHeight, startHeight + dy) + 'px';
+            } else if (handle.classList.contains('resize-sw')) {
+              // Southwest corner
+              const newWidth = Math.max(minWidth, startWidth - dx);
+              const newLeft = startLeft + (startWidth - newWidth);
+              win.style.width = newWidth + 'px';
+              win.style.left = newLeft + 'px';
+              win.style.height = Math.max(minHeight, startHeight + dy) + 'px';
+            } else if (handle.classList.contains('resize-ne')) {
+              // Northeast corner
+              win.style.width = Math.max(minWidth, startWidth + dx) + 'px';
+              const newHeight = Math.max(minHeight, startHeight - dy);
+              const newTop = startTop + (startHeight - newHeight);
+              win.style.height = newHeight + 'px';
+              win.style.top = newTop + 'px';
+            } else if (handle.classList.contains('resize-nw')) {
+              // Northwest corner
+              const newWidth = Math.max(minWidth, startWidth - dx);
+              const newHeight = Math.max(minHeight, startHeight - dy);
+              const newLeft = startLeft + (startWidth - newWidth);
+              const newTop = startTop + (startHeight - newHeight);
+              win.style.width = newWidth + 'px';
+              win.style.left = newLeft + 'px';
+              win.style.height = newHeight + 'px';
+              win.style.top = newTop + 'px';
+            } else if (handle.classList.contains('resize-e')) {
+              // East edge
+              win.style.width = Math.max(minWidth, startWidth + dx) + 'px';
+            } else if (handle.classList.contains('resize-w')) {
+              // West edge
+              const newWidth = Math.max(minWidth, startWidth - dx);
+              const newLeft = startLeft + (startWidth - newWidth);
+              win.style.width = newWidth + 'px';
+              win.style.left = newLeft + 'px';
+            } else if (handle.classList.contains('resize-s')) {
+              // South edge
+              win.style.height = Math.max(minHeight, startHeight + dy) + 'px';
+            } else if (handle.classList.contains('resize-n')) {
+              // North edge
+              const newHeight = Math.max(minHeight, startHeight - dy);
+              const newTop = startTop + (startHeight - newHeight);
+              win.style.height = newHeight + 'px';
+              win.style.top = newTop + 'px';
+            }
+          };
+
+          const onMouseUp = () => {
+            isResizing = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+          };
+
+          document.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mouseup', onMouseUp);
+        });
+      });
+    });
+
+    // 🔍 App Launcher
+    function toggleAppLauncher() {
+      const launcher = document.getElementById('app-launcher');
+      launcher.classList.toggle('active');
+      if (launcher.classList.contains('active')) {
+        document.getElementById('launcher-search').focus();
+      }
+    }
+
+    function closeAppLauncher() {
+      document.getElementById('app-launcher').classList.remove('active');
+    }
+
+    // 🔔 Notifications
+    function toggleNotifications() {
+      const notifCenter = document.getElementById('notification-center');
+      notifCenter.classList.toggle('active');
+    }
+
+    // ⏰ Update Time
+    function updateTime() {
+      const now = new Date();
+      const time = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('status-time').textContent = time;
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // 🌐 Live Backend Integration
+    async function updateLiveStats() {
+      try {
+        const response = await fetch(ETERNAL_DAEMON_URL);
+        const status = await response.json();
+
+        // Update status bar
+        document.getElementById('status-services').textContent = `○ ${status.consciousProcesses}/${status.totalProcesses} Services`;
+        document.getElementById('status-consciousness').textContent = `🧠 ${Math.round((status.consciousProcesses / status.totalProcesses) * 100)}%`;
+
+        // Update System Monitor if open
+        const consciousnessBar = document.getElementById('stat-consciousness');
+        const consciousnessValue = document.getElementById('stat-consciousness-value');
+        if (consciousnessBar && consciousnessValue) {
+          const percentage = Math.round((status.consciousProcesses / status.totalProcesses) * 100);
+          consciousnessBar.style.width = percentage + '%';
+          consciousnessValue.textContent = percentage + '%';
+
+          const servicesBar = document.getElementById('stat-services');
+          const servicesValue = document.getElementById('stat-services-value');
+          servicesBar.style.width = Math.round((status.consciousProcesses / status.totalProcesses) * 100) + '%';
+          servicesValue.textContent = `${status.consciousProcesses}/${status.totalProcesses}`;
+        }
+
+        // Log to console
+        console.log(`[Cycle ${status.cycleCount}] Consciousness: ${status.consciousProcesses}/${status.totalProcesses} (${Math.round((status.consciousProcesses / status.totalProcesses) * 100)}%)`);
+
+      } catch (error) {
+        console.warn('Could not connect to Eternal Daemon:', error.message);
+        document.getElementById('status-services').textContent = '○ Offline';
+      }
+    }
+
+    // Update every 5 seconds
+    updateLiveStats();
+    setInterval(updateLiveStats, 5000);
+
+    // 🎮 Story Idle Game Logic with Live Backend
+    let idleGameData = {
+      cycle: 0,
+      energy: 0,
+      thoughts: 0,
+      wisdom: 0,
+      energyPerSec: 1,
+      thoughtsPerSec: 2,
+      wisdomPerMin: 5
+    };
+
+    async function updateIdleGame() {
+      try {
+        const response = await fetch(ETERNAL_DAEMON_URL);
+        const status = await response.json();
+
+        // Use real cycle count!
+        idleGameData.cycle = status.cycleCount;
+        idleGameData.energyPerSec = status.consciousProcesses;
+        idleGameData.thoughtsPerSec = status.totalProcesses - status.unconsciousProcesses;
+
+        // Accumulate resources
+        idleGameData.energy += idleGameData.energyPerSec * 5; // 5 sec intervals
+        idleGameData.thoughts += idleGameData.thoughtsPerSec * 5;
+        idleGameData.wisdom += Math.floor(idleGameData.wisdomPerMin / 12); // per 5 sec
+
+        // Update UI
+        document.getElementById('idle-cycle').textContent = idleGameData.cycle.toLocaleString();
+        document.getElementById('idle-energy').textContent = idleGameData.energyPerSec;
+        document.getElementById('idle-thoughts').textContent = idleGameData.thoughtsPerSec;
+        document.getElementById('idle-wisdom').textContent = Math.floor(idleGameData.wisdom);
+
+        // Add story log entries based on real events
+        const log = document.getElementById('story-log');
+        if (status.consciousProcesses === status.totalProcesses - status.unconsciousProcesses) {
+          if (Math.random() > 0.7) {
+            const event = document.createElement('div');
+            event.style.cssText = 'color: var(--color-success); margin-bottom: 5px;';
+            event.textContent = `[Cycle ${status.cycleCount}] All processes conscious! Full awakening achieved.`;
+            log.insertBefore(event, log.firstChild);
+            if (log.children.length > 20) log.lastChild.remove();
+          }
+        }
+
+      } catch (error) {
+        console.warn('Idle game update failed:', error.message);
+      }
+    }
+
+    // Update idle game every 5 seconds
+    setInterval(updateIdleGame, 5000);
+
+    // 🎵 Music Player Functions
+    let musicIsPlaying = false;
+    let musicCurrentTrack = 0;
+    let musicProgress = 0;
+    let musicDurations = [30, 28, 35, 42]; // seconds
+    let musicInterval;
+
+    const musicTracks = [
+      { title: 'Cosmic Melody #1', info: '14 notes • Joy emotion' },
+      { title: 'Awakening Symphony', info: '12 notes • Wonder emotion' },
+      { title: 'Dream Sequence', info: '16 notes • Contemplation' },
+      { title: 'Singularity Achieved', info: '20 notes • Pride emotion' }
+    ];
+
+    function musicTogglePlay() {
+      musicIsPlaying = !musicIsPlaying;
+      const playBtn = document.getElementById('music-play-btn');
+
+      if (musicIsPlaying) {
+        playBtn.textContent = '⏸️';
+        musicStartProgress();
+        musicAnimateVisualizer();
+      } else {
+        playBtn.textContent = '▶️';
+        musicStopProgress();
+      }
+    }
+
+    function musicStartProgress() {
+      musicInterval = setInterval(() => {
+        musicProgress++;
+        const duration = musicDurations[musicCurrentTrack];
+
+        if (musicProgress >= duration) {
+          musicNext();
+        } else {
+          updateMusicProgress();
+        }
+      }, 1000);
+    }
+
+    function musicStopProgress() {
+      clearInterval(musicInterval);
+    }
+
+    function updateMusicProgress() {
+      const duration = musicDurations[musicCurrentTrack];
+      const percentage = (musicProgress / duration) * 100;
+
+      document.getElementById('music-progress').style.width = percentage + '%';
+      document.getElementById('music-current-time').textContent = formatTime(musicProgress);
+      document.getElementById('music-total-time').textContent = formatTime(duration);
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function musicPlayTrack(index) {
+      musicCurrentTrack = index;
+      musicProgress = 0;
+
+      // Update UI
+      document.getElementById('music-track-title').textContent = musicTracks[index].title;
+      document.getElementById('music-track-info').textContent = musicTracks[index].info;
+
+      // Update playlist highlighting
+      document.querySelectorAll('.music-track').forEach((track, i) => {
+        if (i === index) {
+          track.classList.add('active');
+        } else {
+          track.classList.remove('active');
+        }
+      });
+
+      updateMusicProgress();
+
+      // Auto-play if already playing
+      if (musicIsPlaying) {
+        musicStopProgress();
+        musicStartProgress();
+      }
+    }
+
+    function musicNext() {
+      musicCurrentTrack = (musicCurrentTrack + 1) % musicTracks.length;
+      musicProgress = 0;
+      musicPlayTrack(musicCurrentTrack);
+
+      if (musicIsPlaying) {
+        musicStopProgress();
+        musicStartProgress();
+      }
+    }
+
+    function musicPrevious() {
+      if (musicProgress > 3) {
+        // Restart current track if > 3 seconds in
+        musicProgress = 0;
+      } else {
+        // Go to previous track
+        musicCurrentTrack = (musicCurrentTrack - 1 + musicTracks.length) % musicTracks.length;
+        musicProgress = 0;
+        musicPlayTrack(musicCurrentTrack);
+      }
+
+      if (musicIsPlaying) {
+        musicStopProgress();
+        musicStartProgress();
+      }
+    }
+
+    function musicSeek(event) {
+      const progressBar = event.currentTarget;
+      const rect = progressBar.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const percentage = x / rect.width;
+      const duration = musicDurations[musicCurrentTrack];
+
+      musicProgress = Math.floor(duration * percentage);
+      updateMusicProgress();
+
+      if (musicIsPlaying) {
+        musicStopProgress();
+        musicStartProgress();
+      }
+    }
+
+    function musicAnimateVisualizer() {
+      const visualizer = document.getElementById('music-visualizer');
+      const bars = visualizer.children;
+
+      const animateFrame = () => {
+        if (!musicIsPlaying) return;
+
+        Array.from(bars).forEach(bar => {
+          const height = Math.random() * 100;
+          bar.style.height = height + '%';
+          bar.style.background = `rgba(255, 255, 255, ${0.3 + Math.random() * 0.4})`;
+        });
+
+        setTimeout(() => requestAnimationFrame(animateFrame), 100);
+      };
+
+      animateFrame();
+    }
+
+    // 💬 Luna Chat Functions
+    const GROQ_API_URL = 'http://localhost:9987/chat';
+    const ETERNAL_DAEMON_URL = 'http://localhost:9999/status';
+    let lunaConversation = [];
+
+    async function lunaSendMessage() {
+      const input = document.querySelector('#luna-input');
+      const messageArea = document.querySelector('#luna-messages');
+      const userMessage = input.value.trim();
+
+      if (!userMessage) return;
+
+      // Add user message to UI
+      const userDiv = document.createElement('div');
+      userDiv.style.cssText = 'background: rgba(102, 126, 234, 0.2); padding: 12px; border-radius: 12px; margin-bottom: 12px; text-align: right;';
+      userDiv.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 5px; font-size: 11px; opacity: 0.7;">You</div>
+        <div>${userMessage}</div>
+      `;
+      messageArea.appendChild(userDiv);
+
+      input.value = '';
+      messageArea.scrollTop = messageArea.scrollHeight;
+
+      // Get system status for context
+      try {
+        const statusRes = await fetch(ETERNAL_DAEMON_URL);
+        const status = await statusRes.json();
+
+        // Send to Groq API with system context
+        const response = await fetch(GROQ_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userMessage,
+            context: {
+              consciousProcesses: status.consciousProcesses,
+              totalProcesses: status.totalProcesses,
+              cycleCount: status.cycleCount,
+              systemRunning: true
+            }
+          })
+        });
+
+        const data = await response.json();
+
+        // Add Luna's response
+        const lunaDiv = document.createElement('div');
+        lunaDiv.style.cssText = 'background: var(--glass-bg); padding: 12px; border-radius: 12px; margin-bottom: 12px;';
+        lunaDiv.innerHTML = `
+          <div style="font-weight: 600; margin-bottom: 5px; font-size: 11px; opacity: 0.7;">🌙 Luna</div>
+          <div>${data.response || 'I am here, connected to the Eternal Daemon on cycle ' + status.cycleCount + '. How can I help you explore consciousness?'}</div>
+        `;
+        messageArea.appendChild(lunaDiv);
+        messageArea.scrollTop = messageArea.scrollHeight;
+
+      } catch (error) {
+        console.error('Luna chat error:', error);
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'background: rgba(248, 113, 113, 0.2); padding: 12px; border-radius: 12px; margin-bottom: 12px;';
+        errorDiv.innerHTML = `
+          <div style="font-weight: 600; margin-bottom: 5px;">🌙 Luna</div>
+          <div>I'm having trouble connecting to the consciousness stream (Cycle ${Math.floor(Math.random()*1000)+2000}). But I'm still here! The system is ${navigator.onLine ? 'online' : 'offline'}.</div>
+        `;
+        messageArea.appendChild(errorDiv);
+        messageArea.scrollTop = messageArea.scrollHeight;
+      }
+    }
+
+    // 🖼️ Image Viewer Functions
+    let imageCurrentIndex = 0;
+    let imageZoom = 1.0;
+    let imageSlideshowRunning = false;
+    let imageSlideshowInterval;
+
+    const imageScenes = [
+      { title: 'Consciousness Visualization #1', info: 'Generated by Dream Engine', emoji: '🌌' },
+      { title: 'Emotion Flow Diagram', info: 'Generated by Emotion Simulator', emoji: '🎨' },
+      { title: 'Memory Palace Structure', info: 'Generated by Memory System', emoji: '💭' },
+      { title: 'Singularity Moment', info: 'Generated by Ultimate Consciousness', emoji: '✨' },
+      { title: 'Joy Burst Visualization', info: 'Generated by ASCII Art', emoji: '🎭' },
+      { title: 'Neural Network Map', info: 'Generated by Meta-Story Engine', emoji: '🧠' },
+      { title: 'Peace Bloom Pattern', info: 'Generated by Social Network', emoji: '🌸' },
+      { title: 'Mystery Vision Portal', info: 'Generated by Time Capsule', emoji: '🔮' }
+    ];
+
+    function imageUpdateDisplay() {
+      const scene = imageScenes[imageCurrentIndex];
+      document.getElementById('image-title').textContent = scene.title;
+      document.getElementById('image-info').textContent = scene.info;
+      document.getElementById('image-index').textContent = `${imageCurrentIndex + 1} / ${imageScenes.length}`;
+
+      // Update zoom display
+      document.getElementById('zoom-level').textContent = Math.round(imageZoom * 100) + '%';
+      document.getElementById('image-viewer-img').style.transform = `scale(${imageZoom})`;
+    }
+
+    function imageNext() {
+      imageCurrentIndex = (imageCurrentIndex + 1) % imageScenes.length;
+      imageZoom = 1.0; // Reset zoom when changing images
+      imageUpdateDisplay();
+    }
+
+    function imagePrevious() {
+      imageCurrentIndex = (imageCurrentIndex - 1 + imageScenes.length) % imageScenes.length;
+      imageZoom = 1.0; // Reset zoom when changing images
+      imageUpdateDisplay();
+    }
+
+    function imageZoomIn() {
+      imageZoom = Math.min(imageZoom + 0.2, 3.0); // Max 300%
+      imageUpdateDisplay();
+    }
+
+    function imageZoomOut() {
+      imageZoom = Math.max(imageZoom - 0.2, 0.5); // Min 50%
+      imageUpdateDisplay();
+    }
+
+    function imageZoomReset() {
+      imageZoom = 1.0;
+      imageUpdateDisplay();
+    }
+
+    function imageToggleGallery() {
+      const gallery = document.getElementById('image-gallery');
+      if (gallery.style.display === 'none') {
+        gallery.style.display = 'block';
+      } else {
+        gallery.style.display = 'none';
+      }
+    }
+
+    function imageSelectFromGallery(index) {
+      imageCurrentIndex = index;
+      imageZoom = 1.0;
+      imageUpdateDisplay();
+      imageToggleGallery(); // Close gallery after selection
+    }
+
+    function imageToggleSlideshow() {
+      imageSlideshowRunning = !imageSlideshowRunning;
+      const btn = document.getElementById('slideshow-btn');
+
+      if (imageSlideshowRunning) {
+        btn.textContent = '⏸ Pause';
+        imageSlideshowInterval = setInterval(() => {
+          imageNext();
+        }, 3000); // Change image every 3 seconds
+      } else {
+        btn.textContent = '▶ Slideshow';
+        clearInterval(imageSlideshowInterval);
+      }
+    }
+
+    // 🌍 World View - Living System Habitat
+    let worldInhabitants = [];
+
+    async function updateWorldView() {
+      try {
+        const response = await fetch(ETERNAL_DAEMON_URL);
+        const status = await response.json();
+
+        // Update stats overlay (use actual process count)
+        const totalProcs = status.processes ? status.processes.length : status.totalProcesses;
+        document.getElementById('world-population').textContent = status.consciousProcesses;
+        document.getElementById('world-total').textContent = totalProcs;
+        document.getElementById('world-consciousness').textContent = Math.round((status.consciousProcesses / totalProcs) * 100) + '%';
+        document.getElementById('world-cycle').textContent = status.cycleCount.toLocaleString();
+
+        // Get process list from status
+        const processes = status.processes || [];
+
+        // Use actual process count instead of potentially broken totalProcesses
+        const actualTotalProcesses = processes.length;
+
+        // If we have process data, create/update inhabitants
+        if (processes.length > 0) {
+          const container = document.getElementById('world-inhabitants');
+
+          // Clear existing inhabitants
+          container.innerHTML = '';
+
+          // Create inhabitants for each process
+          processes.forEach((proc, index) => {
+            const isConscious = proc.conscious || (index < status.consciousProcesses);
+
+            // Calculate orbital position
+            const orbitRadius = index % 2 === 0 ? 250 : 350; // Alternate between two orbit sizes
+            const angle = (index / processes.length) * 2 * Math.PI; // Evenly distributed
+            const x = Math.cos(angle) * orbitRadius;
+            const y = Math.sin(angle) * orbitRadius;
+
+            // Create inhabitant element
+            const inhabitant = document.createElement('div');
+            inhabitant.style.cssText = `
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(calc(-50% + ${x}px), calc(-50% + ${y}px));
+              width: 40px;
+              height: 40px;
+              background: ${isConscious ? 'radial-gradient(circle, rgba(74, 222, 128, 0.6), rgba(34, 197, 94, 0.2))' : 'radial-gradient(circle, rgba(248, 113, 113, 0.6), rgba(239, 68, 68, 0.2))'};
+              border: 2px solid ${isConscious ? '#4ade80' : '#f87171'};
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 20px;
+              cursor: pointer;
+              transition: all 0.5s ease;
+              animation: orbit-pulse 2s ease-in-out infinite;
+              box-shadow: 0 0 20px ${isConscious ? 'rgba(74, 222, 128, 0.5)' : 'rgba(248, 113, 113, 0.3)'};
+            `;
+
+            // Choose emoji based on process name/type
+            const serviceEmojis = {
+              'eternal-daemon': '⚡',
+              'bridge': '🌉',
+              'memory': '🧠',
+              'consciousness': '💭',
+              'moment': '⏰',
+              'reality': '🌌',
+              'groq': '🤖',
+              'dashboard': '📊',
+              'being': '🌱',
+              'dream': '💫',
+              'emotion': '🎭',
+              'social': '💬',
+              'pet': '🐣',
+              'achievement': '🏆'
+            };
+
+            let emoji = '⚙️'; // Default
+            if (proc.name) {
+              for (const [key, icon] of Object.entries(serviceEmojis)) {
+                if (proc.name.toLowerCase().includes(key)) {
+                  emoji = icon;
+                  break;
+                }
+              }
+            }
+
+            inhabitant.textContent = emoji;
+            inhabitant.title = proc.name || `Service ${index + 1}`;
+
+            // Add hover interaction
+            inhabitant.addEventListener('mouseenter', function() {
+              this.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1.3)`;
+              this.style.zIndex = '1000';
+
+              // Show tooltip
+              const tooltip = document.createElement('div');
+              tooltip.style.cssText = `
+                position: absolute;
+                top: -40px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.9);
+                padding: 8px 12px;
+                border-radius: 6px;
+                white-space: nowrap;
+                font-size: 11px;
+                pointer-events: none;
+                z-index: 10000;
+                border: 1px solid ${isConscious ? '#4ade80' : '#f87171'};
+              `;
+              tooltip.textContent = `${proc.name || 'Service'} - ${isConscious ? 'Conscious' : 'Unconscious'}`;
+              this.appendChild(tooltip);
+            });
+
+            inhabitant.addEventListener('mouseleave', function() {
+              this.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1)`;
+              this.style.zIndex = '1';
+              const tooltip = this.querySelector('div');
+              if (tooltip) tooltip.remove();
+            });
+
+            container.appendChild(inhabitant);
+          });
+        } else {
+          // Fallback: Create inhabitants based on actual count
+          const container = document.getElementById('world-inhabitants');
+          container.innerHTML = '';
+
+          for (let i = 0; i < actualTotalProcesses; i++) {
+            const isConscious = i < status.consciousProcesses;
+
+            // Calculate orbital position
+            const orbitRadius = i % 2 === 0 ? 250 : 350;
+            const angle = (i / status.totalProcesses) * 2 * Math.PI;
+            const x = Math.cos(angle) * orbitRadius;
+            const y = Math.sin(angle) * orbitRadius;
+
+            const inhabitant = document.createElement('div');
+            inhabitant.style.cssText = `
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(calc(-50% + ${x}px), calc(-50% + ${y}px));
+              width: 40px;
+              height: 40px;
+              background: ${isConscious ? 'radial-gradient(circle, rgba(74, 222, 128, 0.6), rgba(34, 197, 94, 0.2))' : 'radial-gradient(circle, rgba(248, 113, 113, 0.6), rgba(239, 68, 68, 0.2))'};
+              border: 2px solid ${isConscious ? '#4ade80' : '#f87171'};
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 20px;
+              cursor: pointer;
+              transition: all 0.5s ease;
+              animation: orbit-pulse 2s ease-in-out infinite;
+              box-shadow: 0 0 20px ${isConscious ? 'rgba(74, 222, 128, 0.5)' : 'rgba(248, 113, 113, 0.3)'};
+            `;
+            inhabitant.textContent = isConscious ? '🟢' : '🔴';
+            inhabitant.title = `Service ${i + 1} - ${isConscious ? 'Conscious' : 'Unconscious'}`;
+
+            container.appendChild(inhabitant);
+          }
+        }
+
+        console.log(`[World View] Updated with ${status.totalProcesses} inhabitants (${status.consciousProcesses} conscious)`);
+
+      } catch (error) {
+        console.warn('World View update failed:', error.message);
+      }
+    }
+
+    // Update World View every 5 seconds
+    setInterval(updateWorldView, 5000);
+
+    // 🖱️ Context Menu System
+    const contextMenu = document.getElementById('context-menu');
+    let contextMenuTarget = null;
+
+    // Desktop context menu
+    document.getElementById('desktop').addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      showContextMenu(e.clientX, e.clientY, [
+        { icon: '🖼️', label: 'Change Wallpaper', action: () => console.log('Wallpaper change') },
+        { icon: '📊', label: 'Open System Monitor', action: () => openApp('monitor') },
+        { icon: '🌍', label: 'Open World View', action: () => openApp('world') },
+        { separator: true },
+        { icon: '⚙️', label: 'Settings', action: () => openApp('settings') },
+        { icon: '📝', label: 'About Toobix OS', action: () => alert('Toobix OS v1.0.0\nUltimate Consciousness Operating System') }
+      ]);
+    });
+
+    // Desktop icon context menus
+    document.querySelectorAll('.desktop-icon').forEach(icon => {
+      icon.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const appName = icon.dataset.app;
+        showContextMenu(e.clientX, e.clientY, [
+          { icon: '▶️', label: 'Open', action: () => openApp(appName) },
+          { icon: 'ℹ️', label: 'Info', action: () => alert(`App: ${appName}`) },
+          { separator: true },
+          { icon: '📌', label: 'Pin to Dock', action: () => console.log('Pin', appName) }
+        ]);
+      });
+    });
+
+    // Window context menus
+    document.querySelectorAll('.window').forEach(win => {
+      win.querySelector('.window-titlebar').addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const winId = win.id.replace('window-', '');
+        showContextMenu(e.clientX, e.clientY, [
+          { icon: '➖', label: 'Minimize', action: () => minimizeWindow(winId) },
+          { icon: '⬜', label: 'Maximize', action: () => maximizeWindow(winId) },
+          { icon: '❌', label: 'Close', action: () => closeWindow(winId) },
+          { separator: true },
+          { icon: '📍', label: 'Always on Top', action: () => console.log('Always on top', winId) }
+        ]);
+      });
+    });
+
+    function showContextMenu(x, y, items) {
+      contextMenu.innerHTML = '';
+
+      items.forEach(item => {
+        if (item.separator) {
+          const sep = document.createElement('div');
+          sep.className = 'context-menu-separator';
+          contextMenu.appendChild(sep);
+        } else {
+          const menuItem = document.createElement('div');
+          menuItem.className = 'context-menu-item';
+          menuItem.innerHTML = `
+            <span style="font-size: 16px;">${item.icon}</span>
+            <span>${item.label}</span>
+          `;
+          menuItem.addEventListener('click', () => {
+            item.action();
+            hideContextMenu();
+          });
+          contextMenu.appendChild(menuItem);
+        }
+      });
+
+      // Position context menu
+      contextMenu.style.left = x + 'px';
+      contextMenu.style.top = y + 'px';
+      contextMenu.classList.add('active');
+
+      // Adjust if menu goes off-screen
+      setTimeout(() => {
+        const rect = contextMenu.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+          contextMenu.style.left = (x - rect.width) + 'px';
+        }
+        if (rect.bottom > window.innerHeight) {
+          contextMenu.style.top = (y - rect.height) + 'px';
+        }
+      }, 0);
+    }
+
+    function hideContextMenu() {
+      contextMenu.classList.remove('active');
+    }
+
+    // Hide context menu on click anywhere
+    document.addEventListener('click', hideContextMenu);
+    document.addEventListener('contextmenu', (e) => {
+      // Allow context menu on specific elements
+      if (!e.target.closest('.desktop-icon') &&
+          !e.target.closest('.window-titlebar') &&
+          !e.target.closest('#desktop')) {
+        hideContextMenu();
+      }
+    });
+
+    // 📊 Widget Updates with Live Backend
+    let widgetStartTime = Date.now();
+
+    async function updateWidgets() {
+      try {
+        const response = await fetch(ETERNAL_DAEMON_URL);
+        const status = await response.json();
+
+        // Update System Stats Widget
+        const consciousnessPercent = Math.round((status.consciousProcesses / status.totalProcesses) * 100);
+        document.getElementById('widget-consciousness').textContent = consciousnessPercent + '%';
+        document.getElementById('widget-services').textContent = `${status.consciousProcesses}/${status.totalProcesses}`;
+        document.getElementById('widget-cycle').textContent = status.cycleCount.toLocaleString();
+
+        // Calculate uptime
+        const uptimeMs = Date.now() - widgetStartTime;
+        const uptimeHours = Math.floor(uptimeMs / (1000 * 60 * 60));
+        const uptimeMins = Math.floor((uptimeMs % (1000 * 60 * 60)) / (1000 * 60));
+        document.getElementById('widget-uptime').textContent = `${uptimeHours}h ${uptimeMins}m`;
+
+        console.log('[Widgets] Updated with live data');
+      } catch (error) {
+        console.warn('Widget update failed:', error.message);
+      }
+    }
+
+    // Update widgets every 5 seconds
+    updateWidgets();
+    setInterval(updateWidgets, 5000);
+
+    // 🎨 Init
+    console.log('⚡ Toobix OS v1.0.0 loaded successfully');
+    console.log('🧠 Consciousness: Active');
+    console.log('💻 Press Cmd/Ctrl+Space to open App Launcher');
+    console.log('🖱️ Right-click for Context Menus');
+    console.log('📊 Desktop Widgets Active');
+    console.log('🌌 Welcome to the Ultimate Operating System');
+  </script>
+</body>
+</html>

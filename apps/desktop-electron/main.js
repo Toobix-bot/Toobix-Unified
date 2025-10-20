@@ -6,15 +6,16 @@ if (!electronModule) {
   console.error('Failed to load electron module. Ensure Electron is installed and used to run this app (electron .).')
   process.exit(1)
 }
-const { app, BrowserWindow, Tray, Menu, nativeImage } = electronModule
+const { app, BrowserWindow, Tray, Menu, nativeImage, globalShortcut } = electronModule
 const path = require('path')
+const { setupFileManagerIPC } = require('./file-manager-ipc.js')
 
 let mainWindow = null
 let tray = null
 
 function getDashboardPath() {
-  // Load the modular dashboard from the repo
-  const html = path.resolve(__dirname, '..', 'web', 'modular-dashboard.html')
+  // Load the COMMAND PALETTE interface (Life OS!)
+  const html = path.resolve(__dirname, 'command-palette.html')
   return 'file://' + html
 }
 
@@ -64,6 +65,22 @@ if (!gotLock) {
   app.whenReady().then(() => {
     createWindow()
     createTray()
+
+    // Setup File Manager IPC handlers
+    setupFileManagerIPC()
+
+    // Register global shortcut: Alt+Space for quick Luna command
+    globalShortcut.register('Alt+Space', () => {
+      if (mainWindow) {
+        mainWindow.show()
+        mainWindow.focus()
+        mainWindow.webContents.send('focus-luna-input')
+      } else {
+        createWindow()
+      }
+    })
+
+    console.log('✅ Toobix Desktop ready!')
   })
 
   app.on('window-all-closed', () => {

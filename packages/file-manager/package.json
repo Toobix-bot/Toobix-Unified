@@ -1,0 +1,46 @@
+{
+  "name": "@toobix/file-manager",
+  "version": "2.0.0",
+  "description": "Fully autonomous AI-powered file management with Groq - Content analysis, autonomous agent, clipboard & context awareness",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./master": "./src/master.ts",
+    "./autonomous": "./src/autonomous/agent.ts",
+    "./content-analyzer": "./src/features/content-analyzer.ts",
+    "./clipboard": "./src/features/clipboard.ts",
+    "./context": "./src/features/context.ts",
+    "./scheduler": "./src/scheduler/index.ts",
+    "./duplicates": "./src/features/duplicates.ts",
+    "./programs": "./src/features/programs.ts",
+    "./luna-commands": "./src/luna-commands.ts"
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "demo": "bun run src/demo.ts",
+    "demo:master": "bun run src/demo-master.ts",
+    "test": "bun test"
+  },
+  "keywords": [
+    "file-manager",
+    "ai",
+    "groq",
+    "autonomous",
+    "clipboard",
+    "context-awareness",
+    "task-scheduler",
+    "content-analysis",
+    "learning-system"
+  ],
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "fast-glob": "^3.3.3",
+    "fuzzysort": "^3.1.0",
+    "groq-sdk": "^0.8.0",
+    "nanoid": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5"
+  }
+}

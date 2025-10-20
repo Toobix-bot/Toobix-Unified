@@ -450,6 +450,73 @@ export const gameEvents = sqliteTable('game_events', {
   createdIdx: index('game_events_created_idx').on(table.created_at),
 }));
 
+/**
+ * ============================================================================
+ * MEMORY SYSTEM - Long-term AI Memory
+ * ============================================================================
+ */
+
+/**
+ * AI Memories - Long-term storage for AI system memories
+ */
+export const aiMemories = sqliteTable('ai_memories', {
+  id: text('id').primaryKey(),
+  timestamp: integer('timestamp', { mode: 'timestamp' }).notNull(),
+  type: text('type').notNull(), // 'event' | 'pattern' | 'learning' | 'context'
+  content: text('content').notNull(),
+  importance: integer('importance').notNull(), // 1-10
+  tags: text('tags'), // JSON array
+  embedding: text('embedding'), // JSON array of numbers for semantic search
+  relatedMemories: text('related_memories'), // JSON array of memory IDs
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  accessed_count: integer('accessed_count').default(0),
+  last_accessed: integer('last_accessed', { mode: 'timestamp' }),
+}, (table) => ({
+  timestampIdx: index('memories_timestamp_idx').on(table.timestamp),
+  typeIdx: index('memories_type_idx').on(table.type),
+  importanceIdx: index('memories_importance_idx').on(table.importance),
+  createdIdx: index('memories_created_idx').on(table.created_at),
+}));
+
+/**
+ * AI Memory Patterns - Detected patterns in memories
+ */
+export const aiMemoryPatterns = sqliteTable('ai_memory_patterns', {
+  id: text('id').primaryKey(),
+  description: text('description').notNull(),
+  occurrences: integer('occurrences').notNull(),
+  firstSeen: integer('first_seen', { mode: 'timestamp' }).notNull(),
+  lastSeen: integer('last_seen', { mode: 'timestamp' }).notNull(),
+  strength: real('strength').notNull(), // 0-1
+  relatedMemoryIds: text('related_memory_ids'), // JSON array
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  strengthIdx: index('memory_patterns_strength_idx').on(table.strength),
+  lastSeenIdx: index('memory_patterns_last_seen_idx').on(table.lastSeen),
+}));
+
+/**
+ * AI Memory Learnings - Accumulated learnings from experience
+ */
+export const aiMemoryLearnings = sqliteTable('ai_memory_learnings', {
+  id: text('id').primaryKey(),
+  lesson: text('lesson').notNull(),
+  confidence: real('confidence').notNull(), // 0-1
+  evidence: text('evidence'), // JSON array of memory IDs
+  appliedCount: integer('applied_count').default(0),
+  successRate: real('success_rate').default(0), // 0-1
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  last_applied: integer('last_applied', { mode: 'timestamp' }),
+}, (table) => ({
+  confidenceIdx: index('memory_learnings_confidence_idx').on(table.confidence),
+  successRateIdx: index('memory_learnings_success_rate_idx').on(table.successRate),
+}));
+
 // Type exports
 export type Person = typeof people.$inferSelect;
 export type NewPerson = typeof people.$inferInsert;
@@ -462,6 +529,285 @@ export type NewCircle = typeof circles.$inferInsert;
 export type Chunk = typeof chunks.$inferSelect;
 export type StoryArc = typeof storyArcs.$inferSelect;
 export type StoryEvent = typeof storyEvents.$inferSelect;
+
+// AI Memory System Type Exports
+export type AIMemory = typeof aiMemories.$inferSelect;
+export type NewAIMemory = typeof aiMemories.$inferInsert;
+export type AIMemoryPattern = typeof aiMemoryPatterns.$inferSelect;
+export type NewAIMemoryPattern = typeof aiMemoryPatterns.$inferInsert;
+export type AIMemoryLearning = typeof aiMemoryLearnings.$inferSelect;
+export type NewAIMemoryLearning = typeof aiMemoryLearnings.$inferInsert;
+
+/**
+ * ============================================================================
+ * WORK MODULE - Tasks, Projects, Goals
+ * ============================================================================
+ */
+
+/**
+ * Tasks - Individual work items
+ */
+export const tasks = sqliteTable('tasks', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  description: text('description'),
+  status: text('status').notNull(), // 'todo' | 'in_progress' | 'completed' | 'cancelled'
+  priority: text('priority').notNull(), // 'low' | 'medium' | 'high' | 'urgent'
+
+  // Organization
+  project_id: text('project_id'),
+  tags: text('tags'), // JSON array
+
+  // Time tracking
+  estimated_minutes: integer('estimated_minutes'),
+  actual_minutes: integer('actual_minutes'),
+  due_date: integer('due_date', { mode: 'timestamp' }),
+
+  // Gamification
+  xp_reward: integer('xp_reward').default(0),
+  energy_cost: integer('energy_cost').default(10),
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  completed_at: integer('completed_at', { mode: 'timestamp' }),
+}, (table) => ({
+  statusIdx: index('tasks_status_idx').on(table.status),
+  priorityIdx: index('tasks_priority_idx').on(table.priority),
+  dueDateIdx: index('tasks_due_date_idx').on(table.due_date),
+  projectIdx: index('tasks_project_idx').on(table.project_id),
+}));
+
+/**
+ * Projects - Collections of related tasks
+ */
+export const projects = sqliteTable('projects', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  status: text('status').notNull(), // 'planning' | 'active' | 'paused' | 'completed' | 'archived'
+  color: text('color'), // Hex color for UI
+  icon: text('icon'), // Emoji
+
+  // Progress
+  progress: integer('progress').default(0), // 0-100
+  total_tasks: integer('total_tasks').default(0),
+  completed_tasks: integer('completed_tasks').default(0),
+
+  // Time
+  deadline: integer('deadline', { mode: 'timestamp' }),
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  completed_at: integer('completed_at', { mode: 'timestamp' }),
+}, (table) => ({
+  statusIdx: index('projects_status_idx').on(table.status),
+  deadlineIdx: index('projects_deadline_idx').on(table.deadline),
+}));
+
+/**
+ * Goals - Long-term objectives
+ */
+export const goals = sqliteTable('goals', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  description: text('description'),
+  category: text('category').notNull(), // 'career' | 'health' | 'finance' | 'learning' | 'personal'
+  status: text('status').notNull(), // 'active' | 'completed' | 'abandoned'
+
+  // Progress
+  progress: integer('progress').default(0), // 0-100
+  milestones: text('milestones'), // JSON array
+
+  // Time
+  target_date: integer('target_date', { mode: 'timestamp' }),
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  completed_at: integer('completed_at', { mode: 'timestamp' }),
+}, (table) => ({
+  categoryIdx: index('goals_category_idx').on(table.category),
+  statusIdx: index('goals_status_idx').on(table.status),
+}));
+
+/**
+ * ============================================================================
+ * HEALTH MODULE - Energy, Sleep, Flow States
+ * ============================================================================
+ */
+
+/**
+ * Energy Logs - Track energy levels throughout the day
+ */
+export const energyLogs = sqliteTable('energy_logs', {
+  id: text('id').primaryKey(),
+  timestamp: integer('timestamp', { mode: 'timestamp' }).notNull(),
+  level: integer('level').notNull(), // 0-100
+  mood: text('mood'), // 'energized' | 'focused' | 'tired' | 'exhausted' | 'neutral'
+  notes: text('notes'),
+
+  // Context
+  activity: text('activity'), // What was being done
+  location: text('location'), // Where
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  timestampIdx: index('energy_logs_timestamp_idx').on(table.timestamp),
+}));
+
+/**
+ * Sleep Logs - Track sleep patterns
+ */
+export const sleepLogs = sqliteTable('sleep_logs', {
+  id: text('id').primaryKey(),
+  date: integer('date', { mode: 'timestamp' }).notNull(), // Day of sleep
+
+  // Time
+  bedtime: integer('bedtime', { mode: 'timestamp' }),
+  wake_time: integer('wake_time', { mode: 'timestamp' }),
+  duration_hours: real('duration_hours'),
+
+  // Quality
+  quality: text('quality'), // 'poor' | 'fair' | 'good' | 'excellent'
+  quality_score: integer('quality_score'), // 0-100
+  interruptions: integer('interruptions').default(0),
+
+  // Notes
+  dreams: text('dreams'),
+  notes: text('notes'),
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  dateIdx: index('sleep_logs_date_idx').on(table.date),
+}));
+
+/**
+ * Flow Sessions - Deep work/focus sessions
+ */
+export const flowSessions = sqliteTable('flow_sessions', {
+  id: text('id').primaryKey(),
+  start_time: integer('start_time', { mode: 'timestamp' }).notNull(),
+  end_time: integer('end_time', { mode: 'timestamp' }),
+  duration_minutes: integer('duration_minutes'),
+
+  // Type
+  type: text('type').notNull(), // 'focus' | 'creative' | 'learning' | 'meditation'
+  activity: text('activity'), // What was done
+
+  // Quality
+  quality_score: integer('quality_score'), // 0-100
+  interruptions: integer('interruptions').default(0),
+  achievements: text('achievements'), // JSON array of what was accomplished
+
+  // Integration
+  task_id: text('task_id'),
+  project_id: text('project_id'),
+
+  notes: text('notes'),
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  startTimeIdx: index('flow_sessions_start_time_idx').on(table.start_time),
+  typeIdx: index('flow_sessions_type_idx').on(table.type),
+}));
+
+/**
+ * Meditation Sessions
+ */
+export const meditationSessions = sqliteTable('meditation_sessions', {
+  id: text('id').primaryKey(),
+  timestamp: integer('timestamp', { mode: 'timestamp' }).notNull(),
+  duration_minutes: integer('duration_minutes').notNull(),
+  type: text('type'), // 'breathing' | 'mindfulness' | 'visualization' | 'body_scan'
+  quality: text('quality'), // 'distracted' | 'focused' | 'deep'
+  notes: text('notes'),
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  timestampIdx: index('meditation_sessions_timestamp_idx').on(table.timestamp),
+}));
+
+/**
+ * ============================================================================
+ * FINANCE MODULE - Budget, Expenses, Income
+ * ============================================================================
+ */
+
+/**
+ * Transactions - Income and expenses
+ */
+export const transactions = sqliteTable('transactions', {
+  id: text('id').primaryKey(),
+  date: integer('date', { mode: 'timestamp' }).notNull(),
+  amount: real('amount').notNull(), // Positive for income, negative for expense
+  type: text('type').notNull(), // 'income' | 'expense'
+  category: text('category').notNull(), // 'food' | 'transport' | 'entertainment' | 'bills' | 'salary' | etc.
+  description: text('description'),
+
+  // Organization
+  tags: text('tags'), // JSON array
+  recurring: integer('recurring', { mode: 'boolean' }).default(false),
+  recurring_pattern: text('recurring_pattern'), // 'weekly' | 'monthly' | 'yearly'
+
+  // Verification
+  verified: integer('verified', { mode: 'boolean' }).default(false),
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  dateIdx: index('transactions_date_idx').on(table.date),
+  typeIdx: index('transactions_type_idx').on(table.type),
+  categoryIdx: index('transactions_category_idx').on(table.category),
+}));
+
+/**
+ * Budgets - Spending limits per category
+ */
+export const budgets = sqliteTable('budgets', {
+  id: text('id').primaryKey(),
+  category: text('category').notNull(),
+  limit_amount: real('limit_amount').notNull(),
+  period: text('period').notNull(), // 'weekly' | 'monthly' | 'yearly'
+
+  // Status
+  current_spent: real('current_spent').default(0),
+  remaining: real('remaining').default(0),
+
+  // Alerts
+  alert_threshold: integer('alert_threshold').default(80), // Alert at X% of limit
+  alert_enabled: integer('alert_enabled', { mode: 'boolean' }).default(true),
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  categoryIdx: index('budgets_category_idx').on(table.category),
+}));
+
+/**
+ * Financial Goals - Saving targets, debt payoff, etc.
+ */
+export const financialGoals = sqliteTable('financial_goals', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  type: text('type').notNull(), // 'savings' | 'debt_payoff' | 'investment' | 'big_purchase'
+  target_amount: real('target_amount').notNull(),
+  current_amount: real('current_amount').default(0),
+
+  // Timeline
+  target_date: integer('target_date', { mode: 'timestamp' }),
+
+  // Progress
+  progress: integer('progress').default(0), // 0-100
+  monthly_contribution: real('monthly_contribution'),
+
+  status: text('status').notNull(), // 'active' | 'completed' | 'paused'
+
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updated_at: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  completed_at: integer('completed_at', { mode: 'timestamp' }),
+}, (table) => ({
+  statusIdx: index('financial_goals_status_idx').on(table.status),
+  typeIdx: index('financial_goals_type_idx').on(table.type),
+}));
 
 // Game Layer Type Exports
 export type PlayerProfile = typeof playerProfile.$inferSelect;
@@ -478,3 +824,29 @@ export type PlayerSkill = typeof playerSkills.$inferSelect;
 export type NewPlayerSkill = typeof playerSkills.$inferInsert;
 export type GameEvent = typeof gameEvents.$inferSelect;
 export type NewGameEvent = typeof gameEvents.$inferInsert;
+
+// Work Module Type Exports
+export type Task = typeof tasks.$inferSelect;
+export type NewTask = typeof tasks.$inferInsert;
+export type Project = typeof projects.$inferSelect;
+export type NewProject = typeof projects.$inferInsert;
+export type Goal = typeof goals.$inferSelect;
+export type NewGoal = typeof goals.$inferInsert;
+
+// Health Module Type Exports
+export type EnergyLog = typeof energyLogs.$inferSelect;
+export type NewEnergyLog = typeof energyLogs.$inferInsert;
+export type SleepLog = typeof sleepLogs.$inferSelect;
+export type NewSleepLog = typeof sleepLogs.$inferInsert;
+export type FlowSession = typeof flowSessions.$inferSelect;
+export type NewFlowSession = typeof flowSessions.$inferInsert;
+export type MeditationSession = typeof meditationSessions.$inferSelect;
+export type NewMeditationSession = typeof meditationSessions.$inferInsert;
+
+// Finance Module Type Exports
+export type Transaction = typeof transactions.$inferSelect;
+export type NewTransaction = typeof transactions.$inferInsert;
+export type Budget = typeof budgets.$inferSelect;
+export type NewBudget = typeof budgets.$inferInsert;
+export type FinancialGoal = typeof financialGoals.$inferSelect;
+export type NewFinancialGoal = typeof financialGoals.$inferInsert;

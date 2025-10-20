@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toobix - Life Operating System</title>
+  <script src="preload-api.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 100%);
+      color: #fff;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* ========== SIDEBAR ========== */
+    .sidebar {
+      width: 80px;
+      background: rgba(20, 20, 40, 0.95);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      gap: 20px;
+      transition: width 0.3s;
+    }
+
+    .sidebar:hover {
+      width: 250px;
+    }
+
+    .sidebar-item {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      font-size: 24px;
+    }
+
+    .sidebar:hover .sidebar-item {
+      width: 220px;
+      justify-content: flex-start;
+      padding-left: 15px;
+    }
+
+    .sidebar-item:hover {
+      background: rgba(157, 78, 221, 0.3);
+      transform: translateX(5px);
+    }
+
+    .sidebar-item.active {
+      background: linear-gradient(135deg, #9D4EDD, #4CC9F0);
+      border-color: transparent;
+    }
+
+    .sidebar-label {
+      display: none;
+      margin-left: 15px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .sidebar:hover .sidebar-label {
+      display: inline;
+    }
+
+    /* ========== MAIN CONTENT ========== */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ========== COMMAND PALETTE ========== */
+    .command-palette {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 600px;
+      max-height: 500px;
+      background: rgba(20, 20, 40, 0.98);
+      backdrop-filter: blur(30px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 9999;
+    }
+
+    .command-palette.active {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: all;
+    }
+
+    .palette-input {
+      width: 100%;
+      padding: 20px 25px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 18px;
+      outline: none;
+    }
+
+    .palette-input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .palette-results {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .palette-item {
+      padding: 12px 15px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .palette-item:hover,
+    .palette-item.selected {
+      background: rgba(157, 78, 221, 0.2);
+      border-color: rgba(157, 78, 221, 0.5);
+      transform: translateX(5px);
+    }
+
+    .palette-item-icon {
+      font-size: 20px;
+      width: 30px;
+      text-align: center;
+    }
+
+    .palette-item-content {
+      flex: 1;
+    }
+
+    .palette-item-title {
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    .palette-item-desc {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
+    .palette-item-shortcut {
+      font-size: 11px;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      opacity: 0.5;
+    }
+
+    /* ========== CONTENT AREA ========== */
+    .content-area {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      background: linear-gradient(135deg, #9D4EDD, #4CC9F0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: bold;
+      margin: 10px 0;
+      background: linear-gradient(135deg, #9D4EDD, #4CC9F0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      opacity: 0.7;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: rgba(157, 78, 221, 0.3);
+      transform: translateY(-2px);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #9D4EDD, #4CC9F0);
+      border: none;
+    }
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    .status-indicator.online {
+      background: #06FFA5;
+      box-shadow: 0 0 10px #06FFA5;
+    }
+
+    .status-indicator.offline {
+      background: #FF006E;
+    }
+
+    /* ========== LUNA CHAT ========== */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 600px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #9D4EDD, #4CC9F0);
+    }
+
+    .message.luna {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-input-container {
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    /* ========== SCROLLBAR ========== */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(157, 78, 221, 0.5);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(157, 78, 221, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-item active" data-page="dashboard">
+        <span>🏠</span>
+        <span class="sidebar-label">Dashboard</span>
+      </div>
+      <div class="sidebar-item" data-page="luna">
+        <span>🌙</span>
+        <span class="sidebar-label">Luna Chat</span>
+      </div>
+      <div class="sidebar-item" data-page="work">
+        <span>💼</span>
+        <span class="sidebar-label">Work</span>
+      </div>
+      <div class="sidebar-item" data-page="health">
+        <span>💪</span>
+        <span class="sidebar-label">Health</span>
+      </div>
+      <div class="sidebar-item" data-page="people">
+        <span>👥</span>
+        <span class="sidebar-label">People</span>
+      </div>
+      <div class="sidebar-item" data-page="finance">
+        <span>💰</span>
+        <span class="sidebar-label">Finance</span>
+      </div>
+      <div class="sidebar-item" data-page="services">
+        <span>⚙️</span>
+        <span class="sidebar-label">Services</span>
+      </div>
+      <div class="sidebar-item" data-page="dreamscape">
+        <span>🌙</span>
+        <span class="sidebar-label">Dreams</span>
+      </div>
+      <div class="sidebar-item" data-page="stories">
+        <span>📖</span>
+        <span class="sidebar-label">Stories</span>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Command Palette (Overlay) -->
+      <div class="command-palette" id="commandPalette">
+        <input
+          type="text"
+          class="palette-input"
+          id="paletteInput"
+          placeholder="🔍 Type a command or ask Luna..."
+          autocomplete="off"
+        />
+        <div class="palette-results" id="paletteResults"></div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <!-- Dashboard Page -->
+        <div class="page active" id="dashboard">
+          <div class="header">
+            <h1>Dashboard</h1>
+            <div>
+              <span id="currentTime"></span>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="stat-card">
+              <div class="stat-label">Tasks Today</div>
+              <div class="stat-value" id="tasksToday">0</div>
+              <button onclick="showPage('work')">View All</button>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Energy Level</div>
+              <div class="stat-value" id="energyLevel">80%</div>
+              <button onclick="showPage('health')">Details</button>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">People Contacted</div>
+              <div class="stat-value" id="peopleContacted">3</div>
+              <button onclick="showPage('people')">View</button>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Budget Status</div>
+              <div class="stat-value" id="budgetStatus">OK</div>
+              <button onclick="showPage('finance')">Manage</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Quick Actions</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="primary" onclick="openCommandPalette()">⌨️ Command Palette (Alt+Space)</button>
+              <button onclick="showPage('luna')">💬 Talk to Luna</button>
+              <button onclick="startFocusMode()">🎯 Start Focus Session</button>
+              <button onclick="showPage('work')">➕ Add Task</button>
+              <button onclick="showPage('health')">🧘 Meditate</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Today's Insights</h2>
+            <p id="todayInsight">🌟 You're off to a great start! Keep going.</p>
+          </div>
+        </div>
+
+        <!-- Luna Chat Page -->
+        <div class="page" id="luna">
+          <div class="header">
+            <h1>🌙 Luna Chat</h1>
+            <button onclick="clearChat()">Clear Chat</button>
+          </div>
+          <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+              <div class="message luna">
+                Hi! I'm Luna, your AI companion. How can I help you today?
+              </div>
+            </div>
+            <div class="chat-input-container">
+              <input
+                type="text"
+                class="chat-input"
+                id="chatInput"
+                placeholder="Ask me anything..."
+                onkeypress="if(event.key === 'Enter') sendMessage()"
+              />
+              <button class="primary" onclick="sendMessage()">Send</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Work Page -->
+        <div class="page" id="work">
+          <div class="header">
+            <h1>💼 Work & Tasks</h1>
+            <button class="primary" onclick="addTask()">➕ New Task</button>
+          </div>
+          <div class="card">
+            <h2>Active Tasks</h2>
+            <div id="taskList">
+              <p>No tasks yet. Click "New Task" to get started!</p>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Projects</h2>
+            <div id="projectList">
+              <p>No projects yet.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Health Page -->
+        <div class="page" id="health">
+          <div class="header">
+            <h1>💪 Health & Energy</h1>
+          </div>
+          <div class="grid">
+            <div class="stat-card">
+              <div class="stat-label">Energy</div>
+              <div class="stat-value">80%</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Sleep Last Night</div>
+              <div class="stat-value">7.5h</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Focus Time</div>
+              <div class="stat-value">2.5h</div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Flow Timer</h2>
+            <div style="text-align: center;">
+              <div style="font-size: 48px; margin: 20px 0;" id="flowTimer">00:00</div>
+              <button class="primary" onclick="startFlowTimer()">Start Focus Session (90 min)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- People Page -->
+        <div class="page" id="people">
+          <div class="header">
+            <h1>👥 People</h1>
+            <button class="primary">➕ Add Person</button>
+          </div>
+          <div class="card">
+            <h2>Your Network</h2>
+            <p>Connect with existing People module...</p>
+          </div>
+        </div>
+
+        <!-- Finance Page -->
+        <div class="page" id="finance">
+          <div class="header">
+            <h1>💰 Finance</h1>
+            <button class="primary">➕ Add Transaction</button>
+          </div>
+          <div class="grid">
+            <div class="stat-card">
+              <div class="stat-label">Monthly Budget</div>
+              <div class="stat-value">€2000</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Spent This Month</div>
+              <div class="stat-value">€1200</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Remaining</div>
+              <div class="stat-value">€800</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Services Page -->
+        <div class="page" id="services">
+          <div class="header">
+            <h1>⚙️ Services</h1>
+            <button onclick="refreshServices()">🔄 Refresh</button>
+          </div>
+          <div class="card">
+            <h2>Service Status</h2>
+            <div id="servicesList">
+              <div style="padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <span class="status-indicator online"></span> Eternal Daemon (Port 9999)
+              </div>
+              <div style="padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <span class="status-indicator offline"></span> Groq API (Port 9987)
+              </div>
+              <div style="padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <span class="status-indicator online"></span> Memory System (Port 9995)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dreamscape Page -->
+        <div class="page" id="dreamscape">
+          <div class="header">
+            <h1>🌙 Dreamscape</h1>
+          </div>
+          <div class="card">
+            <h2>Recent Dreams</h2>
+            <p>Connect with existing Dreamscape module...</p>
+          </div>
+        </div>
+
+        <!-- Stories Page -->
+        <div class="page" id="stories">
+          <div class="header">
+            <h1>📖 Stories</h1>
+          </div>
+          <div class="card">
+            <h2>Your Stories</h2>
+            <p>Connect with existing Story module...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== COMMAND PALETTE ==========
+    const commands = [
+      { icon: '🌙', title: 'Talk to Luna', desc: 'Open Luna chat', action: () => showPage('luna') },
+      { icon: '💼', title: 'Add Task', desc: 'Create a new task', action: addTask },
+      { icon: '🎯', title: 'Start Focus Mode', desc: '90 min flow session', action: startFocusMode },
+      { icon: '⚡', title: 'Log Energy', desc: 'Track your energy level', action: logEnergy },
+      { icon: '💰', title: 'Add Transaction', desc: 'Log income or expense', action: addTransaction },
+      { icon: '💪', title: 'View Health', desc: 'Energy & Flow Timer', action: () => showPage('health') },
+      { icon: '💼', title: 'View Work', desc: 'Tasks & Projects', action: () => showPage('work') },
+      { icon: '👥', title: 'View People', desc: 'Your relationships', action: () => showPage('people') },
+      { icon: '💰', title: 'View Finance', desc: 'Budget & expenses', action: () => showPage('finance') },
+      { icon: '⚙️', title: 'View Services', desc: 'System services', action: () => showPage('services') },
+      { icon: '🏠', title: 'Dashboard', desc: 'Go to dashboard', action: () => showPage('dashboard') },
+      { icon: '🌙', title: 'View Dreams', desc: 'Dreamscape module', action: () => showPage('dreamscape') },
+      { icon: '📖', title: 'View Stories', desc: 'Story module', action: () => showPage('stories') },
+      { icon: '🔄', title: 'Refresh Data', desc: 'Reload stats and tasks', action: async () => { await loadStats(); await loadTodayTasks(); } },
+    ]
+
+    let selectedIndex = 0
+    let filteredCommands = commands
+
+    function openCommandPalette() {
+      document.getElementById('commandPalette').classList.add('active')
+      document.getElementById('paletteInput').focus()
+      renderPaletteResults()
+    }
+
+    function closeCommandPalette() {
+      document.getElementById('commandPalette').classList.remove('active')
+      document.getElementById('paletteInput').value = ''
+      selectedIndex = 0
+    }
+
+    function renderPaletteResults() {
+      const input = document.getElementById('paletteInput').value.toLowerCase()
+      filteredCommands = commands.filter(cmd =>
+        cmd.title.toLowerCase().includes(input) ||
+        cmd.desc.toLowerCase().includes(input)
+      )
+
+      const html = filteredCommands.map((cmd, i) => `
+        <div class="palette-item ${i === selectedIndex ? 'selected' : ''}" onclick="executeCommand(${i})">
+          <div class="palette-item-icon">${cmd.icon}</div>
+          <div class="palette-item-content">
+            <div class="palette-item-title">${cmd.title}</div>
+            <div class="palette-item-desc">${cmd.desc}</div>
+          </div>
+        </div>
+      `).join('')
+
+      document.getElementById('paletteResults').innerHTML = html || '<p style="padding: 20px; opacity: 0.5;">No results found</p>'
+    }
+
+    function executeCommand(index) {
+      filteredCommands[index].action()
+      closeCommandPalette()
+    }
+
+    // Keyboard navigation
+    document.getElementById('paletteInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeCommandPalette()
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        selectedIndex = Math.min(selectedIndex + 1, filteredCommands.length - 1)
+        renderPaletteResults()
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        selectedIndex = Math.max(selectedIndex - 1, 0)
+        renderPaletteResults()
+      } else if (e.key === 'Enter') {
+        e.preventDefault()
+        if (filteredCommands[selectedIndex]) {
+          executeCommand(selectedIndex)
+        }
+      }
+    })
+
+    document.getElementById('paletteInput').addEventListener('input', () => {
+      selectedIndex = 0
+      renderPaletteResults()
+    })
+
+    // Global hotkey (handled by Electron main.js)
+    window.addEventListener('focus-luna-input', openCommandPalette)
+
+    // Click outside to close
+    document.getElementById('commandPalette').addEventListener('click', (e) => {
+      if (e.target.id === 'commandPalette') {
+        closeCommandPalette()
+      }
+    })
+
+    // ========== NAVIGATION ==========
+    function showPage(pageName) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'))
+
+      document.getElementById(pageName).classList.add('active')
+      document.querySelector(`[data-page="${pageName}"]`).classList.add('active')
+    }
+
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const page = item.getAttribute('data-page')
+        showPage(page)
+      })
+    })
+
+    // ========== LUNA CHAT ==========
+    function sendMessage() {
+      const input = document.getElementById('chatInput')
+      const message = input.value.trim()
+      if (!message) return
+
+      const messagesDiv = document.getElementById('chatMessages')
+
+      // User message
+      messagesDiv.innerHTML += `<div class="message user">${message}</div>`
+      input.value = ''
+
+      // Luna response (TODO: Connect to actual Groq API)
+      setTimeout(() => {
+        messagesDiv.innerHTML += `<div class="message luna">I understand you said: "${message}". I'm working on connecting to the full AI system!</div>`
+        messagesDiv.scrollTop = messagesDiv.scrollHeight
+      }, 500)
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight
+    }
+
+    function clearChat() {
+      document.getElementById('chatMessages').innerHTML = '<div class="message luna">Hi! I\'m Luna, your AI companion. How can I help you today?</div>'
+    }
+
+    // ========== WORK MODULE ==========
+    let currentFlowSessionId = null
+
+    async function addTask() {
+      const taskName = prompt('Task name:')
+      if (!taskName) return
+
+      try {
+        const task = await window.api.work.createTask({
+          title: taskName,
+          description: '',
+          status: 'todo',
+          priority: 'medium',
+        })
+
+        await loadTodayTasks()
+        await loadStats()
+        console.log('✅ Task created:', task)
+      } catch (err) {
+        console.error('Failed to create task:', err)
+        alert('Failed to create task. Make sure API server is running on port 3002.')
+      }
+    }
+
+    async function loadTodayTasks() {
+      try {
+        const tasks = await window.api.work.getTodayTasks()
+        const taskList = document.getElementById('taskList')
+
+        if (tasks.length === 0) {
+          taskList.innerHTML = '<p style="opacity: 0.5;">No tasks for today. Add one above!</p>'
+        } else {
+          taskList.innerHTML = tasks.map(task => `
+            <div style="padding: 12px; margin: 8px 0; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;" data-task-id="${task.id}">
+              <span style="flex: 1; ${task.status === 'completed' ? 'text-decoration: line-through; opacity: 0.6;' : ''}">
+                ${task.priority === 'high' ? '🔴' : task.priority === 'urgent' ? '🚨' : '📋'} ${task.title}
+              </span>
+              ${task.status !== 'completed' ? `<button onclick="completeTask('${task.id}')">✅ Complete</button>` : '<span style="opacity: 0.6;">✅ Done</span>'}
+            </div>
+          `).join('')
+        }
+
+        updateTaskCount(tasks.length)
+      } catch (err) {
+        console.error('Failed to load tasks:', err)
+        document.getElementById('taskList').innerHTML = '<p style="color: #ff6b6b;">⚠️ Failed to load tasks. Is API server running?</p>'
+      }
+    }
+
+    async function completeTask(taskId) {
+      try {
+        await window.api.work.completeTask(taskId)
+        await loadTodayTasks()
+        await loadStats()
+        console.log('✅ Task completed:', taskId)
+      } catch (err) {
+        console.error('Failed to complete task:', err)
+        alert('Failed to complete task.')
+      }
+    }
+
+    function updateTaskCount(count) {
+      document.getElementById('tasksToday').textContent = count || 0
+    }
+
+    // ========== HEALTH MODULE ==========
+    let flowTimerInterval = null
+    let flowSeconds = 0
+
+    async function startFlowTimer() {
+      // If already running, stop it
+      if (flowTimerInterval) {
+        await endFlowSession()
+        return
+      }
+
+      // Start new session via API
+      try {
+        const session = await window.api.health.startFlowSession('focus', 'Deep work session')
+        currentFlowSessionId = session.id
+        console.log('✅ Flow session started:', session)
+
+        flowSeconds = 0
+        flowTimerInterval = setInterval(() => {
+          flowSeconds++
+          const mins = Math.floor(flowSeconds / 60)
+          const secs = flowSeconds % 60
+          document.getElementById('flowTimer').textContent =
+            `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+
+          if (flowSeconds >= 90 * 60) {
+            endFlowSession(95, 0) // Auto-complete with high quality
+          }
+        }, 1000)
+      } catch (err) {
+        console.error('Failed to start flow session:', err)
+        alert('Failed to start flow session. Make sure API server is running.')
+      }
+    }
+
+    async function endFlowSession(qualityScore, interruptions) {
+      if (!flowTimerInterval || !currentFlowSessionId) return
+
+      clearInterval(flowTimerInterval)
+      flowTimerInterval = null
+
+      try {
+        // Prompt for quality if not auto-completed
+        if (qualityScore === undefined) {
+          qualityScore = parseInt(prompt('Quality score (0-100):', '80') || '80')
+          interruptions = parseInt(prompt('Number of interruptions:', '0') || '0')
+        }
+
+        await window.api.health.endFlowSession(currentFlowSessionId, {
+          quality_score: qualityScore,
+          interruptions: interruptions,
+          achievements: JSON.stringify(['Completed focus session']),
+          notes: `${Math.floor(flowSeconds / 60)} minutes of focused work`,
+        })
+
+        console.log('✅ Flow session completed')
+        alert(`🎉 Focus session complete! ${Math.floor(flowSeconds / 60)} minutes of deep work!`)
+
+        currentFlowSessionId = null
+        flowSeconds = 0
+        document.getElementById('flowTimer').textContent = '00:00'
+
+        await loadStats()
+      } catch (err) {
+        console.error('Failed to end flow session:', err)
+        alert('Failed to save flow session.')
+      }
+    }
+
+    async function startFocusMode() {
+      showPage('health')
+      await startFlowTimer()
+    }
+
+    async function logEnergy() {
+      const level = parseInt(prompt('Energy level (0-100):', '70') || '70')
+      const mood = prompt('Mood (energized/focused/tired/exhausted/neutral):', 'neutral')
+      const notes = prompt('Notes (optional):', '')
+
+      try {
+        await window.api.health.logEnergy(level, mood, notes)
+        console.log('✅ Energy logged:', level, mood)
+        await loadStats()
+      } catch (err) {
+        console.error('Failed to log energy:', err)
+        alert('Failed to log energy.')
+      }
+    }
+
+    // ========== FINANCE MODULE ==========
+    async function addTransaction() {
+      const type = prompt('Type (income/expense):', 'expense')
+      if (!type || (type !== 'income' && type !== 'expense')) {
+        alert('Invalid type. Must be "income" or "expense".')
+        return
+      }
+
+      const amount = parseFloat(prompt('Amount:', '0') || '0')
+      if (amount <= 0) {
+        alert('Amount must be greater than 0.')
+        return
+      }
+
+      const category = prompt('Category (food/transport/entertainment/health/other):', 'other')
+      const description = prompt('Description:', '')
+
+      try {
+        await window.api.finance.createTransaction({
+          date: new Date(),
+          amount: type === 'expense' ? -amount : amount,
+          type: type,
+          category: category,
+          description: description,
+        })
+
+        console.log('✅ Transaction created:', type, amount, category)
+        await loadStats()
+        alert(`✅ ${type === 'income' ? 'Income' : 'Expense'} of €${amount.toFixed(2)} recorded!`)
+      } catch (err) {
+        console.error('Failed to create transaction:', err)
+        alert('Failed to create transaction.')
+      }
+    }
+
+    async function loadBalance() {
+      try {
+        const balance = await window.api.finance.getBalance()
+        document.getElementById('currentBalance').textContent = `€${balance.toFixed(2)}`
+        console.log('✅ Balance loaded:', balance)
+      } catch (err) {
+        console.error('Failed to load balance:', err)
+      }
+    }
+
+    // ========== STATS & DATA LOADING ==========
+    async function loadStats() {
+      try {
+        const stats = await window.api.getStats()
+
+        // Update dashboard cards
+        document.getElementById('tasksToday').textContent = stats.work.todoTasks || 0
+        document.getElementById('energyLevel').textContent = stats.health.currentEnergy || 0
+        document.getElementById('flowTime').textContent = `${stats.health.flowTimeToday || 0}m`
+
+        console.log('✅ Stats loaded:', stats)
+      } catch (err) {
+        console.error('Failed to load stats:', err)
+        // Don't alert here, just log - stats will show 0
+      }
+    }
+
+    // ========== SERVICES ==========
+    async function refreshServices() {
+      try {
+        // Check API health
+        const healthResponse = await fetch('http://localhost:3002/health')
+        const healthData = await healthResponse.json()
+
+        const servicesList = document.getElementById('servicesList')
+        servicesList.innerHTML = `
+          <div style="padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.05); border-radius: 8px;">
+            <span class="status-indicator ${healthData.success ? 'online' : 'offline'}"></span> Life OS API (Port 3002)
+          </div>
+          <div style="padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.05); border-radius: 8px;">
+            <span class="status-indicator online"></span> Desktop App (Port ${window.location.port || 'file'})
+          </div>
+        `
+
+        console.log('✅ Services refreshed')
+      } catch (err) {
+        console.error('Failed to refresh services:', err)
+        const servicesList = document.getElementById('servicesList')
+        servicesList.innerHTML = `
+          <div style="padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.05); border-radius: 8px;">
+            <span class="status-indicator offline"></span> Life OS API (Port 3002) - ⚠️ Not Running
+          </div>
+          <div style="padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.05); border-radius: 8px;">
+            <span class="status-indicator online"></span> Desktop App (Port ${window.location.port || 'file'})
+          </div>
+          <p style="color: #ff6b6b; margin-top: 10px;">⚠️ API server not responding. Start it with: <code>bun run scripts/life-os-api-server.ts</code></p>
+        `
+      }
+    }
+
+    // ========== TIME ==========
+    function updateTime() {
+      const now = new Date()
+      const time = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+      const date = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+      document.getElementById('currentTime').textContent = `${time} · ${date}`
+    }
+
+    setInterval(updateTime, 1000)
+    updateTime()
+
+    // ========== INITIALIZATION ==========
+    async function initializeApp() {
+      console.log('🚀 Initializing Toobix Life OS...')
+
+      // Check if API is available
+      if (typeof window.api === 'undefined') {
+        console.warn('⚠️ window.api not available. Make sure preload-api.js is loaded.')
+        alert('⚠️ API helper not loaded. Some features may not work.')
+        return
+      }
+
+      // Load initial data
+      await loadStats()
+      await loadTodayTasks()
+      await loadBalance()
+      await refreshServices()
+
+      console.log('✅ Toobix Life OS loaded!')
+    }
+
+    // Start the app when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApp)
+    } else {
+      initializeApp()
+    }
+  </script>
+</body>
+</html>
