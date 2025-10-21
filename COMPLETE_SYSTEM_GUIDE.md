@@ -43,7 +43,7 @@ bun install
 
 ### **2. API Key prüfen**
 
-API Key ist bereits in `.env` vorhanden:
+API Key ist bereits in `.env` vorhanden (Beispiel):
 ```
 GROQ_API_KEY=YOUR_GROQ_API_KEY
 ```

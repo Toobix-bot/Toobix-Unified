@@ -16,6 +16,7 @@ build/
 data/
 
 # Environment
+.env.*
 .env
 .env.local
 .env.*.local
@@ -29,6 +30,21 @@ data/
 # Protect all backup .env files (Version_X)
 Version_*/.env
 Version_*/Version_*/.env
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.p7*
+*.cer
+*.crt
+id_rsa*
+id_ed25519*
+
+# Auth config files
+.npmrc
+.pypirc
 
 # IDE
 .vscode/
