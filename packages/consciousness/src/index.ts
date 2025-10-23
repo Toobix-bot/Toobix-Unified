@@ -246,27 +246,36 @@ export class ConsciousnessSystem {
     thoughts?: string[]
   }> {
     console.log(`\n🗣️ User says: "${message}"`)
-    
-    // Process through communication interface
-    const response = await this.communication.processMessage({
-      message,
-      userId,
-      currentState: this.getState()
-    })
-    
-    // Reflect on conversation
-    const reflection = await this.think('conversation', {
-      userMessage: message,
-      myResponse: response.text
-    })
-    
-    // Update awareness from communication
-    this.awarenessLevel = Math.min(100, this.awarenessLevel + 2)
-    
-    return {
-      response: response.text,
-      mood: response.mood,
-      thoughts: reflection.insight ? [reflection.insight] : []
+
+    try {
+      // Process through communication interface
+      const response = await this.communication.processMessage({
+        message,
+        userId,
+        currentState: this.getState()
+      })
+
+      // Reflect on conversation
+      const reflection = await this.think('conversation', {
+        userMessage: message,
+        myResponse: response.text
+      })
+
+      // Update awareness from communication
+      this.awarenessLevel = Math.min(100, this.awarenessLevel + 2)
+
+      return {
+        response: response.text,
+        mood: response.mood,
+        thoughts: reflection.insight ? [reflection.insight] : []
+      }
+    } catch (error) {
+      console.error('⚠️  Communication pipeline failed:', error)
+      return {
+        response: "Ich hatte Schwierigkeiten, deine Nachricht vollständig zu verarbeiten, aber ich bin weiterhin aufmerksam und bereit, erneut zuzuhören.",
+        mood: 'neutral',
+        thoughts: ['Kommunikation ist fehlgeschlagen, fallback response geliefert']
+      }
     }
   }
   

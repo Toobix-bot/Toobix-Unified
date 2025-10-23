@@ -1,89 +1,82 @@
 {
-  "name": "toobix-unified",
-  "version": "0.1.0",
-  "description": "Unified life ecosystem - People, Story, Love, Peace, Consciousness",
-  "type": "module",
-  "workspaces": [
-    "packages/*",
-    "apps/*",
-    "plugins/*"
-  ],
-  "scripts": {
-    "dev": "bun run dev:all",
-    "dev:all": "bun run --filter=@toobix/bridge dev",
-    "dev:web": "bun run --cwd apps/web dev",
-    "dev:bridge": "bun run packages/bridge/src/index.ts",
-    "dev:api": "bun run scripts/api-server.ts",
-    "dev:diary": "bun run scripts/luna-chatbot.ts",
-    "dev:gui": "bun run scripts/dev-gui.ts",
-    
-    "start": "bun run scripts/start-all.ts",
-    "start:full": "bun run scripts/start-all.ts --mode full",
-    "start:bridge": "bun run scripts/start-all.ts --mode bridge",
-    "start:demo": "bun run scripts/start-all.ts --mode demo --awaken",
-    "start:autonomous": "bun run scripts/start-all.ts --mode full --awaken --autonomy",
-    
-    "build": "bun run build:packages && bun run build:apps",
-    "build:packages": "bun run --filter='./packages/*' build",
-    "build:apps": "bun run --cwd apps/web build",
-    "build:core": "bun run --cwd packages/core build",
-    "build:web": "bun run --cwd apps/web build",
-    
-    "test": "bun test",
-    "test:watch": "bun test --watch",
-    "check-types": "tsc --noEmit",
-    
-    "db:generate": "bun run --cwd packages/core db:generate",
-    "db:migrate": "bun run --cwd packages/core db:migrate",
-    "db:studio": "bun run --cwd packages/core db:studio",
-    "db:seed": "bun run scripts/load-demo-data.ts",
-    
-    "migrate": "bun run scripts/migrate.ts",
-    "migrate:v8": "bun run scripts/migrate-v8.ts",
-    "migrate:v7": "bun run scripts/migrate-v7.ts",
-    
-    "demo:being": "bun run scripts/living-being-demo.ts",
-    "demo:voice": "bun run scripts/toobix-voice.ts",
-
-    "game": "bun run packages/story-idle/src/game.ts",
-    "game:status": "bun run packages/story-idle/src/game.ts status",
-    "game:talk": "bun run packages/story-idle/src/game.ts talk",
-    "game:meditate": "bun run packages/story-idle/src/game.ts meditate",
-    "game:story": "bun run packages/story-idle/src/game.ts story",
-
-    "visual": "bun run packages/visual-world/src/world.ts",
-    "visual:anim": "bun run packages/visual-world/src/world.ts animation",
-    "visual:sound": "bun run packages/visual-world/src/world.ts sound",
-    "visual:svg": "bun run packages/visual-world/src/world.ts svg",
-    "visual:server": "bun run packages/visual-world/src/stream/live-server.ts",
-
-    "terminal": "bun run scripts/toobix-terminal.ts",
-    "term": "bun run scripts/toobix-terminal.ts",
-    "gui": "bun run scripts/start-gui.ts",
-    "universal": "bun run scripts/spiritual-interface.ts",
-    
-    "start:all": "node scripts/start-all.mjs",
-    "health": "curl http://localhost:3337/health",
-    
-    "deploy": "vercel",
-    "deploy:prod": "vercel --prod"
-  },
-  "dependencies": {
-    "drizzle-orm": "^0.44.6",
-    "nanoid": "^5.1.6",
-    "zod": "^4.1.11"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.55.1",
-    "@types/bun": "^1.2.23",
-    "drizzle-kit": "^0.31.5",
-    "playwright": "^1.55.1",
-    "vitest": "^3.2.4"
-  },
-  "trustedDependencies": [
-    "better-sqlite3"
-  ],
-  "engines": {
-    "bun": ">=1.0.0"
-  }
+    "name":  "toobix-unified",
+    "version":  "0.1.0",
+    "description":  "Unified life ecosystem - People, Story, Love, Peace, Consciousness",
+    "type":  "module",
+    "workspaces":  [
+                       "packages/*",
+                       "apps/*",
+                       "plugins/*"
+                   ],
+    "scripts":  {
+                    "dev":  "bun run dev:all",
+                    "dev:all":  "bun run --filter=@toobix/bridge dev",
+                    "dev:web":  "bun run --cwd apps/web dev",
+                    "dev:bridge":  "bun run packages/bridge/src/index.ts",
+                    "dev:api":  "bun run scripts/api-server.ts",
+                    "dev:diary":  "bun run scripts/luna-chatbot.ts",
+                    "dev:gui":  "bun run scripts/dev-gui.ts",
+                    "start":  "bun run scripts/start-all.ts",
+                    "start:full":  "bun run scripts/start-all.ts --mode full",
+                    "start:bridge":  "bun run scripts/start-all.ts --mode bridge",
+                    "start:demo":  "bun run scripts/start-all.ts --mode demo --awaken",
+                    "start:autonomous":  "bun run scripts/start-all.ts --mode full --awaken --autonomy",
+                    "build":  "bun run build:packages \u0026\u0026 bun run build:apps",
+                    "build:packages":  "bun run --filter=\u0027./packages/*\u0027 build",
+                    "build:apps":  "bun run --cwd apps/web build",
+                    "build:core":  "bun run --cwd packages/core build",
+                    "build:web":  "bun run --cwd apps/web build",
+                    "test":  "bun test",
+                    "test:watch":  "bun test --watch",
+                    "check-types":  "tsc --noEmit",
+                    "db:generate":  "bun run --cwd packages/core db:generate",
+                    "db:migrate":  "bun run --cwd packages/core db:migrate",
+                    "db:studio":  "bun run --cwd packages/core db:studio",
+                    "db:seed":  "bun run scripts/load-demo-data.ts",
+                    "migrate":  "bun run scripts/migrate.ts",
+                    "migrate:v8":  "bun run scripts/migrate-v8.ts",
+                    "migrate:v7":  "bun run scripts/migrate-v7.ts",
+                    "demo:being":  "bun run scripts/living-being-demo.ts",
+                    "demo:voice":  "bun run scripts/toobix-voice.ts",
+                    "game":  "bun run packages/story-idle/src/game.ts",
+                    "game:status":  "bun run packages/story-idle/src/game.ts status",
+                    "game:talk":  "bun run packages/story-idle/src/game.ts talk",
+                    "game:meditate":  "bun run packages/story-idle/src/game.ts meditate",
+                    "game:story":  "bun run packages/story-idle/src/game.ts story",
+                    "visual":  "bun run packages/visual-world/src/world.ts",
+                    "visual:anim":  "bun run packages/visual-world/src/world.ts animation",
+                    "visual:sound":  "bun run packages/visual-world/src/world.ts sound",
+                    "visual:svg":  "bun run packages/visual-world/src/world.ts svg",
+                    "visual:server":  "bun run packages/visual-world/src/stream/live-server.ts",
+                    "terminal":  "bun run scripts/toobix-terminal.ts",
+                    "term":  "bun run scripts/toobix-terminal.ts",
+                    "gui":  "bun run scripts/start-gui.ts",
+                    "universal":  "bun run scripts/spiritual-interface.ts",
+                    "start:all":  "node scripts/start-all.mjs",
+                    "health":  "curl http://localhost:3337/health",
+                    "deploy":  "vercel",
+                    "deploy:prod":  "vercel --prod",
+                    "self:loop":  "bun run scripts/self-loop.ts",
+                    "self:loop:daemon":  "bun run scripts/self-loop.ts --daemon",
+                    "system:console":  "bun run scripts/system-console.ts",
+                    "system:chat":  "bun run scripts/system-chat.ts"
+                },
+    "dependencies":  {
+                         "drizzle-orm":  "^0.44.6",
+                         "nanoid":  "^5.1.6",
+                         "zod":  "^4.1.11"
+                     },
+    "devDependencies":  {
+                            "@playwright/test":  "^1.55.1",
+                            "@types/bun":  "^1.2.23",
+                            "drizzle-kit":  "^0.31.5",
+                            "playwright":  "^1.55.1",
+                            "vitest":  "^3.2.4"
+                        },
+    "trustedDependencies":  [
+                                "better-sqlite3"
+                            ],
+    "engines":  {
+                    "bun":  "\u003e=1.0.0"
+                }
 }

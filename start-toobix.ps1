@@ -321,12 +321,14 @@ if ($Mode -ne 'demo') {
     } finally {
         Write-Host ""
         Write-Info "Stopping services..."
-        Stop-Job -Job $bridgeJob -ErrorAction SilentlyContinue
-        Remove-Job -Job $bridgeJob -ErrorAction SilentlyContinue
+        if ($bridgeJob) {
+            Stop-Job -Job $bridgeJob -ErrorAction SilentlyContinue
+            Remove-Job -Job $bridgeJob -ErrorAction SilentlyContinue
+        }
         if ($webJob) {
             Stop-Job -Job $webJob -ErrorAction SilentlyContinue
             Remove-Job -Job $webJob -ErrorAction SilentlyContinue
         }
-        Write-Success "All services stopped"
+        #Write-Success "All services stopped"
     }
 }

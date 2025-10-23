@@ -13,6 +13,8 @@
 
 import { db } from '../packages/core/src/db';
 import { moments } from '../packages/core/src/db/schema';
+import { WorkService } from '../packages/core/src/services/work-service.js';
+import type { Task as DbTaskRecord, Goal as DbGoalRecord } from '../packages/core/src/db/schema';
 
 // ============================================================================
 // TYPES
@@ -101,6 +103,9 @@ class TaskSystem {
     private port = 9997;
     private xp: number = 0;
     private level: number = 1;
+    private workService = new WorkService(db);
+    private taskXp: number = 0;
+    private habitXp: number = 0;
 
     async start() {
         console.log('\n✅ TASK SYSTEM STARTING...\n');
@@ -133,8 +138,28 @@ class TaskSystem {
     private async loadData() {
         console.log('📚 Loading tasks, goals, habits...');
 
-        // TODO: Load from database
-        // For now, start with empty data
+        try {
+            const [dbTasks, dbGoals] = await Promise.all([
+                this.workService.getTasks(),
+                this.workService.getGoals(),
+            ]);
+
+            this.tasks.clear();
+            for (const dbTask of dbTasks) {
+                const task = this.mapDbTask(dbTask);
+                this.tasks.set(task.id, task);
+            }
+
+            this.goals.clear();
+            for (const dbGoal of dbGoals) {
+                const goal = this.mapDbGoal(dbGoal);
+                this.goals.set(goal.id, goal);
+            }
+
+            this.recalculateTaskXp();
+        } catch (error) {
+            console.error('⚠️ Failed to load task data from database', error);
+        }
 
         console.log(`   Tasks: ${this.tasks.size}`);
         console.log(`   Goals: ${this.goals.size}`);
@@ -182,7 +207,7 @@ class TaskSystem {
                 if (url.pathname === '/tasks' && req.method === 'POST') {
                     try {
                         const body = await req.json();
-                        const task = self.createTask(body);
+                        const task = await self.createTask(body);
 
                         return new Response(JSON.stringify(task), {
                             status: 201,
@@ -201,7 +226,7 @@ class TaskSystem {
                     try {
                         const id = url.pathname.split('/')[2];
                         const updates = await req.json();
-                        const task = self.updateTask(id, updates);
+                        const task = await self.updateTask(id, updates);
 
                         if (!task) {
                             return new Response(JSON.stringify({ error: 'Task not found' }), {
@@ -224,7 +249,7 @@ class TaskSystem {
                 // POST /tasks/:id/complete - Complete task
                 if (url.pathname.match(/\/tasks\/.+\/complete/) && req.method === 'POST') {
                     const id = url.pathname.split('/')[2];
-                    const result = self.completeTask(id);
+                    const result = await self.completeTask(id);
 
                     if (!result.success) {
                         return new Response(JSON.stringify(result), {
@@ -290,7 +315,7 @@ class TaskSystem {
                 if (url.pathname === '/goals' && req.method === 'POST') {
                     try {
                         const body = await req.json();
-                        const goal = self.createGoal(body);
+                        const goal = await self.createGoal(body);
 
                         return new Response(JSON.stringify(goal), {
                             status: 201,
@@ -374,68 +399,168 @@ class TaskSystem {
     /**
      * Create a new task
      */
-    private createTask(data: Partial<Task>): Task {
-        const task: Task = {
-            id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            title: data.title || 'Untitled Task',
-            description: data.description || '',
-            status: data.status || 'todo',
-            priority: data.priority || 'medium',
-            tags: data.tags || [],
-            createdAt: Date.now(),
-            subtasks: [],
-            ...data,
+    private async createTask(data: Partial<Task>): Promise<Task> {
+        const targetStatus = data.status ?? 'todo';
+        const completedAtInput = data.completedAt ?? (targetStatus === 'done' ? Date.now() : undefined);
+
+        const payload: Parameters<WorkService['createTask']>[0] = {
+            title: data.title ?? 'Untitled Task',
+            description: data.description ?? '',
+            status: this.toDbStatus(targetStatus),
+            priority: data.priority ?? 'medium',
+            project_id: data.parentTask ?? null,
+            tags: this.serializeTags(data.tags),
+            estimated_minutes: data.estimatedMinutes ?? null,
+            actual_minutes: data.actualMinutes ?? null,
+            due_date: this.toDateOrNull(data.dueDate),
+            xp_reward: null,
+            energy_cost: null,
+            completed_at: completedAtInput ? new Date(completedAtInput) : null,
         };
 
-        this.tasks.set(task.id, task);
-        return task;
+        const createdTask = await this.workService.createTask(payload);
+        const mappedTask = this.mapDbTask(createdTask);
+
+        if (data.subtasks) mappedTask.subtasks = data.subtasks;
+        if (data.recurrence) mappedTask.recurrence = data.recurrence;
+
+        this.tasks.set(mappedTask.id, mappedTask);
+        this.recalculateTaskXp();
+
+        return mappedTask;
     }
 
     /**
      * Update a task
      */
-    private updateTask(id: string, updates: Partial<Task>): Task | null {
-        const task = this.tasks.get(id);
-        if (!task) return null;
+    private async updateTask(id: string, updates: Partial<Task>): Promise<Task | null> {
+        let current = this.tasks.get(id);
 
-        Object.assign(task, updates);
-        this.tasks.set(id, task);
-        return task;
+        if (!current) {
+            const existing = await this.workService.getTask(id);
+            if (!existing) return null;
+            current = this.mapDbTask(existing);
+            this.tasks.set(current.id, current);
+        }
+
+        current = this.tasks.get(id);
+        if (!current) return null;
+
+        const payload: Parameters<WorkService['updateTask']>[1] = {};
+        let hasDbChanges = false;
+
+        if (updates.title !== undefined) {
+            payload.title = updates.title;
+            hasDbChanges = true;
+        }
+        if (updates.description !== undefined) {
+            payload.description = updates.description;
+            hasDbChanges = true;
+        }
+        if (updates.status !== undefined) {
+            payload.status = this.toDbStatus(updates.status);
+            hasDbChanges = true;
+        }
+        if (updates.priority !== undefined) {
+            payload.priority = updates.priority;
+            hasDbChanges = true;
+        }
+        if (updates.tags !== undefined) {
+            payload.tags = this.serializeTags(updates.tags);
+            hasDbChanges = true;
+        }
+        if (updates.dueDate !== undefined) {
+            payload.due_date = this.toDateOrNull(updates.dueDate);
+            hasDbChanges = true;
+        }
+        if (updates.estimatedMinutes !== undefined) {
+            payload.estimated_minutes = updates.estimatedMinutes ?? null;
+            hasDbChanges = true;
+        }
+        if (updates.actualMinutes !== undefined) {
+            payload.actual_minutes = updates.actualMinutes ?? null;
+            hasDbChanges = true;
+        }
+        if (updates.completedAt !== undefined) {
+            payload.completed_at = this.toDateOrNull(updates.completedAt);
+            hasDbChanges = true;
+        }
+        if (updates.parentTask !== undefined) {
+            payload.project_id = updates.parentTask ?? null;
+            hasDbChanges = true;
+        }
+
+        let updatedTask: Task;
+
+        if (hasDbChanges) {
+            const dbTask = await this.workService.updateTask(id, payload);
+            updatedTask = this.mapDbTask(dbTask);
+        } else {
+            updatedTask = { ...current };
+        }
+
+        if (updates.subtasks !== undefined) {
+            updatedTask.subtasks = updates.subtasks;
+        } else {
+            updatedTask.subtasks = current?.subtasks ?? updatedTask.subtasks;
+        }
+
+        if (updates.recurrence !== undefined) {
+            updatedTask.recurrence = updates.recurrence;
+        } else {
+            updatedTask.recurrence = current?.recurrence;
+        }
+
+        this.tasks.set(id, updatedTask);
+
+        if (hasDbChanges && (updates.status !== undefined || updates.priority !== undefined || updates.completedAt !== undefined)) {
+            this.recalculateTaskXp();
+        }
+
+        return updatedTask;
     }
 
     /**
      * Complete a task (with XP rewards)
      */
-    private completeTask(id: string): { success: boolean; task?: Task; xpGained?: number; levelUp?: boolean; } {
-        const task = this.tasks.get(id);
-        if (!task) return { success: false };
+    private async completeTask(id: string): Promise<{ success: boolean; task?: Task; xpGained?: number; levelUp?: boolean; }> {
+        let current = this.tasks.get(id);
 
-        task.status = 'done';
-        task.completedAt = Date.now();
+        if (!current) {
+            const existing = await this.workService.getTask(id);
+            if (!existing) return { success: false };
+            current = this.mapDbTask(existing);
+            this.tasks.set(current.id, current);
+        }
 
-        // Calculate XP
-        const baseXP = 10;
-        const priorityMultiplier = { low: 1, medium: 1.5, high: 2, urgent: 3 };
-        const xpGained = baseXP * priorityMultiplier[task.priority];
+        current = this.tasks.get(id);
+        if (!current) return { success: false };
 
-        this.xp += xpGained;
+        const dbTask = await this.workService.completeTask(id);
+        const completedTask = this.mapDbTask(dbTask);
 
-        // Check level up
-        const oldLevel = this.level;
-        this.level = Math.floor(this.xp / 100) + 1;
-        const levelUp = this.level > oldLevel;
+        completedTask.subtasks = current.subtasks;
+        completedTask.recurrence = current.recurrence;
 
-        // Store in moments
+        const previousXp = this.xp;
+        const previousLevel = this.level;
+
+        this.tasks.set(id, completedTask);
+        this.recalculateTaskXp();
+
+        const xpGained = this.xp - previousXp;
+        const levelUp = this.level > previousLevel;
+
         db.insert(moments).values({
             timestamp: Date.now(),
             depth: 1,
-            thought: `Task completed: "${task.title}" (+${xpGained} XP)`,
+            thought: `Task completed: "${completedTask.title}" (+${xpGained} XP)`,
             feeling: 'produktiv',
             ethicsScore: 85,
             needsAttention: false,
         });
 
-        return { success: true, task, xpGained, levelUp };
+        return { success: true, task: completedTask, xpGained, levelUp };
     }
 
     /**
@@ -458,21 +583,32 @@ class TaskSystem {
     /**
      * Create a goal
      */
-    private createGoal(data: Partial<Goal>): Goal {
-        const goal: Goal = {
-            id: `goal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            title: data.title || 'New Goal',
-            description: data.description || '',
-            targetDate: data.targetDate || Date.now() + (30 * 24 * 60 * 60 * 1000), // Default 30 days
-            milestones: data.milestones || [],
-            progress: 0,
-            status: 'active',
-            category: data.category || 'general',
-            createdAt: Date.now(),
+    private async createGoal(data: Partial<Goal>): Promise<Goal> {
+        const status = data.status ?? 'active';
+        const progress = data.progress ?? 0;
+        const completedAt = status === 'completed' || progress >= 100 ? Date.now() : undefined;
+
+        const payload: Parameters<WorkService['createGoal']>[0] = {
+            title: data.title ?? 'New Goal',
+            description: data.description ?? '',
+            category: data.category ?? 'general',
+            status,
+            progress,
+            milestones: this.serializeMilestones(data.milestones),
+            target_date: this.toDateOrNull(data.targetDate),
+            completed_at: completedAt ? new Date(completedAt) : null,
         };
 
-        this.goals.set(goal.id, goal);
-        return goal;
+        const createdGoal = await this.workService.createGoal(payload);
+        const mappedGoal = this.mapDbGoal(createdGoal);
+
+        if (data.milestones) mappedGoal.milestones = data.milestones;
+        if (data.targetDate) mappedGoal.targetDate = data.targetDate;
+        if (data.status) mappedGoal.status = data.status;
+        if (data.progress !== undefined) mappedGoal.progress = data.progress;
+
+        this.goals.set(mappedGoal.id, mappedGoal);
+        return mappedGoal;
     }
 
     /**
@@ -498,7 +634,7 @@ class TaskSystem {
     /**
      * Complete a habit for today
      */
-    private completeHabit(id: string): { success: boolean; habit?: Habit; xpGained?: number; streakBonus?: number; } {
+    private completeHabit(id: string): { success: boolean; habit?: Habit; xpGained?: number; streakBonus?: number; levelUp?: boolean; } {
         const habit = this.habits.get(id);
         if (!habit) return { success: false };
 
@@ -533,7 +669,10 @@ class TaskSystem {
         const streakBonus = Math.min(habit.streak * 2, 50); // Max +50 XP
         const xpGained = baseXP + streakBonus;
 
-        this.xp += xpGained;
+        const previousLevel = this.level;
+        this.habitXp += xpGained;
+        this.recalculateTaskXp();
+        const levelUp = this.level > previousLevel;
 
         // Store in moments
         db.insert(moments).values({
@@ -545,7 +684,7 @@ class TaskSystem {
             needsAttention: false,
         });
 
-        return { success: true, habit, xpGained, streakBonus };
+        return { success: true, habit, xpGained, streakBonus, levelUp };
     }
 
     /**
@@ -633,6 +772,180 @@ class TaskSystem {
                 }
             }
         }, 3600000); // Check every hour
+    }
+
+    private mapDbTask(dbTask: DbTaskRecord): Task {
+        const mapped: Task = {
+            id: dbTask.id,
+            title: dbTask.title,
+            description: dbTask.description ?? '',
+            status: this.fromDbStatus(dbTask.status),
+            priority: this.toPriority(dbTask.priority),
+            tags: this.parseTags(dbTask.tags),
+            dueDate: this.toTimestamp(dbTask.due_date),
+            createdAt: this.toTimestamp(dbTask.created_at) ?? Date.now(),
+            completedAt: this.toTimestamp(dbTask.completed_at),
+            estimatedMinutes: dbTask.estimated_minutes ?? undefined,
+            actualMinutes: dbTask.actual_minutes ?? undefined,
+            parentTask: dbTask.project_id ?? undefined,
+            subtasks: [],
+            recurrence: undefined,
+        };
+
+        return mapped;
+    }
+
+    private mapDbGoal(dbGoal: DbGoalRecord): Goal {
+        return {
+            id: dbGoal.id,
+            title: dbGoal.title,
+            description: dbGoal.description ?? '',
+            targetDate: this.toTimestamp(dbGoal.target_date) ?? Date.now(),
+            milestones: this.parseMilestones(dbGoal.milestones),
+            progress: dbGoal.progress ?? 0,
+            status: this.toGoalStatus(dbGoal.status),
+            category: dbGoal.category ?? 'general',
+            createdAt: this.toTimestamp(dbGoal.created_at) ?? Date.now(),
+        };
+    }
+
+    private toDbStatus(status: Task['status']): string {
+        switch (status) {
+            case 'in-progress':
+                return 'in_progress';
+            case 'done':
+                return 'completed';
+            case 'blocked':
+                return 'blocked';
+            default:
+                return 'todo';
+        }
+    }
+
+    private fromDbStatus(status?: string | null): Task['status'] {
+        switch (status) {
+            case 'in_progress':
+            case 'in-progress':
+                return 'in-progress';
+            case 'completed':
+            case 'done':
+                return 'done';
+            case 'blocked':
+            case 'cancelled':
+                return 'blocked';
+            default:
+                return 'todo';
+        }
+    }
+
+    private toGoalStatus(status?: string | null): Goal['status'] {
+        switch (status) {
+            case 'completed':
+                return 'completed';
+            case 'abandoned':
+                return 'abandoned';
+            case 'paused':
+                return 'paused';
+            case 'active':
+            default:
+                return 'active';
+        }
+    }
+
+    private toPriority(priority?: string | null): Task['priority'] {
+        if (priority === 'low' || priority === 'medium' || priority === 'high' || priority === 'urgent') {
+            return priority;
+        }
+        return 'medium';
+    }
+
+    private parseTags(value?: string | null): string[] {
+        if (!value) return [];
+        try {
+            const parsed = JSON.parse(value);
+            if (!Array.isArray(parsed)) return [];
+            return parsed.filter((item): item is string => typeof item === 'string');
+        } catch {
+            return [];
+        }
+    }
+
+    private serializeTags(tags?: string[]): string | null {
+        if (!tags || tags.length === 0) return null;
+        return JSON.stringify(tags);
+    }
+
+    private parseMilestones(value?: string | null): Milestone[] {
+        if (!value) return [];
+        try {
+            const parsed = JSON.parse(value);
+            if (!Array.isArray(parsed)) return [];
+
+            return parsed
+                .filter(item => item && typeof item === 'object')
+                .map((item: any, index: number): Milestone => ({
+                    id: typeof item.id === 'string' ? item.id : `milestone-${index}`,
+                    title: typeof item.title === 'string' ? item.title : `Milestone ${index + 1}`,
+                    completed: Boolean(item.completed),
+                    completedAt: this.toTimestamp(item.completedAt ?? item.completed_at),
+                }));
+        } catch {
+            return [];
+        }
+    }
+
+    private serializeMilestones(milestones?: Milestone[]): string | null {
+        if (!milestones || milestones.length === 0) return null;
+        return JSON.stringify(
+            milestones.map(milestone => ({
+                id: milestone.id,
+                title: milestone.title,
+                completed: milestone.completed,
+                completedAt: milestone.completedAt ?? null,
+            })),
+        );
+    }
+
+    private toTimestamp(value: unknown): number | undefined {
+        if (value instanceof Date) return value.getTime();
+        if (typeof value === 'number' && Number.isFinite(value)) return value;
+        if (typeof value === 'string') {
+            const numeric = Number(value);
+            if (!Number.isNaN(numeric)) return numeric;
+            const parsed = Date.parse(value);
+            if (!Number.isNaN(parsed)) return parsed;
+        }
+        return undefined;
+    }
+
+    private toDateOrNull(value?: number): Date | null {
+        if (value === undefined || value === null) return null;
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    private recalculateTaskXp() {
+        let total = 0;
+        for (const task of this.tasks.values()) {
+            if (task.status === 'done') {
+                total += this.calculateTaskXp(task);
+            }
+        }
+
+        this.taskXp = total;
+        this.xp = this.taskXp + this.habitXp;
+        this.level = Math.floor(this.xp / 100) + 1;
+    }
+
+    private calculateTaskXp(task: Task): number {
+        const multiplier: Record<Task['priority'], number> = {
+            low: 1,
+            medium: 1.5,
+            high: 2,
+            urgent: 3,
+        };
+        const baseXP = 10;
+        return baseXP * (multiplier[task.priority] ?? 1);
     }
 }
 
