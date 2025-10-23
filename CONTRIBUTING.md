@@ -1,6 +1,23 @@
-# Contributing to Toobix-Unified
+# 🤝 Contributing to Toobix-Unified
 
-First off, thank you for considering contributing to Toobix! 🎉
+**Thank you for considering contributing to Toobix!** 🎉
+
+## 🌟 Before You Start - Read the Philosophy
+
+**Toobix-Unified is not a typical open source project.**
+
+It is a **philosophical exploration** and **lifelong work** by Michael Horn, created to provide **value for all people and life**, not to make money.
+
+**Please read [VISION.md](./VISION.md) first** to understand:
+- 💝 **Impact over Profit** - We build for meaning
+- 🌐 **Open Sandbox Philosophy** - Fork it, make it yours
+- 🎯 **Quality over Quantity** - Slow and good beats fast
+- 💝 **80/10/10 Rule** - Transparent funding allocation
+- 🚀 **Version Philosophy** - Never finished, always growing
+
+**If these values resonate with you, welcome! Let's build something meaningful together.**
+
+---
 
 ## 🚀 Quick Start for Contributors
 

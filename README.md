@@ -811,6 +811,50 @@ Toobix Unified embodies 5 core values:
 
 ---
 
+## 🤖 Development & Authorship
+
+### Created by Michael Horn
+
+**This project was created by Michael Horn with assistance from AI tools.**
+
+**Human Contributions (75%):**
+- 🎯 Vision & Philosophy - All philosophical concepts and frameworks
+- 🏗️ Architecture & Design - System structure and component relationships
+- 🎨 Creative Decisions - Feature selection, UX design, artistic direction
+- 🔍 Code Review & Curation - Every line of code was reviewed and approved
+- 🔧 Integration & Testing - Bringing all components together
+- 💝 Values & Ethics - The soul of the project
+
+**AI Assistance (25%):**
+- 💻 Code Implementation - Writing TypeScript based on specifications
+- 📝 Documentation - Formatting and structuring written content
+- 🎯 Best Practices - Suggesting patterns and optimizations
+- 🐛 Debugging Support - Identifying potential issues
+
+**Open Source Community (10%):**
+- Bun, TypeScript, Next.js, SQLite, Drizzle ORM, MCP Protocol
+- Standing on the shoulders of giants
+
+### Copyright & Legal
+
+All creative and architectural decisions were made by Michael Horn.
+The AI served as a tool - like a synthesizer for a musician or Photoshop for an artist.
+
+**Copyright © 2025 Michael Horn**
+Licensed under MIT License (see [LICENSE](./LICENSE))
+
+You are free to:
+- ✅ Use for personal or commercial projects
+- ✅ Modify and create derivatives
+- ✅ Share and distribute
+- ✅ Use as foundation/sandbox for your own projects
+
+You must:
+- ✅ Keep copyright notice
+- ✅ Include license text
+
+---
+
 ## 🚦 Project Status
 
 ### ✅ Completed (Phase 1)
