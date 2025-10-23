@@ -1,12 +1,13 @@
 /**
  * 📖 Story Service - Narrative Engine für Toobix Unified
  * Portiert von Version_7 mit Integration in People Module
- * 
+ *
  * ✅ FIXED: Events enabled, createEvent & getEvent working!
  */
 
 import { Database } from 'bun:sqlite'
 import { nanoid } from 'nanoid'
+import { DatabaseError, ErrorCode, NotFoundError, createLogger } from '../errors/index.ts'
 import type {
   StoryState,
   StoryEvent,
@@ -24,6 +25,8 @@ import type {
   CreateSkillInput
 } from './types.ts'
 
+const logger = createLogger('story-service')
+
 const ARC_ORDER: StoryArc[] = ['foundations', 'exploration', 'mastery']
 
 const DEFAULT_RESOURCES: StoryResources = {
@@ -40,22 +43,33 @@ export class StoryService {
   private db: Database
 
   constructor(db: Database) {
-    this.db = db
-    this.initializeTables() // ✅ ENABLED!
+    try {
+      this.db = db
+      this.initializeTables() // ✅ ENABLED!
+      logger.info('Story Service initialized successfully')
+    } catch (error) {
+      logger.error('Failed to initialize Story Service', error as Error)
+      throw new DatabaseError(
+        'Failed to initialize Story Service',
+        ErrorCode.DATABASE_CONNECTION_FAILED,
+        { error: String(error) }
+      )
+    }
   }
 
   private initializeTables() {
-    // Story State
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS story_state (
-        id INTEGER PRIMARY KEY DEFAULT 1,
-        ts INTEGER NOT NULL,
-        epoch INTEGER NOT NULL DEFAULT 0,
-        mood TEXT NOT NULL DEFAULT 'calm',
-        arc TEXT NOT NULL DEFAULT 'foundations',
-        resources TEXT NOT NULL
-      )
-    `)
+    try {
+      // Story State
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS story_state (
+          id INTEGER PRIMARY KEY DEFAULT 1,
+          ts INTEGER NOT NULL,
+          epoch INTEGER NOT NULL DEFAULT 0,
+          mood TEXT NOT NULL DEFAULT 'calm',
+          arc TEXT NOT NULL DEFAULT 'foundations',
+          resources TEXT NOT NULL
+        )
+      `)
 
     // Story Events
     this.db.run(`
@@ -112,24 +126,34 @@ export class StoryService {
       )
     `)
 
-    // Skills
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS story_skills (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        category TEXT,
-        level INTEGER DEFAULT 1,
-        xp INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
-      )
-    `)
+      // Skills
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS story_skills (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          category TEXT,
+          level INTEGER DEFAULT 1,
+          xp INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      `)
 
-    // Initialize default state if not exists
-    const state = this.db.query('SELECT id FROM story_state WHERE id = 1').get()
-    if (!state) {
-      this.db.run(
-        'INSERT INTO story_state (id, ts, epoch, mood, arc, resources) VALUES (?, ?, ?, ?, ?, ?)',
-        [1, Date.now(), 0, 'calm', 'foundations', JSON.stringify(DEFAULT_RESOURCES)]
+      // Initialize default state if not exists
+      const state = this.db.query('SELECT id FROM story_state WHERE id = 1').get()
+      if (!state) {
+        this.db.run(
+          'INSERT INTO story_state (id, ts, epoch, mood, arc, resources) VALUES (?, ?, ?, ?, ?, ?)',
+          [1, Date.now(), 0, 'calm', 'foundations', JSON.stringify(DEFAULT_RESOURCES)]
+        )
+      }
+
+      logger.debug('Story Service tables initialized successfully')
+    } catch (error) {
+      logger.error('Failed to initialize story tables', error as Error)
+      throw new DatabaseError(
+        'Failed to create story database tables',
+        ErrorCode.DATABASE_QUERY_FAILED,
+        { error: String(error) }
       )
     }
   }
