@@ -35,6 +35,7 @@ import { gameEngine } from '../../consciousness/src/story/ai-game-engine.ts';
 
 // Error handling & logging
 import { errorHandler, requestLogger, asyncHandler, validate, notFound } from './middleware/error-handler.ts';
+import { rateLimiter } from './middleware/rate-limiter.ts';
 import { initLogger, LogLevel } from '@toobix/core';
 
 // Initialize logger
@@ -57,8 +58,9 @@ const app = new Elysia()
       }
     }
   }))
-  // Add error handling & logging middleware
+  // Add error handling, logging & rate limiting middleware
   .use(requestLogger)
+  .use(rateLimiter())
   .use(errorHandler)
 
   /**
