@@ -36,7 +36,8 @@ import { gameEngine } from '../../consciousness/src/story/ai-game-engine.ts';
 // Error handling & logging
 import { errorHandler, requestLogger, asyncHandler, validate, notFound } from './middleware/error-handler.ts';
 import { rateLimiter } from './middleware/rate-limiter.ts';
-import { initLogger, LogLevel } from '@toobix/core';
+import { metricsMiddleware, getMetricsSummary } from './middleware/metrics.ts';
+import { initLogger, LogLevel, errorTracker, metricsRegistry } from '@toobix/core';
 
 // Initialize logger
 const logger = initLogger({
@@ -58,8 +59,9 @@ const app = new Elysia()
       }
     }
   }))
-  // Add error handling, logging & rate limiting middleware
+  // Add error handling, logging, metrics & rate limiting middleware
   .use(requestLogger)
+  .use(metricsMiddleware)
   .use(rateLimiter())
   .use(errorHandler)
 
@@ -399,12 +401,57 @@ const app = new Elysia()
 
   /**
    * ═══════════════════════════════════════════════════════════════
-   * HEALTH CHECK
+   * MONITORING ENDPOINTS
    * ═══════════════════════════════════════════════════════════════
    */
 
   .get('/health', asyncHandler(async () => {
-    return { status: 'ok', timestamp: new Date(), service: 'api-server' };
+    const errorStats = errorTracker.getStats()
+    const metricsSummary = getMetricsSummary()
+
+    return {
+      status: 'ok',
+      timestamp: new Date(),
+      service: 'api-server',
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      errors: {
+        total: errorStats.total,
+        lastHour: errorStats.lastHour,
+        lastMinute: errorStats.lastMinute
+      },
+      requests: metricsSummary.requests
+    }
+  }))
+
+  .get('/metrics', asyncHandler(async ({ request }) => {
+    const url = new URL(request.url)
+    const format = url.searchParams.get('format') || 'prometheus'
+
+    if (format === 'json') {
+      // JSON format
+      return {
+        timestamp: new Date(),
+        metrics: metricsRegistry.exportJSON(),
+        errors: errorTracker.getStats(),
+        summary: getMetricsSummary()
+      }
+    } else {
+      // Prometheus format (default)
+      const prometheus = metricsRegistry.exportPrometheus()
+      return new Response(prometheus, {
+        headers: { 'Content-Type': 'text/plain; version=0.0.4' }
+      })
+    }
+  }))
+
+  .get('/metrics/errors', asyncHandler(async () => {
+    const stats = errorTracker.getStats()
+    return {
+      timestamp: new Date(),
+      ...stats,
+      summary: errorTracker.getSummary()
+    }
   }))
 
   .listen(3000);

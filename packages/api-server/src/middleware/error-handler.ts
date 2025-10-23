@@ -13,7 +13,8 @@ import {
   AuthorizationError,
   RateLimitError,
   normalizeError,
-  ErrorCode
+  ErrorCode,
+  errorTracker
 } from '@toobix/core'
 import { getLogger } from '@toobix/core'
 
@@ -116,6 +117,9 @@ export const errorHandler = (app: Elysia) => {
 
       // Log the error
       logError(toobixError, path, method)
+
+      // Track the error for monitoring
+      errorTracker.track(toobixError)
 
       // Set HTTP status code
       set.status = toobixError.statusCode as any

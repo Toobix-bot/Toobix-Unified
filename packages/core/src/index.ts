@@ -17,5 +17,9 @@ export * from './errors';
 // Logging System
 export * from './logging';
 
+// Monitoring System
+export * from './monitoring/error-tracker';
+export * from './monitoring/metrics';
+
 // Version
 export const VERSION = '0.1.0';
