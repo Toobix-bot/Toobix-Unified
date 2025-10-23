@@ -472,3 +472,44 @@ console.log(`
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 `);
+
+// Graceful shutdown handling
+let isShuttingDown = false;
+
+async function gracefulShutdown(signal: string) {
+  if (isShuttingDown) {
+    logger.warn('Shutdown already in progress...');
+    return;
+  }
+
+  isShuttingDown = true;
+  logger.info(`Received ${signal}, starting graceful shutdown...`);
+
+  try {
+    // Log final stats
+    const errorStats = errorTracker.getStats();
+    const metricsSummary = getMetricsSummary();
+
+    logger.info('📊 Final Statistics:', {
+      errors: errorStats.total,
+      requests: metricsSummary.requests?.total || 0,
+      uptime: process.uptime()
+    });
+
+    // Give active requests time to complete
+    logger.info('Waiting for active requests to complete...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Stop the server
+    app.stop();
+    logger.info('✅ Server stopped gracefully');
+
+    process.exit(0);
+  } catch (error) {
+    logger.error('Error during shutdown', error as Error);
+    process.exit(1);
+  }
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

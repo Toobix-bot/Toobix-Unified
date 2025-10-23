@@ -1,0 +1,43 @@
+[Unit]
+Description=Toobix Unified API Server
+Documentation=https://github.com/toobix/toobix-unified
+After=network.target
+
+[Service]
+Type=simple
+User=toobix
+Group=toobix
+WorkingDirectory=/opt/toobix/api-server
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+
+# Use the eternal daemon for auto-restart
+ExecStart=/usr/bin/bun run /opt/toobix/api-server/src/daemon.ts
+
+# Graceful shutdown
+ExecStop=/bin/kill -SIGTERM $MAINPID
+TimeoutStopSec=30
+
+# Restart policy (daemon handles restarts, but systemd provides additional safety)
+Restart=on-failure
+RestartSec=10s
+
+# Resource limits
+LimitNOFILE=65536
+MemoryLimit=2G
+CPUQuota=200%
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/toobix/api-server/logs /opt/toobix/api-server/data
+
+# Logging
+StandardOutput=append:/var/log/toobix/api-server.log
+StandardError=append:/var/log/toobix/api-server-error.log
+SyslogIdentifier=toobix-api
+
+[Install]
+WantedBy=multi-user.target

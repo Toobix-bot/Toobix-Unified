@@ -4,7 +4,12 @@
   "type": "module",
   "scripts": {
     "dev": "bun run src/server.ts",
-    "start": "bun run src/server.ts"
+    "start": "bun run src/server.ts",
+    "daemon": "bun run src/daemon.ts",
+    "daemon:start": "./scripts/daemon-start.sh",
+    "daemon:stop": "./scripts/daemon-stop.sh",
+    "daemon:restart": "./scripts/daemon-restart.sh",
+    "daemon:status": "./scripts/daemon-status.sh"
   },
   "dependencies": {
     "elysia": "^1.0.0",
