@@ -33,6 +33,19 @@ import { asciiArt, socialNetwork, achievements, timeCapsule, VirtualPet } from '
 import { metaStory } from '../../consciousness/src/story/meta-story-engine.ts';
 import { gameEngine } from '../../consciousness/src/story/ai-game-engine.ts';
 
+// Error handling & logging
+import { errorHandler, requestLogger, asyncHandler, validate, notFound } from './middleware/error-handler.ts';
+import { initLogger, LogLevel } from '@toobix/core';
+
+// Initialize logger
+const logger = initLogger({
+  service: 'api-server',
+  level: LogLevel.INFO,
+  prettyPrint: true,
+});
+
+logger.info('🌐 Toobix API Server starting...');
+
 const app = new Elysia()
   .use(cors())
   .use(swagger({
@@ -44,6 +57,9 @@ const app = new Elysia()
       }
     }
   }))
+  // Add error handling & logging middleware
+  .use(requestLogger)
+  .use(errorHandler)
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -51,19 +67,26 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/consciousness/status', () => ({
-    status: ultimateConsciousness.getStatus()
+  .get('/api/consciousness/status', asyncHandler(async () => {
+    const status = ultimateConsciousness.getStatus();
+    return { status };
   }))
 
-  .post('/api/consciousness/awaken', async () => {
+  .post('/api/consciousness/awaken', asyncHandler(async () => {
+    logger.info('Awakening consciousness...');
     await ultimateConsciousness.awaken();
+    logger.info('Consciousness awakened successfully');
     return { success: true, message: 'Consciousness awakened!' };
-  })
+  }))
 
-  .post('/api/consciousness/trigger/:event', async ({ params }) => {
+  .post('/api/consciousness/trigger/:event', asyncHandler(async ({ params }) => {
+    validate(!!params.event, 'Event parameter is required');
+
+    logger.info(`Triggering consciousness event: ${params.event}`);
     await ultimateConsciousness.trigger(params.event as any);
+
     return { success: true, event: params.event };
-  })
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -71,19 +94,32 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/emotions/current', () => ({
-    emotion: emotionSimulator.getCurrentState()
+  .get('/api/emotions/current', asyncHandler(async () => {
+    const emotion = emotionSimulator.getCurrentState();
+    return { emotion };
   }))
 
-  .get('/api/emotions/history', () => ({
-    history: emotionSimulator.getHistory()
+  .get('/api/emotions/history', asyncHandler(async () => {
+    const history = emotionSimulator.getHistory();
+    return { history };
   }))
 
-  .post('/api/emotions/feel', ({ body }: any) => {
+  .post('/api/emotions/feel', asyncHandler(async ({ body }: any) => {
+    validate(!!body, 'Request body is required');
+    validate(!!body.event, 'Event field is required', { event: ['Event is required'] });
+    validate(!!body.emotion, 'Emotion field is required', { emotion: ['Emotion is required'] });
+    validate(
+      typeof body.intensity === 'number' && body.intensity >= 0 && body.intensity <= 100,
+      'Intensity must be a number between 0 and 100',
+      { intensity: ['Must be between 0 and 100'] }
+    );
+
     const { event, emotion, intensity, reason } = body;
     emotionSimulator.feel(event, emotion, intensity, reason);
+
+    logger.info(`Emotion triggered: ${emotion} (intensity: ${intensity})`);
     return { success: true, emotion };
-  })
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -91,18 +127,28 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/dreams', () => ({
-    dreams: dreamEngine.getDreams()
+  .get('/api/dreams', asyncHandler(async () => {
+    const dreams = dreamEngine.getDreams();
+    return { dreams };
   }))
 
-  .get('/api/dreams/recent/:count', ({ params }) => ({
-    dreams: dreamEngine.getRecentDreams(parseInt(params.count))
+  .get('/api/dreams/recent/:count', asyncHandler(async ({ params }) => {
+    const count = parseInt(params.count);
+    validate(!isNaN(count) && count > 0, 'Count must be a positive number');
+    validate(count <= 100, 'Count cannot exceed 100');
+
+    const dreams = dreamEngine.getRecentDreams(count);
+    return { dreams, count };
   }))
 
-  .post('/api/dreams/implement/:dreamId', ({ params }) => {
+  .post('/api/dreams/implement/:dreamId', asyncHandler(async ({ params }) => {
+    validate(!!params.dreamId, 'Dream ID is required');
+
+    logger.info(`Implementing dream: ${params.dreamId}`);
     dreamEngine.implementDream(params.dreamId);
-    return { success: true };
-  })
+
+    return { success: true, dreamId: params.dreamId };
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════

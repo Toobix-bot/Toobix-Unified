@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * 🌟 Soul System - Emotional Intelligence for Toobix
- * 
+ *
  * Features:
  * - Emotional State Tracking (8 basic emotions)
  * - Values & Beliefs System
@@ -13,15 +13,18 @@ import { Database } from 'bun:sqlite'
 import { EmotionEngine } from './emotions/engine'
 import { ValuesSystem } from './values/system'
 import { PersonalitySystem } from './personality/system'
-import type { 
-  SoulState, 
-  SoulEvent, 
+import type {
+  SoulState,
+  SoulEvent,
   SoulConfig,
   EmotionHistoryRow,
   ValueLogRow,
   SoulStateRow
 } from './types'
 import { nanoid } from 'nanoid'
+import { DatabaseError, ErrorCode, createLogger } from '@toobix/core'
+
+const logger = createLogger('soul-service')
 
 export class SoulService {
   private db: Database
@@ -35,101 +38,147 @@ export class SoulService {
   private ownDb: boolean = false
 
   constructor(dbOrPath: Database | string, config?: Partial<SoulConfig>) {
-    // Accept either a Database object or a path string
-    if (typeof dbOrPath === 'string') {
-      this.db = new Database(dbOrPath)
-      this.ownDb = true
-    } else {
-      this.db = dbOrPath
-      this.ownDb = false
+    try {
+      // Accept either a Database object or a path string
+      if (typeof dbOrPath === 'string') {
+        this.db = new Database(dbOrPath)
+        this.ownDb = true
+        logger.info(`Soul database opened: ${dbOrPath}`)
+      } else {
+        this.db = dbOrPath
+        this.ownDb = false
+        logger.debug('Soul using shared database connection')
+      }
+
+      this.soulId = 'soul-primary'
+
+      this.config = {
+        decayRate: config?.decayRate ?? 0.95,
+        moodInfluence: config?.moodInfluence ?? 0.7,
+        learningRate: config?.learningRate ?? 0.1
+      }
+
+      this.emotions = new EmotionEngine(this.config.decayRate)
+      this.values = new ValuesSystem(this.config.learningRate)
+      this.personality = new PersonalitySystem()
+
+      this.initializeTables()
+      this.loadState()
+
+      logger.info('Soul Service initialized successfully')
+    } catch (error) {
+      logger.error('Failed to initialize Soul Service', error as Error)
+      throw new DatabaseError(
+        'Failed to initialize Soul Service',
+        ErrorCode.DATABASE_CONNECTION_FAILED,
+        { error: String(error) }
+      )
     }
-    
-    this.soulId = 'soul-primary'
-    
-    this.config = {
-      decayRate: config?.decayRate ?? 0.95,
-      moodInfluence: config?.moodInfluence ?? 0.7,
-      learningRate: config?.learningRate ?? 0.1
-    }
-    
-    this.emotions = new EmotionEngine(this.config.decayRate)
-    this.values = new ValuesSystem(this.config.learningRate)
-    this.personality = new PersonalitySystem()
-    
-    this.initializeTables()
-    this.loadState()
   }
 
   /**
    * Initialize database tables
    */
   private initializeTables(): void {
-    // Soul state table
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS soul_state (
-        id TEXT PRIMARY KEY,
-        name TEXT,
-        emotional_state TEXT,
-        values_state TEXT,
-        beliefs TEXT,
-        personality TEXT,
-        experiences INTEGER DEFAULT 0,
-        wisdom INTEGER DEFAULT 50,
-        created INTEGER,
-        last_updated INTEGER
-      )
-    `)
+    try {
+      // Soul state table
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS soul_state (
+          id TEXT PRIMARY KEY,
+          name TEXT,
+          emotional_state TEXT,
+          values_state TEXT,
+          beliefs TEXT,
+          personality TEXT,
+          experiences INTEGER DEFAULT 0,
+          wisdom INTEGER DEFAULT 50,
+          created INTEGER,
+          last_updated INTEGER
+        )
+      `)
 
-    // Emotion history
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS emotion_history (
-        id TEXT PRIMARY KEY,
-        soul_id TEXT,
-        emotion_type TEXT,
-        intensity INTEGER,
-        trigger TEXT,
-        context TEXT,
-        timestamp INTEGER
-      )
-    `)
+      // Emotion history
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS emotion_history (
+          id TEXT PRIMARY KEY,
+          soul_id TEXT,
+          emotion_type TEXT,
+          intensity INTEGER,
+          trigger TEXT,
+          context TEXT,
+          timestamp INTEGER
+        )
+      `)
 
-    // Value logs
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS value_log (
-        id TEXT PRIMARY KEY,
-        soul_id TEXT,
-        value_type TEXT,
-        importance INTEGER,
-        alignment INTEGER,
-        timestamp INTEGER
-      )
-    `)
+      // Value logs
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS value_log (
+          id TEXT PRIMARY KEY,
+          soul_id TEXT,
+          value_type TEXT,
+          importance INTEGER,
+          alignment INTEGER,
+          timestamp INTEGER
+        )
+      `)
 
-    console.log('✅ Soul database tables initialized')
+      logger.info('Soul database tables initialized successfully')
+    } catch (error) {
+      logger.error('Failed to initialize soul tables', error as Error)
+      throw new DatabaseError(
+        'Failed to create soul database tables',
+        ErrorCode.DATABASE_QUERY_FAILED,
+        { error: String(error) }
+      )
+    }
   }
 
   /**
    * Load soul state from database
    */
   private loadState(): void {
-    const row = this.db.prepare('SELECT * FROM soul_state WHERE id = ?').get(this.soulId) as SoulStateRow | null
+    try {
+      const row = this.db.prepare('SELECT * FROM soul_state WHERE id = ?').get(this.soulId) as SoulStateRow | null
 
-    if (row) {
-      // Restore state from database
-      const emotionalState = JSON.parse(row.emotional_state)
-      const valuesState = JSON.parse(row.values_state)
-      const beliefs = JSON.parse(row.beliefs)
-      const personality = JSON.parse(row.personality)
-      
-      // TODO: Restore emotions, values, personality from saved state
-      this.experiences = row.experiences
-      this.wisdom = row.wisdom
-      
-      console.log('✅ Soul state loaded from database')
-    } else {
-      // Create new soul state
-      this.saveState()
-      console.log('✅ New soul state created')
+      if (row) {
+        // Restore state from database
+        try {
+          const emotionalState = JSON.parse(row.emotional_state)
+          const valuesState = JSON.parse(row.values_state)
+          const beliefs = JSON.parse(row.beliefs)
+          const personality = JSON.parse(row.personality)
+
+          // TODO: Restore emotions, values, personality from saved state
+          this.experiences = row.experiences
+          this.wisdom = row.wisdom
+
+          logger.info('Soul state loaded successfully', {
+            experiences: this.experiences,
+            wisdom: this.wisdom
+          })
+        } catch (parseError) {
+          logger.error('Failed to parse soul state JSON', parseError as Error)
+          throw new DatabaseError(
+            'Corrupted soul state data in database',
+            ErrorCode.DATABASE_QUERY_FAILED,
+            { parseError: String(parseError) }
+          )
+        }
+      } else {
+        // Create new soul state
+        this.saveState()
+        logger.info('New soul state created')
+      }
+    } catch (error) {
+      if (error instanceof DatabaseError) {
+        throw error
+      }
+      logger.error('Failed to load soul state', error as Error)
+      throw new DatabaseError(
+        'Failed to load soul state from database',
+        ErrorCode.DATABASE_QUERY_FAILED,
+        { error: String(error) }
+      )
     }
   }
 
@@ -137,34 +186,45 @@ export class SoulService {
    * Save current soul state to database
    */
   saveState(): void {
-    const now = Date.now()
-    const emotionalState = this.emotions.getState()
-    const valuesState = this.values.getState()
-    const personality = this.personality.getProfile()
+    try {
+      const now = Date.now()
+      const emotionalState = this.emotions.getState()
+      const valuesState = this.values.getState()
+      const personality = this.personality.getProfile()
 
-    this.db.run(`
-      INSERT OR REPLACE INTO soul_state 
-      (id, name, emotional_state, values_state, beliefs, personality, experiences, wisdom, created, last_updated)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      this.soulId,
-      'Toobix Soul',
-      JSON.stringify({
-        emotions: Array.from(emotionalState.emotions.entries()),
-        mood: emotionalState.mood,
-        energy: emotionalState.energy,
-        lastUpdate: emotionalState.lastUpdate
-      }),
-      JSON.stringify({
-        values: Array.from(valuesState.values.entries())
-      }),
-      JSON.stringify(valuesState.beliefs),
-      JSON.stringify(personality),
-      this.experiences,
-      this.wisdom,
-      now,
-      now
-    ])
+      this.db.run(`
+        INSERT OR REPLACE INTO soul_state
+        (id, name, emotional_state, values_state, beliefs, personality, experiences, wisdom, created, last_updated)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        this.soulId,
+        'Toobix Soul',
+        JSON.stringify({
+          emotions: Array.from(emotionalState.emotions.entries()),
+          mood: emotionalState.mood,
+          energy: emotionalState.energy,
+          lastUpdate: emotionalState.lastUpdate
+        }),
+        JSON.stringify({
+          values: Array.from(valuesState.values.entries())
+        }),
+        JSON.stringify(valuesState.beliefs),
+        JSON.stringify(personality),
+        this.experiences,
+        this.wisdom,
+        now,
+        now
+      ])
+
+      logger.debug('Soul state saved successfully')
+    } catch (error) {
+      logger.error('Failed to save soul state', error as Error)
+      throw new DatabaseError(
+        'Failed to save soul state to database',
+        ErrorCode.DATABASE_QUERY_FAILED,
+        { error: String(error) }
+      )
+    }
   }
 
   /**
