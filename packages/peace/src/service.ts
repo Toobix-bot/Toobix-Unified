@@ -4,6 +4,9 @@
 
 import { Database } from 'bun:sqlite'
 import { nanoid } from 'nanoid'
+import { DatabaseError, ErrorCode, createLogger } from '@toobix/core'
+
+const logger = createLogger('peace-catalyst')
 
 export interface PeaceState {
   overall: number
@@ -43,41 +46,53 @@ export class PeaceCatalystService {
   public purposeAgent: PurposeAgent
 
   constructor(db: Database) {
-    this.db = db
-    this.initializeTables()
-    
-    this.calmAgent = new CalmAgent(db)
-    this.harmonyAgent = new HarmonyAgent(db)
-    this.clarityAgent = new ClarityAgent(db)
-    this.growthAgent = new GrowthAgent(db)
-    this.purposeAgent = new PurposeAgent(db)
+    try {
+      this.db = db
+      this.initializeTables()
+
+      this.calmAgent = new CalmAgent(db)
+      this.harmonyAgent = new HarmonyAgent(db)
+      this.clarityAgent = new ClarityAgent(db)
+      this.growthAgent = new GrowthAgent(db)
+      this.purposeAgent = new PurposeAgent(db)
+
+      logger.info('Peace Catalyst Service initialized successfully')
+    } catch (error) {
+      logger.error('Failed to initialize Peace Catalyst Service', error as Error)
+      throw new DatabaseError(
+        'Failed to initialize Peace Catalyst Service',
+        ErrorCode.DATABASE_CONNECTION_FAILED,
+        { error: String(error) }
+      )
+    }
   }
 
   private initializeTables() {
-    // Peace actions
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS peace_actions (
-        id TEXT PRIMARY KEY,
-        timestamp INTEGER NOT NULL,
-        agent TEXT NOT NULL,
-        action TEXT NOT NULL,
-        details TEXT NOT NULL,
-        impact INTEGER NOT NULL
-      )
-    `)
+    try {
+      // Peace actions
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS peace_actions (
+          id TEXT PRIMARY KEY,
+          timestamp INTEGER NOT NULL,
+          agent TEXT NOT NULL,
+          action TEXT NOT NULL,
+          details TEXT NOT NULL,
+          impact INTEGER NOT NULL
+        )
+      `)
 
-    // Conflicts
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS peace_conflicts (
-        id TEXT PRIMARY KEY,
-        timestamp INTEGER NOT NULL,
-        description TEXT NOT NULL,
-        person_id TEXT,
-        severity INTEGER NOT NULL,
-        resolved INTEGER NOT NULL DEFAULT 0,
-        resolved_at INTEGER,
-        resolution_notes TEXT
-      )
+      // Conflicts
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS peace_conflicts (
+          id TEXT PRIMARY KEY,
+          timestamp INTEGER NOT NULL,
+          description TEXT NOT NULL,
+          person_id TEXT,
+          severity INTEGER NOT NULL,
+          resolved INTEGER NOT NULL DEFAULT 0,
+          resolved_at INTEGER,
+          resolution_notes TEXT
+        )
     `)
 
     console.log('✅ Peace Catalyst tables initialized')

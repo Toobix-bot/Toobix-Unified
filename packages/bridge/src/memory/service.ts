@@ -7,6 +7,9 @@ import type { Database } from 'bun:sqlite'
 import type { MemoryChunk, SearchResult } from '../types'
 import { nanoid } from 'nanoid'
 import { EmbeddingService, TextChunker, VectorStore } from './embeddings'
+import { DatabaseError, ErrorCode, ExternalServiceError, createLogger } from '@toobix/core'
+
+const logger = createLogger('memory-service')
 
 export class MemoryService {
   private db: Database
@@ -16,67 +19,116 @@ export class MemoryService {
   private useVectorSearch: boolean
 
   constructor(db: Database, apiKey?: string) {
-    this.db = db
-    this.chunker = new TextChunker(1000, 100)
-    this.vectorStore = new VectorStore(db)
-    this.useVectorSearch = !!apiKey
-    
-    if (apiKey) {
-      this.embedder = new EmbeddingService({ apiKey })
-      console.log('✅ Memory Service: Vector search enabled')
-    } else {
-      console.log('⚠️  Memory Service: Using keyword search only (no API key)')
+    try {
+      this.db = db
+      this.chunker = new TextChunker(1000, 100)
+      this.vectorStore = new VectorStore(db)
+      this.useVectorSearch = !!apiKey
+
+      if (apiKey) {
+        this.embedder = new EmbeddingService({ apiKey })
+        logger.info('Vector search enabled with API key')
+      } else {
+        logger.warn('Using keyword search only (no API key provided)')
+      }
+
+      logger.info('Memory Service initialized successfully')
+    } catch (error) {
+      logger.error('Failed to initialize Memory Service', error as Error)
+      throw new DatabaseError(
+        'Failed to initialize Memory Service',
+        ErrorCode.DATABASE_CONNECTION_FAILED,
+        { error: String(error) }
+      )
     }
   }
 
   async add(text: string, metadata?: Record<string, any>): Promise<string> {
-    const id = nanoid()
-    const now = Date.now()
+    try {
+      const id = nanoid()
+      const now = Date.now()
 
-    // Store main memory chunk
-    this.db.run(`
-      INSERT INTO memory_chunks (id, text, metadata, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?)
-    `, [id, text, JSON.stringify(metadata || {}), now, now])
+      // Store main memory chunk
+      try {
+        this.db.run(`
+          INSERT INTO memory_chunks (id, text, metadata, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?)
+        `, [id, text, JSON.stringify(metadata || {}), now, now])
 
-    // Generate embeddings if available
-    if (this.embedder && this.useVectorSearch) {
-      // Chunk large texts
-      const chunks = text.length > 1000 
-        ? this.chunker.chunkBySentences(text)
-        : [text]
-      
-      // Generate embeddings for each chunk
-      const embeddings = await this.embedder.generateEmbeddings(chunks)
-      
-      // Store chunks with embeddings
-      chunks.forEach((chunkText, index) => {
-        this.vectorStore.storeChunk({
-          id: `${id}_chunk_${index}`,
-          text: chunkText,
-          embedding: embeddings[index] || undefined,
-          metadata: {
-            memory_id: id,
-            chunk_index: index,
-            ...metadata
-          },
-          created_at: now
-        })
-      })
-      
-      console.log(`📦 Stored memory ${id} with ${chunks.length} chunks and embeddings`)
+        logger.debug(`Memory chunk stored: ${id}`)
+      } catch (error) {
+        logger.error('Failed to store memory chunk in database', error as Error)
+        throw new DatabaseError(
+          'Failed to store memory chunk',
+          ErrorCode.DATABASE_QUERY_FAILED,
+          { id, error: String(error) }
+        )
+      }
+
+      // Generate embeddings if available
+      if (this.embedder && this.useVectorSearch) {
+        try {
+          // Chunk large texts
+          const chunks = text.length > 1000
+            ? this.chunker.chunkBySentences(text)
+            : [text]
+
+          // Generate embeddings for each chunk
+          const embeddings = await this.embedder.generateEmbeddings(chunks)
+
+          // Store chunks with embeddings
+          chunks.forEach((chunkText, index) => {
+            this.vectorStore.storeChunk({
+              id: `${id}_chunk_${index}`,
+              text: chunkText,
+              embedding: embeddings[index] || undefined,
+              metadata: {
+                memory_id: id,
+                chunk_index: index,
+                ...metadata
+              },
+              created_at: now
+            })
+          })
+
+          logger.info(`Memory stored with ${chunks.length} chunks and embeddings`, { id })
+        } catch (error) {
+          logger.error('Failed to generate embeddings (continuing without)', error as Error)
+          // Don't throw - memory is still stored, just without embeddings
+        }
+      }
+
+      return id
+    } catch (error) {
+      if (error instanceof DatabaseError) {
+        throw error
+      }
+      logger.error('Failed to add memory', error as Error)
+      throw new DatabaseError(
+        'Failed to add memory',
+        ErrorCode.DATABASE_QUERY_FAILED,
+        { error: String(error) }
+      )
     }
-
-    return id
   }
 
   async search(query: string, limit: number = 10): Promise<SearchResult[]> {
-    // Hybrid search: Vector + Keyword
-    
-    if (this.embedder && this.useVectorSearch) {
-      return await this.hybridSearch(query, limit)
-    } else {
-      return await this.keywordSearch(query, limit)
+    try {
+      logger.debug(`Memory search: ${query.substring(0, 50)}...`, { limit })
+
+      // Hybrid search: Vector + Keyword
+      if (this.embedder && this.useVectorSearch) {
+        return await this.hybridSearch(query, limit)
+      } else {
+        return await this.keywordSearch(query, limit)
+      }
+    } catch (error) {
+      logger.error('Memory search failed', error as Error, { query, limit })
+      throw new DatabaseError(
+        'Memory search failed',
+        ErrorCode.DATABASE_QUERY_FAILED,
+        { query, error: String(error) }
+      )
     }
   }
   

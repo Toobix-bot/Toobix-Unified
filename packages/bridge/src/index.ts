@@ -123,17 +123,29 @@ export class BridgeService {
     console.log(`ðŸ“ Opening database: ${dbPath}`)
     this.db = new Database(dbPath)
     
-    // Initialize services WITH embeddings support
-    const openaiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
-    this.memory = new MemoryService(this.db, openaiKey)  // Pass API key for vector search
-    this.actions = new ActionsService(this.db)
-    this.ai = new GroqService(config.groqApiKey || process.env.GROQ_API_KEY || '')
-    this.soul = new SoulService(this.db)
-    this.contacts = new ContactService()
-    this.interactions = new InteractionService()
-    this.story = new StoryService(this.db)
-    this.love = new LoveEngineService(this.db)
-    this.peace = new PeaceCatalystService(this.db)
+      // Initialize services WITH embeddings support
+      try {
+        logger.debug('Initializing core services...')
+
+        const openaiKey = config.openaiApiKey || process.env.OPENAI_API_KEY
+        this.memory = new MemoryService(this.db, openaiKey)  // Pass API key for vector search
+        this.actions = new ActionsService(this.db)
+        this.ai = new GroqService(config.groqApiKey || process.env.GROQ_API_KEY || '')
+        this.soul = new SoulService(this.db)
+        this.contacts = new ContactService()
+        this.interactions = new InteractionService()
+        this.story = new StoryService(this.db)
+        this.love = new LoveEngineService(this.db)
+        this.peace = new PeaceCatalystService(this.db)
+
+        logger.info('✅ Core services initialized')
+      } catch (error) {
+        logger.error('Failed to initialize core services', error as Error)
+        throw new ConfigurationError(
+          'Failed to initialize Bridge services',
+          { error: String(error) }
+        )
+      }
     
     // NEW: Initialize Nexus Persistence
     console.log('ðŸ’¾ Initializing Nexus Persistence...')

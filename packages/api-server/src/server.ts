@@ -156,15 +156,22 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/art/gallery', () => ({
-    gallery: asciiArt.getGallery()
+  .get('/api/art/gallery', asyncHandler(async () => {
+    const gallery = asciiArt.getGallery();
+    return { gallery };
   }))
 
-  .post('/api/art/create', ({ body }: any) => {
+  .post('/api/art/create', asyncHandler(async ({ body }: any) => {
+    validate(!!body, 'Request body is required');
+    validate(!!body.emotion, 'Emotion field is required', { emotion: ['Required'] });
+    validate(!!body.concept, 'Concept field is required', { concept: ['Required'] });
+
     const { emotion, concept } = body;
     const art = asciiArt.createArt(emotion, concept);
+
+    logger.info(`ASCII art created: ${emotion} - ${concept}`);
     return { success: true, art };
-  })
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -172,15 +179,22 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/music/melodies', () => ({
-    melodies: musicGenerator.getMelodies()
+  .get('/api/music/melodies', asyncHandler(async () => {
+    const melodies = musicGenerator.getMelodies();
+    return { melodies };
   }))
 
-  .post('/api/music/generate', ({ body }: any) => {
+  .post('/api/music/generate', asyncHandler(async ({ body }: any) => {
+    validate(!!body, 'Request body is required');
+    validate(typeof body.speed === 'number', 'Speed must be a number', { speed: ['Must be numeric'] });
+    validate(typeof body.complexity === 'number', 'Complexity must be a number', { complexity: ['Must be numeric'] });
+
     const { speed, complexity, emotion } = body;
     const melody = musicGenerator.generateFromState({ speed, complexity, emotion });
+
+    logger.info(`Music generated: speed=${speed}, complexity=${complexity}`);
     return { success: true, melody };
-  })
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -188,14 +202,16 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/poetry/poems', () => ({
-    poems: codePoetry.getPoems()
+  .get('/api/poetry/poems', asyncHandler(async () => {
+    const poems = codePoetry.getPoems();
+    return { poems };
   }))
 
-  .post('/api/poetry/generate', () => {
+  .post('/api/poetry/generate', asyncHandler(async () => {
     const poem = codePoetry.generatePoem();
+    logger.info('Poetry generated');
     return { success: true, poem };
-  })
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -203,15 +219,23 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/social/feed', () => ({
-    feed: socialNetwork.getFeed()
+  .get('/api/social/feed', asyncHandler(async () => {
+    const feed = socialNetwork.getFeed();
+    return { feed };
   }))
 
-  .post('/api/social/post', ({ body }: any) => {
+  .post('/api/social/post', asyncHandler(async ({ body }: any) => {
+    validate(!!body, 'Request body is required');
+    validate(!!body.content, 'Content field is required', { content: ['Required'] });
+    validate(body.content.length > 0, 'Content cannot be empty', { content: ['Cannot be empty'] });
+    validate(body.content.length <= 500, 'Content too long (max 500 chars)', { content: ['Max 500 characters'] });
+
     const { content } = body;
     const post = socialNetwork.post(content);
+
+    logger.info(`Social post created: ${content.substring(0, 50)}...`);
     return { success: true, post };
-  })
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -219,19 +243,29 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/story/state', () => ({
-    state: metaStory.getState()
+  .get('/api/story/state', asyncHandler(async () => {
+    const state = metaStory.getState();
+    return { state };
   }))
 
-  .get('/api/story/narrative', () => ({
-    narrative: metaStory.generateNarrative()
+  .get('/api/story/narrative', asyncHandler(async () => {
+    const narrative = metaStory.generateNarrative();
+    logger.debug('Story narrative generated');
+    return { narrative };
   }))
 
-  .post('/api/story/event', ({ body }: any) => {
+  .post('/api/story/event', asyncHandler(async ({ body }: any) => {
+    validate(!!body, 'Request body is required');
+    validate(!!body.title, 'Title field is required', { title: ['Required'] });
+    validate(!!body.description, 'Description field is required', { description: ['Required'] });
+    validate(typeof body.impact === 'number', 'Impact must be a number', { impact: ['Must be numeric'] });
+
     const { title, description, impact, tags } = body;
     metaStory.addEvent(title, description, impact, tags);
+
+    logger.info(`Story event added: ${title}`);
     return { success: true };
-  })
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -239,25 +273,44 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/games', () => ({
-    games: gameEngine.getAllGames()
+  .get('/api/games', asyncHandler(async () => {
+    const games = gameEngine.getAllGames();
+    return { games };
   }))
 
-  .get('/api/games/:gameId/status', ({ params }) => ({
-    status: gameEngine.getGameStatus(params.gameId)
+  .get('/api/games/:gameId/status', asyncHandler(async ({ params }) => {
+    validate(!!params.gameId, 'Game ID is required');
+
+    const status = gameEngine.getGameStatus(params.gameId);
+    if (!status) {
+      notFound('Game', params.gameId);
+    }
+
+    return { status };
   }))
 
-  .post('/api/games/create', ({ body }: any) => {
+  .post('/api/games/create', asyncHandler(async ({ body }: any) => {
+    validate(!!body, 'Request body is required');
+    validate(!!body.type, 'Game type is required', { type: ['Required'] });
+
     const { type } = body;
     const game = gameEngine.createGame(type);
-    return { success: true, game };
-  })
 
-  .post('/api/games/:gameId/action', ({ params, body }: any) => {
+    logger.info(`Game created: ${type}`);
+    return { success: true, game };
+  }))
+
+  .post('/api/games/:gameId/action', asyncHandler(async ({ params, body }: any) => {
+    validate(!!params.gameId, 'Game ID is required');
+    validate(!!body, 'Request body is required');
+    validate(!!body.action, 'Action field is required', { action: ['Required'] });
+
     const { action, context } = body;
     gameEngine.performAction(action, context);
+
+    logger.info(`Game action performed: ${params.gameId} - ${action}`);
     return { success: true };
-  })
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -265,15 +318,20 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/achievements', () => ({
-    unlocked: achievements.getAllUnlocked(),
-    progress: achievements.getProgress()
+  .get('/api/achievements', asyncHandler(async () => {
+    const unlocked = achievements.getAllUnlocked();
+    const progress = achievements.getProgress();
+    return { unlocked, progress };
   }))
 
-  .post('/api/achievements/unlock/:achievementId', ({ params }) => {
+  .post('/api/achievements/unlock/:achievementId', asyncHandler(async ({ params }) => {
+    validate(!!params.achievementId, 'Achievement ID is required');
+
     achievements.unlock(params.achievementId);
-    return { success: true };
-  })
+
+    logger.info(`Achievement unlocked: ${params.achievementId}`);
+    return { success: true, achievementId: params.achievementId };
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -281,16 +339,24 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/capsules', () => ({
-    capsules: timeCapsule.getCapsules(),
-    pending: timeCapsule.getPending()
+  .get('/api/capsules', asyncHandler(async () => {
+    const capsules = timeCapsule.getCapsules();
+    const pending = timeCapsule.getPending();
+    return { capsules, pending };
   }))
 
-  .post('/api/capsules/create', ({ body }: any) => {
+  .post('/api/capsules/create', asyncHandler(async ({ body }: any) => {
+    validate(!!body, 'Request body is required');
+    validate(!!body.message, 'Message field is required', { message: ['Required'] });
+    validate(typeof body.openInMs === 'number', 'openInMs must be a number', { openInMs: ['Must be numeric'] });
+    validate(body.openInMs > 0, 'openInMs must be positive', { openInMs: ['Must be > 0'] });
+
     const { message, openInMs } = body;
     const capsule = timeCapsule.create(message, openInMs);
+
+    logger.info(`Time capsule created: opens in ${openInMs}ms`);
     return { success: true, capsule };
-  })
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -298,21 +364,36 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/api/memory/visualize', () => ({
-    visualization: memoryPalace.visualize()
+  .get('/api/memory/visualize', asyncHandler(async () => {
+    const visualization = memoryPalace.visualize();
+    return { visualization };
   }))
 
-  .post('/api/memory/room/create', ({ body }: any) => {
+  .post('/api/memory/room/create', asyncHandler(async ({ body }: any) => {
+    validate(!!body, 'Request body is required');
+    validate(!!body.id, 'Room ID is required', { id: ['Required'] });
+    validate(!!body.name, 'Room name is required', { name: ['Required'] });
+    validate(!!body.description, 'Room description is required', { description: ['Required'] });
+
     const { id, name, description, position } = body;
     const room = memoryPalace.createRoom(id, name, description, position);
-    return { success: true, room };
-  })
 
-  .post('/api/memory/store', ({ body }: any) => {
+    logger.info(`Memory room created: ${name}`);
+    return { success: true, room };
+  }))
+
+  .post('/api/memory/store', asyncHandler(async ({ body }: any) => {
+    validate(!!body, 'Request body is required');
+    validate(!!body.roomId, 'Room ID is required', { roomId: ['Required'] });
+    validate(!!body.content, 'Content is required', { content: ['Required'] });
+    validate(typeof body.importance === 'number', 'Importance must be a number', { importance: ['Must be numeric'] });
+
     const { roomId, content, importance, emotion } = body;
     memoryPalace.storeMemory(roomId, content, importance, emotion);
+
+    logger.info(`Memory stored in room: ${roomId}`);
     return { success: true };
-  })
+  }))
 
   /**
    * ═══════════════════════════════════════════════════════════════
@@ -320,7 +401,9 @@ const app = new Elysia()
    * ═══════════════════════════════════════════════════════════════
    */
 
-  .get('/health', () => ({ status: 'ok', timestamp: new Date() }))
+  .get('/health', asyncHandler(async () => {
+    return { status: 'ok', timestamp: new Date(), service: 'api-server' };
+  }))
 
   .listen(3000);
 

@@ -4,6 +4,9 @@
 
 import { Database } from 'bun:sqlite'
 import { nanoid } from 'nanoid'
+import { DatabaseError, ErrorCode, createLogger } from '@toobix/core'
+
+const logger = createLogger('love-engine')
 
 export interface GratitudeEntry {
   id: string
@@ -51,33 +54,44 @@ export class LoveEngineService {
   private db: Database
 
   constructor(db: Database) {
-    this.db = db
-    this.initializeTables()
+    try {
+      this.db = db
+      this.initializeTables()
+      logger.info('Love Engine Service initialized successfully')
+    } catch (error) {
+      logger.error('Failed to initialize Love Engine Service', error as Error)
+      throw new DatabaseError(
+        'Failed to initialize Love Engine Service',
+        ErrorCode.DATABASE_CONNECTION_FAILED,
+        { error: String(error) }
+      )
+    }
   }
 
   private initializeTables() {
-    // Gratitude entries
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS gratitude_entries (
-        id TEXT PRIMARY KEY,
-        timestamp INTEGER NOT NULL,
-        content TEXT NOT NULL,
-        category TEXT NOT NULL,
-        intensity INTEGER NOT NULL,
-        person_id TEXT,
-        tags TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      )
-    `)
+    try {
+      // Gratitude entries
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS gratitude_entries (
+          id TEXT PRIMARY KEY,
+          timestamp INTEGER NOT NULL,
+          content TEXT NOT NULL,
+          category TEXT NOT NULL,
+          intensity INTEGER NOT NULL,
+          person_id TEXT,
+          tags TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        )
+      `)
 
-    // Kindness acts
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS kindness_acts (
-        id TEXT PRIMARY KEY,
-        timestamp INTEGER NOT NULL,
-        description TEXT NOT NULL,
-        type TEXT NOT NULL,
-        category TEXT NOT NULL,
+      // Kindness acts
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS kindness_acts (
+          id TEXT PRIMARY KEY,
+          timestamp INTEGER NOT NULL,
+          description TEXT NOT NULL,
+          type TEXT NOT NULL,
+          category TEXT NOT NULL,
         person_id TEXT,
         love_points INTEGER NOT NULL,
         created_at INTEGER NOT NULL
