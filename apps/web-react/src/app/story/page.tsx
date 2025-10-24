@@ -1,668 +1,444 @@
-/**
- * Story Engine Page component.
- * 
- * This component displays the story engine page, including the story state, options, events, and tools.
- * 
- * @returns The story engine page component.
- */
-export default function StoryEnginePage() {
-  // State and loading variables
-  const [state, setState] = useState<StoryState | null>(null);
-  const [events, setEvents] = useState<StoryEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tools, setTools] = useState<BridgeTool[]>([]);
-  const [toolsLoading, setToolsLoading] = useState(true);
-  const [toolsError, setToolsError] = useState<string | null>(null);
-  const isMountedRef = useRef(true);
+'use client'
 
-  // Load story and tools
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { QuestDialog, Quest as QuestType } from '@/components/story/QuestDialog'
+import { bridgeClient } from '@/lib/bridge-client'
+import {
+  Home,
+  Book,
+  Scroll,
+  Sparkles,
+  Users,
+  Zap,
+  ChevronRight,
+  Swords,
+  Heart,
+  Brain
+} from 'lucide-react'
+import Link from 'next/link'
+
+interface StoryState {
+  epoch: string
+  arc: string
+  mood: string
+  resources?: Record<string, number>
+  companions?: Array<{ name: string } | string>
+  buffs?: Array<{ name: string } | string>
+  options?: Array<{
+    id: string
+    label: string
+    rationale?: string
+    expected?: Record<string, number>
+  }>
+}
+
+interface StoryEvent {
+  id: number
+  timestamp: string
+  type: string
+  label?: string
+  description?: string
+  effects?: Record<string, number>
+}
+
+interface PlayerStats {
+  level: number
+  xp: number
+  xpToNext: number
+  stats: {
+    mut: number
+    weisheit: number
+    bewusstsein: number
+    frieden: number
+    liebe: number
+  }
+}
+
+export default function StoryModePage() {
+  const [state, setState] = useState<StoryState | null>(null)
+  const [events, setEvents] = useState<StoryEvent[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [activeQuest, setActiveQuest] = useState<QuestType | null>(null)
+  const [isChoosingOption, setIsChoosingOption] = useState(false)
+  const isMountedRef = useRef(true)
+
+  const [player, setPlayer] = useState<PlayerStats>({
+    level: 1,
+    xp: 0,
+    xpToNext: 100,
+    stats: {
+      mut: 5,
+      weisheit: 5,
+      bewusstsein: 5,
+      frieden: 5,
+      liebe: 5
+    }
+  })
+
+  // Load story state
   const loadStory = useCallback(async () => {
     try {
       if (isMountedRef.current) {
-        setLoading(true);
+        setLoading(true)
       }
 
       const [storyState, eventsData] = await Promise.all([
         bridgeClient.getStoryState(),
         bridgeClient.getStoryEvents(10)
-      ]);
+      ])
 
       if (isMountedRef.current) {
-        setState(storyState);
-        setEvents(Array.isArray(eventsData.events) ? eventsData.events : []);
-        setError(null);
+        setState(storyState)
+        setEvents(Array.isArray(eventsData.events) ? eventsData.events : [])
+        setError(null)
+
+        // Update player stats from story state
+        const resources = storyState.resources || {}
+        setPlayer(prev => ({
+          ...prev,
+          level: resources.level || 1,
+          xp: resources.erfahrung || 0,
+          xpToNext: (resources.level || 1) * 100,
+          stats: {
+            mut: resources.mut || prev.stats.mut,
+            weisheit: resources.wissen || prev.stats.weisheit,
+            bewusstsein: resources.bewusstsein || prev.stats.bewusstsein,
+            frieden: resources.stabilitaet || prev.stats.frieden,
+            liebe: resources.inspiration || prev.stats.liebe
+          }
+        }))
+
+        // Convert story options to quest format
+        if (storyState.options && storyState.options.length > 0) {
+          convertOptionsToQuest(storyState)
+        }
       }
     } catch (err) {
       if (isMountedRef.current) {
-        setError(err instanceof Error ? err.message : 'Failed to load story');
+        setError(err instanceof Error ? err.message : 'Failed to load story')
       }
     } finally {
       if (isMountedRef.current) {
-        setLoading(false);
+        setLoading(false)
       }
     }
-  }, []);
+  }, [])
 
-  const loadTools = useCallback(async () => {
+  // Convert story options to quest format
+  const convertOptionsToQuest = (storyState: StoryState) => {
+    if (!storyState.options || storyState.options.length === 0) return
+
+    const quest: QuestType = {
+      id: `quest-${Date.now()}`,
+      title: `${storyState.arc} - Wähle deinen Weg`,
+      description: storyState.mood || 'Eine Entscheidung steht bevor...',
+      theme: storyState.epoch || 'Die Reise',
+      choices: storyState.options.map(option => {
+        const statKey = Object.keys(option.expected || {})[0]
+        const statValue = Object.values(option.expected || {})[0] || 0
+
+        return {
+          id: option.id,
+          text: option.label,
+          effects: {
+            stat: statKey as any,
+            value: statValue,
+            xp: Math.abs(statValue) * 10,
+            description: option.rationale
+          }
+        }
+      })
+    }
+
+    setActiveQuest(quest)
+  }
+
+  // Handle quest choice
+  const handleQuestChoice = async (choiceId: string) => {
+    setIsChoosingOption(true)
     try {
-      if (isMountedRef.current) {
-        setToolsLoading(true);
-      }
-
-      const toolsList = await bridgeClient.listTools();
-
-      if (isMountedRef.current) {
-        setTools(toolsList);
-        setToolsError(null);
-      }
+      await bridgeClient.chooseStoryOption(choiceId)
+      await new Promise(resolve => setTimeout(resolve, 1000)) // Visual feedback delay
+      await loadStory()
+      setActiveQuest(null) // Clear quest after choice
     } catch (err) {
-      if (isMountedRef.current) {
-        setToolsError(err instanceof Error ? err.message : 'Failed to load tools');
-      }
+      console.error('Failed to choose option:', err)
     } finally {
-      if (isMountedRef.current) {
-        setToolsLoading(false);
-      }
+      setIsChoosingOption(false)
     }
-  }, []);
+  }
 
-  // Handle choose option and refresh
-  const handleChooseOption = useCallback(
-    async (optionId: string) => {
-      try {
-        await bridgeClient.chooseStoryOption(optionId);
-        await loadStory();
-      } catch (err) {
-        console.error('Failed to choose option:', err);
-      }
-    },
-    [loadStory]
-  );
-
-  const handleRefresh = useCallback(async () => {
+  // Generate new quest
+  const handleGenerateQuest = async () => {
+    setLoading(true)
     try {
-      await bridgeClient.refreshStoryOptions(true);
-      await loadStory();
+      await bridgeClient.refreshStoryOptions(true)
+      await loadStory()
     } catch (err) {
-      console.error('Failed to refresh:', err);
+      console.error('Failed to refresh:', err)
+    } finally {
+      setLoading(false)
     }
-  }, [loadStory]);
+  }
 
-  // Use effect to load story and tools on mount
   useEffect(() => {
-    isMountedRef.current = true;
-    loadStory();
-    loadTools();
+    isMountedRef.current = true
+    loadStory()
 
-    const interval = setInterval(loadStory, 30000);
-    const toolsInterval = setInterval(loadTools, 60000);
+    const interval = setInterval(loadStory, 30000)
 
     return () => {
-      isMountedRef.current = false;
-      clearInterval(interval);
-      clearInterval(toolsInterval);
-    };
-  }, [loadStory, loadTools]);
+      isMountedRef.current = false
+      clearInterval(interval)
+    }
+  }, [loadStory])
 
-  // Render loading or error state
+  const xpPercent = Math.min(100, (player.xp / player.xpToNext) * 100)
+  const companions = Array.isArray(state?.companions) ? state.companions : []
+
   if (loading && !state) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-purple-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="mb-4 text-4xl">⏳</div>
-          <p className="text-muted-foreground">Loading Story Engine...</p>
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xl text-purple-200">Lade Story Engine...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Card className="w-full max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-purple-950 flex items-center justify-center p-6">
+        <Card className="max-w-md bg-red-950/50 border-red-500/30">
           <CardHeader>
-            <CardTitle>❌ Error</CardTitle>
-            <CardDescription>{error}</CardDescription>
+            <CardTitle className="text-white">❌ Fehler</CardTitle>
+            <CardDescription className="text-red-200">{error}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={loadStory}>Retry</Button>
+            <Button onClick={loadStory} className="w-full">Erneut versuchen</Button>
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
-  // Render story engine page
-  if (!state) return null;
-
-  // Calculate resources and level
-  const resourcesRaw = state.resources && typeof state.resources === 'object' ? state.resources : {};
-  const resources = {
-    energie: Number((resourcesRaw as Record<string, unknown>).energie) || 0,
-    wissen: Number((resourcesRaw as Record<string, unknown>).wissen) || 0,
-    inspiration: Number((resourcesRaw as Record<string, unknown>).inspiration) || 0,
-    ruf: Number((resourcesRaw as Record<string, unknown>).ruf) || 0,
-    stabilitaet: Number((resourcesRaw as Record<string, unknown>).stabilitaet) || 0,
-    erfahrung: Number((resourcesRaw as Record<string, unknown>).erfahrung) || 0,
-    level: Number((resourcesRaw as Record<string, unknown>).level) || 1
-  };
-
-  const level = resources.level || 1;
-  const xpForNextLevel = Math.max(1, level * 100);
-  const currentXP = resources.erfahrung || 0;
-  const xpPercent = Math.min(100, (currentXP / xpForNextLevel) * 100);
-
-  // Get options, companions, and buffs
-  const options = Array.isArray(state.options) ? state.options : [];
-  const companions = Array.isArray(state.companions) ? state.companions : [];
-  const buffs = Array.isArray(state.buffs) ? state.buffs : [];
-
-  // Sort tools
-  const sortedTools = useMemo(() => {
-    const unique = new Map<string, BridgeTool>();
-
-    for (const tool of tools) {
-      if (tool?.name && !unique.has(tool.name)) {
-        unique.set(tool.name, tool);
-      }
-    }
-
-    return Array.from(unique.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [tools]);
-
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">📖 Story Engine</h1>
-          <p className="text-muted-foreground">
-            Arc: {state.arc} · Level {level}
-          </p>
-        </div>
-        <Button onClick={handleRefresh} variant="outline">
-          🔄 Refresh
-        </Button>
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-purple-950 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 pointer-events-none opacity-30">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="options">Options ({options.length})</TabsTrigger>
-          <TabsTrigger value="events">Events ({events.length})</TabsTrigger>
-          <TabsTrigger value="tools">Tools ({sortedTools.length})</TabsTrigger>
-        </TabsList>
+      <div className="container mx-auto px-6 py-12 relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/">
+            <Button variant="ghost" className="text-white hover:bg-white/10">
+              <Home className="w-4 h-4 mr-2" />
+              Hauptmenü
+            </Button>
+          </Link>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-3">
-            {/* Progress Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Progress</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <div className="mb-2 flex justify-between text-sm">
-                    <span className="text-muted-foreground">Epoch</span>
-                    <Badge>{state.epoch}</Badge>
-                  </div>
-                  <div className="mb-2 flex justify-between text-sm">
-                    <span className="text-muted-foreground">Arc</span>
-                    <Badge variant="secondary">{state.arc}</Badge>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Level</span>
-                    <Badge variant="default">{level}</Badge>
-                  </div>
-                </div>
-                <div>
-                  <div className="mb-2 flex justify-between text-sm">
-                    <span className="text-muted-foreground">XP to Level {level + 1}</span>
-                    <span className="text-sm">{currentXP.toFixed(0)} / {xpForNextLevel}</span>
-                  </div>
-                  <Progress value={xpPercent} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Resources Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>💎 Resources</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {Object.entries(resources)
-                  .filter(([key]) => !['level', 'erfahrung'].includes(key))
-                  .slice(0, 5)
-                  .map(([key, val]) => {
-                    const numVal = typeof val === 'number' ? val : 0;
-                    const percent = Math.min(100, (numVal / 100) * 100);
-
-                    return (
-                      <div key={key}>
-                        <div className="mb-1 flex justify-between text-sm">
-                          <span className="capitalize text-muted-foreground">{key}</span>
-                          <span className="font-semibold">{numVal.toFixed(0)}</span>
-                        </div>
-                        <Progress value={percent} className="h-1" />
-                      </div>
-                    );
-                  })}
-              </CardContent>
-            </Card>
-
-            {/* Mood Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>🌙 Mood & Companions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-lg font-semibold">{state.mood}</p>
-                  <p className="text-sm text-muted-foreground">{state.arc}</p>
-                </div>
-                {companions.length > 0 && (
-                  <div>
-                    <p className="mb-2 text-sm text-muted-foreground">Companions:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {companions.map((companion, index) => (
-                        <Badge key={index} variant="secondary">
-                          {(companion as { name?: string }).name || (companion as string)}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {buffs.length > 0 && (
-                  <div>
-                    <p className="mb-2 text-sm text-muted-foreground">Buffs:</p>
-                    <div className="space-y-1">
-                      {buffs.map((buff, index) => (
-                        <div key={index} className="text-sm">
-                          ✨ {(buff as { name?: string }).name || (buff as string)}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <div className="flex items-center gap-4">
+            <Badge variant="secondary" className="bg-purple-500/20 text-purple-200 border-purple-400/30 text-lg px-4 py-2">
+              <Book className="w-5 h-5 mr-2 inline" />
+              {state?.arc || 'Story Mode'}
+            </Badge>
           </div>
-        </TabsContent>
+        </div>
 
-        {/* Options Tab */}
-        <TabsContent value="options" className="space-y-4">
-          {options.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <p className="mb-4 text-muted-foreground">No active story options.</p>
-                <Button onClick={handleRefresh}>Generate Options</Button>
-              </CardContent>
-            </Card>
+        {/* Player Stats Header */}
+        <Card className="max-w-4xl mx-auto mb-8 bg-slate-900/80 border-purple-500/30 backdrop-blur-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-1">Wanderer</h2>
+                <p className="text-purple-300">Level {player.level} • {state?.arc}</p>
+              </div>
+              <Badge variant="outline" className="text-lg px-4 py-2 border-purple-400 text-purple-200">
+                <Zap className="w-5 h-5 mr-2 inline text-yellow-400" />
+                {player.xp} XP
+              </Badge>
+            </div>
+
+            {/* XP Progress */}
+            <div className="mb-4">
+              <div className="flex justify-between text-sm text-slate-300 mb-2">
+                <span>Fortschritt zu Level {player.level + 1}</span>
+                <span>{player.xp} / {player.xpToNext}</span>
+              </div>
+              <Progress value={xpPercent} className="h-3 bg-slate-800" />
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-5 gap-3">
+              {[
+                { key: 'mut', label: 'Mut', icon: '⚔️', color: 'text-red-400' },
+                { key: 'weisheit', label: 'Weisheit', icon: '📚', color: 'text-blue-400' },
+                { key: 'bewusstsein', label: 'Bewusstsein', icon: '🧠', color: 'text-purple-400' },
+                { key: 'frieden', label: 'Frieden', icon: '🕊️', color: 'text-green-400' },
+                { key: 'liebe', label: 'Liebe', icon: '💝', color: 'text-pink-400' }
+              ].map(stat => (
+                <div key={stat.key} className="text-center p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <div className="text-2xl mb-1">{stat.icon}</div>
+                  <div className={`text-xl font-bold ${stat.color} mb-1`}>
+                    {player.stats[stat.key as keyof typeof player.stats]}
+                  </div>
+                  <div className="text-xs text-slate-400">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Companions */}
+            {companions.length > 0 && (
+              <div className="mt-4 p-3 bg-purple-900/20 rounded-lg border border-purple-500/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm text-purple-200">Companions:</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {companions.map((companion, idx) => (
+                    <Badge key={idx} variant="secondary" className="bg-purple-800/50 text-purple-100">
+                      {typeof companion === 'string' ? companion : companion.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Main Content Area */}
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Active Quest */}
+          {activeQuest ? (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-white mb-2">📖 Aktive Quest</h2>
+                <p className="text-lg text-purple-200">Eine Entscheidung steht bevor...</p>
+              </div>
+
+              <QuestDialog
+                quest={activeQuest}
+                onChoose={handleQuestChoice}
+                isLoading={isChoosingOption}
+              />
+            </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-3">
-              {options.map(option => (
-                <Card
-                  key={option.id}
-                  className="cursor-pointer transition-shadow hover:shadow-lg"
-                  onClick={() => handleChooseOption(option.id)}
+            <Card className="bg-slate-900/80 border-purple-500/30 backdrop-blur-lg">
+              <CardContent className="p-12 text-center">
+                <div className="text-6xl mb-6">🌙</div>
+                <h3 className="text-2xl font-bold text-white mb-4">
+                  Keine aktive Quest
+                </h3>
+                <p className="text-slate-300 mb-8 max-w-md mx-auto">
+                  Die Geschichte wartet darauf, sich zu entfalten. Möchtest du ein neues Kapitel beginnen?
+                </p>
+                <Button
+                  size="lg"
+                  onClick={handleGenerateQuest}
+                  disabled={loading}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-lg"
                 >
-                  <CardHeader>
-                    <CardTitle className="text-base">{option.label}</CardTitle>
-                    <CardDescription>{option.rationale || 'Choose this option'}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {option.expected && (
-                      <div className="flex flex-wrap gap-1">
-                        {Object.entries(option.expected).map(([key, value]) => (
-                          <Badge key={key} variant={value > 0 ? 'default' : 'destructive'}>
-                            {key}: {value > 0 ? '+' : ''}
-                            {value}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* Events Tab */}
-        <TabsContent value="events" className="space-y-4">
-          {events.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <p className="text-muted-foreground">No events yet.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {events.map(evt => (
-                <Card key={evt.id}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">
-                        {evt.type === 'choice' ? '🎯' : evt.type === 'level_up' ? '⭐' : '📝'}{' '}
-                        {evt.description || evt.label}
-                      </CardTitle>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(evt.timestamp).toLocaleString()}
-                      </span>
-                    </div>
-                  </CardHeader>
-                  {evt.effects && (
-                    <CardContent>
-                      <div className="flex flex-wrap gap-1">
-                        {Object.entries(evt.effects).map(([key, value]) => (
-                          <Badge key={key} variant={value > 0 ? 'default' : 'secondary'}>
-                            {key}: {value > 0 ? '+' : ''}
-                            {value}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* Tools Tab */}
-        <TabsContent value="tools" className="space-y-4">
-          {toolsLoading ? (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <p className="text-muted-foreground">Loading tools...</p>
-              </CardContent>
-            </Card>
-          ) : toolsError ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Unable to load tools</CardTitle>
-                <CardDescription>{toolsError}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" onClick={loadTools}>
-                  Retry
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  {loading ? 'Lädt...' : 'Neue Quest generieren'}
                 </Button>
               </CardContent>
             </Card>
-          ) : sortedTools.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center">
-                <p className="text-muted-foreground">No MCP tools registered.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {sortedTools.map(tool => {
-                const schema = tool.inputSchema;
-                const hasSchema = hasSchemaContent(schema);
+          )}
 
-                return (
-                  <Card key={tool.name}>
-                    <CardHeader>
-                      <CardTitle className="text-base">{tool.name}</CardTitle>
-                      {tool.description && (
-                        <CardDescription>{tool.description}</CardDescription>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {schema && hasSchema ? (
-                        <SchemaNode schema={schema} />
-                      ) : (
-                        <p className="text-sm text-muted-foreground">No input parameters.</p>
-                      )}
+          {/* Story Log (Recent Events) */}
+          {events.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 mb-4">
+                <Scroll className="w-6 h-6 text-purple-400" />
+                <h3 className="text-2xl font-bold text-white">Story Log</h3>
+              </div>
+
+              <div className="space-y-3">
+                {events.slice(0, 5).map(event => (
+                  <Card key={event.id} className="bg-slate-900/60 border-slate-700/50 backdrop-blur-sm">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl">
+                              {event.type === 'choice' ? '🎯' :
+                               event.type === 'level_up' ? '⭐' : '📝'}
+                            </span>
+                            <span className="text-white font-medium">
+                              {event.description || event.label || 'Event'}
+                            </span>
+                          </div>
+                          {event.effects && Object.keys(event.effects).length > 0 && (
+                            <div className="flex flex-wrap gap-2 ml-8">
+                              {Object.entries(event.effects).map(([key, value]) => (
+                                <Badge
+                                  key={key}
+                                  variant="secondary"
+                                  className={value > 0 ? 'bg-green-500/20 text-green-300' : 'bg-slate-700/50 text-slate-300'}
+                                >
+                                  {key}: {value > 0 ? '+' : ''}{value}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs text-slate-500">
+                          {new Date(event.timestamp).toLocaleTimeString('de-DE')}
+                        </span>
+                      </div>
                     </CardContent>
                   </Card>
-                );
-              })}
+                ))}
+              </div>
             </div>
           )}
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}
 
-/**
- * Checks if a schema has content.
- * 
- * @param schema The schema to check.
- * @returns True if the schema has content, false otherwise.
- */
-function hasSchemaContent(schema?: BridgeToolSchema | null): boolean {
-  if (!schema) {
-    return false;
-  }
+          {/* Quick Actions */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link href="/world">
+              <Card className="bg-green-600/20 border-green-500/30 hover:bg-green-600/30 transition-colors cursor-pointer h-full">
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="text-4xl">🌍</div>
+                  <div>
+                    <h4 className="text-lg font-bold text-white mb-1">BlockWorld</h4>
+                    <p className="text-sm text-green-200">Zurück zur 3D Welt</p>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-green-300 ml-auto" />
+                </CardContent>
+              </Card>
+            </Link>
 
-  if (
-    schema.description ||
-    schema.default !== undefined ||
-    schema.format ||
-    schema.type ||
-    (Array.isArray(schema.enum) && schema.enum.length > 0) ||
-    (schema.properties && Object.keys(schema.properties).length > 0) ||
-    schema.items ||
-    (Array.isArray(schema.anyOf) && schema.anyOf.length > 0) ||
-    (Array.isArray(schema.oneOf) && schema.oneOf.length > 0) ||
-    (Array.isArray(schema.allOf) && schema.allOf.length > 0) ||
-    typeof schema.additionalProperties !== 'undefined' ||
-    (Array.isArray(schema.required) && schema.required.length > 0)
-  ) {
-    return true;
-  }
-
-  return false;
-}
-
-/**
- * Formats a schema value as a string.
- * 
- * @param value The value to format.
- * @returns The formatted value as a string.
- */
-function formatSchemaValue(value: unknown): string {
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value);
-  }
-
-  if (value === null) {
-    return 'null';
-  }
-
-  try {
-    return JSON.stringify(value);
-  } catch (error) {
-    console.error('Failed to stringify schema value', error);
-    return String(value);
-  }
-}
-
-/**
- * Schema node component.
- * 
- * This component displays a schema node, including its properties and children.
- * 
- * @param props The component props.
- * @returns The schema node component.
- */
-interface SchemaNodeProps {
-  schema: BridgeToolSchema;
-  depth?: number;
-  name?: string;
-  required?: boolean;
-}
-
-function SchemaNode({ schema, depth = 0, name, required = false }: SchemaNodeProps): JSX.Element | null {
-  if (!schema) {
-    return null;
-  }
-
-  const typeLabel = Array.isArray(schema.type) ? schema.type.join(' | ') : schema.type;
-  const containerClass = cn(
-    'space-y-2',
-    depth > 0 && 'ml-4 rounded-md border border-dashed border-border/40 p-3'
-  );
-  const descriptionClass = cn('text-muted-foreground', depth > 0 ? 'text-xs' : 'text-sm');
-  const metadataTextClass = depth > 0 ? 'text-[11px]' : 'text-xs';
-  const sectionLabelClass = cn(
-    'font-medium uppercase tracking-wide text-muted-foreground',
-    depth > 0 ? 'text-[11px]' : 'text-xs'
-  );
-  const requiredSet = new Set(schema.required ?? []);
-  const propertyEntries = schema.properties ? Object.entries(schema.properties) : [];
-
-  return (
-    <div className={containerClass}>
-      {(name || typeLabel || schema.format || schema.description) && (
-        <div className="flex flex-col gap-1">
-          <div className="flex flex-wrap gap-2">
-            {name && <span className="font-medium">{name}</span>}
-            {typeLabel && (
-              <Badge variant="outline" className="font-normal capitalize">
-                {typeLabel}
-              </Badge>
-            )}
-            {schema.format && (
-              <Badge variant="outline" className="font-normal">
-                {schema.format}
-              </Badge>
-            )}
-            {required && <Badge variant="secondary">Required</Badge>}
-          </div>
-          {schema.description && <p className={descriptionClass}>{schema.description}</p>}
-        </div>
-      )}
-
-      {schema.default !== undefined && (
-        <p className={cn('text-muted-foreground', metadataTextClass)}>
-          Default:{' '}
-          <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
-            {formatSchemaValue(schema.default)}
-          </code>
-        </p>
-      )}
-
-      {Array.isArray(schema.enum) && schema.enum.length > 0 && (
-        <div className={cn('flex flex-wrap gap-1 text-muted-foreground', metadataTextClass)}>
-          {schema.enum.map((value, index) => (
-            <span key={index} className="rounded bg-muted px-2 py-0.5">
-              {formatSchemaValue(value)}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {propertyEntries.length > 0 && (
-        <div className="space-y-2">
-          <p className={sectionLabelClass}>Fields</p>
-          <div className="space-y-2">
-            {propertyEntries.map(([key, propSchema]) => (
-              <SchemaNode
-                key={key}
-                schema={propSchema}
-                depth={depth + 1}
-                name={key}
-                required={requiredSet.has(key)}
-              />
-            ))}
+            <Link href="/people">
+              <Card className="bg-blue-600/20 border-blue-500/30 hover:bg-blue-600/30 transition-colors cursor-pointer h-full">
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="text-4xl">👥</div>
+                  <div>
+                    <h4 className="text-lg font-bold text-white mb-1">Menschen</h4>
+                    <p className="text-sm text-blue-200">Beziehungen & Circles</p>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-blue-300 ml-auto" />
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
-      )}
 
-      {schema.items && (
-        <div className="space-y-2">
-          <p className={sectionLabelClass}>Items</p>
-          <div className="space-y-2">
-            {Array.isArray(schema.items)
-              ? schema.items.map((itemSchema, index) => (
-                  <SchemaNode
-                    key={`item-${index}`}
-                    schema={itemSchema}
-                    depth={depth + 1}
-                    name={`Variant ${index + 1}`}
-                  />
-                ))
-              : (
-                  <SchemaNode schema={schema.items} depth={depth + 1} name="Item" />
-                )}
-          </div>
-        </div>
-      )}
-
-      {Array.isArray(schema.anyOf) && schema.anyOf.length > 0 && (
-        <div className="space-y-2">
-          <p className={sectionLabelClass}>Any of</p>
-          <div className="space-y-2">
-            {schema.anyOf.map((entry, index) => (
-              <SchemaNode
-                key={`anyOf-${index}`}
-                schema={entry}
-                depth={depth + 1}
-                name={`Option ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {Array.isArray(schema.oneOf) && schema.oneOf.length > 0 && (
-        <div className="space-y-2">
-          <p className={sectionLabelClass}>One of</p>
-          <div className="space-y-2">
-            {schema.oneOf.map((entry, index) => (
-              <SchemaNode
-                key={`oneOf-${index}`}
-                schema={entry}
-                depth={depth + 1}
-                name={`Option ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {Array.isArray(schema.allOf) && schema.allOf.length > 0 && (
-        <div className="space-y-2">
-          <p className={sectionLabelClass}>All of</p>
-          <div className="space-y-2">
-            {schema.allOf.map((entry, index) => (
-              <SchemaNode
-                key={`allOf-${index}`}
-                schema={entry}
-                depth={depth + 1}
-                name={`Requirement ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {typeof schema.additionalProperties !== 'undefined' && (
-        typeof schema.additionalProperties === 'boolean' ? (
-          <p className={cn('text-muted-foreground', metadataTextClass)}>
-            Additional properties {schema.additionalProperties ? 'allowed' : 'not allowed'}
+        {/* Footer */}
+        <div className="max-w-2xl mx-auto mt-16 text-center">
+          <p className="text-lg text-purple-300 font-light italic">
+            "{state?.mood || 'Die Geschichte entwickelt sich weiter...'}"
           </p>
-        ) : (
-          <div className="space-y-2">
-            <p className={sectionLabelClass}>Additional Properties</p>
-            <SchemaNode
-              schema={schema.additionalProperties as BridgeToolSchema}
-              depth={depth + 1}
-            />
-          </div>
-        )
-      )}
+        </div>
+      </div>
     </div>
-  );
+  )
 }

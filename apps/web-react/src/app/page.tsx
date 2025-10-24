@@ -6,6 +6,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { IdleRewardsModal } from '@/components/idle/IdleRewardsModal'
+import {
+  calculateIdleRewards,
+  clearIdleProgress,
+  saveLastActiveTime,
+  idleManager
+} from '@/lib/idle/idle-progression'
 import { Gamepad2, Zap, Heart, Book, Users, Sparkles, Settings } from 'lucide-react'
 
 interface PlayerStats {
@@ -42,6 +49,54 @@ export default function Home() {
   })
 
   const [isHovering, setIsHovering] = useState(false)
+  const [showIdleRewards, setShowIdleRewards] = useState(false)
+  const [idleRewardsData, setIdleRewardsData] = useState<{
+    idleTime: string
+    rewards: Array<{ icon: string; text: string; value: number | string }>
+    welcomeMessage: string
+  } | null>(null)
+
+  useEffect(() => {
+    // Check for idle rewards on mount
+    const idleProgress = calculateIdleRewards()
+
+    if (idleProgress && idleProgress.totalIdleTime >= 5) {
+      const summary = idleManager.getIdleRewardsSummary(idleProgress)
+      const welcomeMessage = idleManager.generateWelcomeBackMessage(idleProgress)
+      const idleTime = idleManager.formatIdleTime(idleProgress.totalIdleTime)
+
+      setIdleRewardsData({
+        idleTime,
+        rewards: summary.items,
+        welcomeMessage
+      })
+
+      setShowIdleRewards(true)
+
+      // Apply idle rewards to player stats
+      setPlayer(prev => ({
+        ...prev,
+        xp: prev.xp + idleProgress.xpGained
+      }))
+    }
+
+    // Save last active time on unload
+    const handleBeforeUnload = () => {
+      saveLastActiveTime()
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      saveLastActiveTime()
+    }
+  }, [])
+
+  const handleCloseIdleRewards = () => {
+    setShowIdleRewards(false)
+    clearIdleProgress()
+  }
 
   useEffect(() => {
     // Load player stats from API
@@ -77,7 +132,19 @@ export default function Home() {
   const xpPercent = Math.min(100, (player.xp / player.xpToNext) * 100)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 overflow-hidden">
+    <>
+      {/* Idle Rewards Modal */}
+      {idleRewardsData && (
+        <IdleRewardsModal
+          isOpen={showIdleRewards}
+          onClose={handleCloseIdleRewards}
+          idleTime={idleRewardsData.idleTime}
+          rewards={idleRewardsData.rewards}
+          welcomeMessage={idleRewardsData.welcomeMessage}
+        />
+      )}
+
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 overflow-hidden">
       {/* Animated Background Stars */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-pulse opacity-60"></div>
@@ -265,5 +332,6 @@ export default function Home() {
         </div>
       </div>
     </div>
+    </>
   )
 }
