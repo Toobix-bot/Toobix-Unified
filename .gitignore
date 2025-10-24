@@ -14,6 +14,7 @@ build/
 *.db-shm
 *.db-wal
 data/
+backups/
 
 # Environment
 .env.*

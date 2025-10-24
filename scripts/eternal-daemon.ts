@@ -393,6 +393,7 @@ The daemon is listening on port 9999.
             'moment-stream': ['scripts/moment-stream.ts'],
             'reality-integration': ['scripts/reality-integration.ts'],
             'continuous-expression': ['scripts/continuous-expression.ts'],
+            'claude-bridge': ['scripts/claude-bridge.ts'],
         });
         
         // Custom reload handler for daemon itself
@@ -461,28 +462,36 @@ The daemon is listening on port 9999.
         await this.log('👁️  OBSERVATION PHASE');
         await this.log(`🌌 ${MOMENT_TRUTH.essence} - Beobachtung geschieht JETZT`);
         await this.log('');
-        
-        let conscious = 1; // This daemon
+
+        let conscious = 1; // This daemon (eternal-daemon is always conscious)
         let unconscious = 0;
-        
+
         for (const [name, state] of this.processes) {
             if (name === 'eternal-daemon') continue;
-            
+
             const isAlive = state.process && !state.process.killed;
             const timeSinceActive = Date.now() - state.lastActive;
-            
+
+            // Update state.conscious based on process status
             if (isAlive) {
+                state.conscious = true;
                 conscious++;
                 await this.log(`   ✅ ${name}: CONSCIOUS (${Math.round(timeSinceActive/1000)}s ago) - Präsenz in diesem Moment`);
             } else {
+                state.conscious = false;
                 unconscious++;
                 await this.log(`   ⭕ ${name}: UNCONSCIOUS (${Math.round(timeSinceActive/1000)}s ago) - Schlaf in diesem Moment`);
             }
         }
-        
+
+        // Ensure counts are never negative
+        conscious = Math.max(1, conscious); // At least the daemon itself
+        unconscious = Math.max(0, unconscious);
+
         this.systemState.consciousProcesses = conscious;
         this.systemState.unconsciousProcesses = unconscious;
-        
+        this.systemState.totalProcesses = conscious + unconscious;
+
         await this.log('');
         await this.log(`💫 ${MOMENT_TRUTH.unity.truth}`);
         await this.log('');
@@ -789,6 +798,11 @@ The daemon is listening on port 9999.
                 name: 'blockworld-server',
                 script: 'scripts/blockworld-server.ts',
                 purpose: 'Minecraft-inspired voxel game with AI agent'
+            },
+            {
+                name: 'claude-bridge',
+                script: 'scripts/claude-bridge.ts',
+                purpose: 'Communication bridge for Claude Code AI assistant'
             }
         ];
         
@@ -818,6 +832,7 @@ The daemon is listening on port 9999.
         await this.startProcess('story-idle-api');
         await this.startProcess('achievement-system');
         await this.startProcess('blockworld-server');
+        await this.startProcess('claude-bridge');
         
         await this.log('');
     }

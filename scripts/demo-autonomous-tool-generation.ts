@@ -20,6 +20,7 @@ import { Database } from 'bun:sqlite';
 import { ToolGenerator } from '../packages/consciousness/src/agent/tool-generator.ts';
 import { ApprovalSystem } from '../packages/consciousness/src/safety/approval-system.ts';
 import { claudeClient } from '../packages/bridge/src/ai/claude-client.ts';
+import { retryWithBackoff, NonRetryableError } from './utils/retry-with-backoff.ts';
 
 // Initialize database (in-memory for demo)
 const db = new Database(':memory:');
@@ -56,27 +57,58 @@ async function scenario1_SimpleWebSearch() {
 
   console.log(`🤔 System realizes: "I need a web search capability"\n`);
 
-  // Request tool
-  const requestId = await toolGenerator.requestTool(
-    'Search the web using a search engine API',
-    'User might ask me to search for current information that is not in my training data'
-  );
+  try {
+    // Request tool with retry logic
+    const requestId = await retryWithBackoff(
+      () => toolGenerator.requestTool(
+        'Search the web using a search engine API',
+        'User might ask me to search for current information that is not in my training data'
+      ),
+      {
+        maxAttempts: 3,
+        onRetry: (attempt, error) => {
+          console.log(`   ⚠️  Request failed: ${error.message}`)
+        }
+      }
+    );
 
-  console.log(`✅ Tool request created: ${requestId}\n`);
-  console.log(`⏳ Waiting 2 seconds before generation...\n`);
-  await new Promise(resolve => setTimeout(resolve, 2000));
+    console.log(`✅ Tool request created: ${requestId}\n`);
+    console.log(`⏳ Waiting 2 seconds before generation...\n`);
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
-  // Generate tool
-  const result = await toolGenerator.generateTool(requestId);
+    // Generate tool with retry logic
+    const result = await retryWithBackoff(
+      async () => {
+        const res = await toolGenerator.generateTool(requestId);
 
-  if (result.success) {
+        // If generation explicitly failed, don't retry
+        if (!res.success) {
+          throw new NonRetryableError(
+            `Tool generation failed: ${res.error}`,
+            new Error(res.error)
+          );
+        }
+
+        return res;
+      },
+      {
+        maxAttempts: 3,
+        initialDelayMs: 2000,
+        onRetry: (attempt, error) => {
+          console.log(`   ⚠️  Generation attempt ${attempt} failed: ${error.message}`)
+        }
+      }
+    );
+
     console.log(`\n╔═══════════════════════════════════════════════════════════════╗`);
     console.log(`║         🎉 SUCCESS! TOOL GENERATED! 🎉                       ║`);
     console.log(`╚═══════════════════════════════════════════════════════════════╝\n`);
     console.log(`Tool ID: ${result.toolId}`);
     console.log(`\n🌟 THE SYSTEM JUST EXTENDED ITSELF! 🌟\n`);
-  } else {
-    console.error(`\n❌ Tool generation failed: ${result.error}\n`);
+
+  } catch (error: any) {
+    console.error(`\n❌ Scenario 1 failed after all retries: ${error.message}\n`);
+    console.log(`   Error details: ${error.stack?.substring(0, 200)}...\n`);
   }
 }
 

@@ -1,116 +1,111 @@
-'use client'
-
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { cn } from '@/lib/utils'
-import {
-  bridgeClient,
-  type BridgeTool,
-  type BridgeToolSchema,
-  type StoryEvent,
-  type StoryState
-} from '@toobix/api-client'
-
+/**
+ * Story Engine Page component.
+ * 
+ * This component displays the story engine page, including the story state, options, events, and tools.
+ * 
+ * @returns The story engine page component.
+ */
 export default function StoryEnginePage() {
-  const [state, setState] = useState<StoryState | null>(null)
-  const [events, setEvents] = useState<StoryEvent[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [tools, setTools] = useState<BridgeTool[]>([])
-  const [toolsLoading, setToolsLoading] = useState(true)
-  const [toolsError, setToolsError] = useState<string | null>(null)
-  const isMountedRef = useRef(true)
+  // State and loading variables
+  const [state, setState] = useState<StoryState | null>(null);
+  const [events, setEvents] = useState<StoryEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [tools, setTools] = useState<BridgeTool[]>([]);
+  const [toolsLoading, setToolsLoading] = useState(true);
+  const [toolsError, setToolsError] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
 
+  // Load story and tools
   const loadStory = useCallback(async () => {
     try {
       if (isMountedRef.current) {
-        setLoading(true)
+        setLoading(true);
       }
 
       const [storyState, eventsData] = await Promise.all([
         bridgeClient.getStoryState(),
         bridgeClient.getStoryEvents(10)
-      ])
+      ]);
 
       if (isMountedRef.current) {
-        setState(storyState)
-        setEvents(Array.isArray(eventsData.events) ? eventsData.events : [])
-        setError(null)
+        setState(storyState);
+        setEvents(Array.isArray(eventsData.events) ? eventsData.events : []);
+        setError(null);
       }
     } catch (err) {
       if (isMountedRef.current) {
-        setError(err instanceof Error ? err.message : 'Failed to load story')
+        setError(err instanceof Error ? err.message : 'Failed to load story');
       }
     } finally {
       if (isMountedRef.current) {
-        setLoading(false)
+        setLoading(false);
       }
     }
-  }, [])
+  }, []);
 
   const loadTools = useCallback(async () => {
     try {
       if (isMountedRef.current) {
-        setToolsLoading(true)
+        setToolsLoading(true);
       }
 
-      const toolsList = await bridgeClient.listTools()
+      const toolsList = await bridgeClient.listTools();
 
       if (isMountedRef.current) {
-        setTools(toolsList)
-        setToolsError(null)
+        setTools(toolsList);
+        setToolsError(null);
       }
     } catch (err) {
       if (isMountedRef.current) {
-        setToolsError(err instanceof Error ? err.message : 'Failed to load tools')
+        setToolsError(err instanceof Error ? err.message : 'Failed to load tools');
       }
     } finally {
       if (isMountedRef.current) {
-        setToolsLoading(false)
+        setToolsLoading(false);
       }
     }
-  }, [])
+  }, []);
 
+  // Handle choose option and refresh
   const handleChooseOption = useCallback(
     async (optionId: string) => {
       try {
-        await bridgeClient.chooseStoryOption(optionId)
-        await loadStory()
+        await bridgeClient.chooseStoryOption(optionId);
+        await loadStory();
       } catch (err) {
-        console.error('Failed to choose option:', err)
+        console.error('Failed to choose option:', err);
       }
     },
     [loadStory]
-  )
+  );
 
   const handleRefresh = useCallback(async () => {
     try {
-      await bridgeClient.refreshStoryOptions(true)
-      await loadStory()
+      await bridgeClient.refreshStoryOptions(true);
+      await loadStory();
     } catch (err) {
-      console.error('Failed to refresh:', err)
+      console.error('Failed to refresh:', err);
     }
-  }, [loadStory])
+  }, [loadStory]);
 
+  // Use effect to load story and tools on mount
   useEffect(() => {
-    isMountedRef.current = true
-    loadStory()
-    loadTools()
+    isMountedRef.current = true;
+    loadStory();
+    loadTools();
 
-    const interval = setInterval(loadStory, 30000)
-    const toolsInterval = setInterval(loadTools, 60000)
+    const interval = setInterval(loadStory, 30000);
+    const toolsInterval = setInterval(loadTools, 60000);
 
     return () => {
-      isMountedRef.current = false
-      clearInterval(interval)
-      clearInterval(toolsInterval)
-    }
-  }, [loadStory, loadTools])
+      isMountedRef.current = false;
+      clearInterval(interval);
+      clearInterval(toolsInterval);
+    };
+  }, [loadStory, loadTools]);
 
+  // Render loading or error state
   if (loading && !state) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -119,7 +114,7 @@ export default function StoryEnginePage() {
           <p className="text-muted-foreground">Loading Story Engine...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -135,14 +130,14 @@ export default function StoryEnginePage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
-  if (!state) return null
+  // Render story engine page
+  if (!state) return null;
 
-  const resourcesRaw =
-    state.resources && typeof state.resources === 'object' ? state.resources : {}
-
+  // Calculate resources and level
+  const resourcesRaw = state.resources && typeof state.resources === 'object' ? state.resources : {};
   const resources = {
     energie: Number((resourcesRaw as Record<string, unknown>).energie) || 0,
     wissen: Number((resourcesRaw as Record<string, unknown>).wissen) || 0,
@@ -151,28 +146,30 @@ export default function StoryEnginePage() {
     stabilitaet: Number((resourcesRaw as Record<string, unknown>).stabilitaet) || 0,
     erfahrung: Number((resourcesRaw as Record<string, unknown>).erfahrung) || 0,
     level: Number((resourcesRaw as Record<string, unknown>).level) || 1
-  }
+  };
 
-  const level = resources.level || 1
-  const xpForNextLevel = Math.max(1, level * 100)
-  const currentXP = resources.erfahrung || 0
-  const xpPercent = Math.min(100, (currentXP / xpForNextLevel) * 100)
+  const level = resources.level || 1;
+  const xpForNextLevel = Math.max(1, level * 100);
+  const currentXP = resources.erfahrung || 0;
+  const xpPercent = Math.min(100, (currentXP / xpForNextLevel) * 100);
 
-  const options = Array.isArray(state.options) ? state.options : []
-  const companions = Array.isArray(state.companions) ? state.companions : []
-  const buffs = Array.isArray(state.buffs) ? state.buffs : []
+  // Get options, companions, and buffs
+  const options = Array.isArray(state.options) ? state.options : [];
+  const companions = Array.isArray(state.companions) ? state.companions : [];
+  const buffs = Array.isArray(state.buffs) ? state.buffs : [];
 
+  // Sort tools
   const sortedTools = useMemo(() => {
-    const unique = new Map<string, BridgeTool>()
+    const unique = new Map<string, BridgeTool>();
 
     for (const tool of tools) {
       if (tool?.name && !unique.has(tool.name)) {
-        unique.set(tool.name, tool)
+        unique.set(tool.name, tool);
       }
     }
 
-    return Array.from(unique.values()).sort((a, b) => a.name.localeCompare(b.name))
-  }, [tools])
+    return Array.from(unique.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [tools]);
 
   return (
     <div className="container mx-auto space-y-6 p-6">
@@ -240,8 +237,8 @@ export default function StoryEnginePage() {
                   .filter(([key]) => !['level', 'erfahrung'].includes(key))
                   .slice(0, 5)
                   .map(([key, val]) => {
-                    const numVal = typeof val === 'number' ? val : 0
-                    const percent = Math.min(100, (numVal / 100) * 100)
+                    const numVal = typeof val === 'number' ? val : 0;
+                    const percent = Math.min(100, (numVal / 100) * 100);
 
                     return (
                       <div key={key}>
@@ -251,7 +248,7 @@ export default function StoryEnginePage() {
                         </div>
                         <Progress value={percent} className="h-1" />
                       </div>
-                    )
+                    );
                   })}
               </CardContent>
             </Card>
@@ -404,8 +401,8 @@ export default function StoryEnginePage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {sortedTools.map(tool => {
-                const schema = tool.inputSchema
-                const hasSchema = hasSchemaContent(schema)
+                const schema = tool.inputSchema;
+                const hasSchema = hasSchemaContent(schema);
 
                 return (
                   <Card key={tool.name}>
@@ -423,19 +420,25 @@ export default function StoryEnginePage() {
                       )}
                     </CardContent>
                   </Card>
-                )
+                );
               })}
             </div>
           )}
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
 
+/**
+ * Checks if a schema has content.
+ * 
+ * @param schema The schema to check.
+ * @returns True if the schema has content, false otherwise.
+ */
 function hasSchemaContent(schema?: BridgeToolSchema | null): boolean {
   if (!schema) {
-    return false
+    return false;
   }
 
   if (
@@ -452,64 +455,78 @@ function hasSchemaContent(schema?: BridgeToolSchema | null): boolean {
     typeof schema.additionalProperties !== 'undefined' ||
     (Array.isArray(schema.required) && schema.required.length > 0)
   ) {
-    return true
+    return true;
   }
 
-  return false
+  return false;
 }
 
+/**
+ * Formats a schema value as a string.
+ * 
+ * @param value The value to format.
+ * @returns The formatted value as a string.
+ */
 function formatSchemaValue(value: unknown): string {
   if (typeof value === 'string') {
-    return value
+    return value;
   }
 
   if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value)
+    return String(value);
   }
 
   if (value === null) {
-    return 'null'
+    return 'null';
   }
 
   try {
-    return JSON.stringify(value)
+    return JSON.stringify(value);
   } catch (error) {
-    console.error('Failed to stringify schema value', error)
-    return String(value)
+    console.error('Failed to stringify schema value', error);
+    return String(value);
   }
 }
 
+/**
+ * Schema node component.
+ * 
+ * This component displays a schema node, including its properties and children.
+ * 
+ * @param props The component props.
+ * @returns The schema node component.
+ */
 interface SchemaNodeProps {
-  schema: BridgeToolSchema
-  depth?: number
-  name?: string
-  required?: boolean
+  schema: BridgeToolSchema;
+  depth?: number;
+  name?: string;
+  required?: boolean;
 }
 
 function SchemaNode({ schema, depth = 0, name, required = false }: SchemaNodeProps): JSX.Element | null {
   if (!schema) {
-    return null
+    return null;
   }
 
-  const typeLabel = Array.isArray(schema.type) ? schema.type.join(' | ') : schema.type
+  const typeLabel = Array.isArray(schema.type) ? schema.type.join(' | ') : schema.type;
   const containerClass = cn(
     'space-y-2',
     depth > 0 && 'ml-4 rounded-md border border-dashed border-border/40 p-3'
-  )
-  const descriptionClass = cn('text-muted-foreground', depth > 0 ? 'text-xs' : 'text-sm')
-  const metadataTextClass = depth > 0 ? 'text-[11px]' : 'text-xs'
+  );
+  const descriptionClass = cn('text-muted-foreground', depth > 0 ? 'text-xs' : 'text-sm');
+  const metadataTextClass = depth > 0 ? 'text-[11px]' : 'text-xs';
   const sectionLabelClass = cn(
     'font-medium uppercase tracking-wide text-muted-foreground',
     depth > 0 ? 'text-[11px]' : 'text-xs'
-  )
-  const requiredSet = new Set(schema.required ?? [])
-  const propertyEntries = schema.properties ? Object.entries(schema.properties) : []
+  );
+  const requiredSet = new Set(schema.required ?? []);
+  const propertyEntries = schema.properties ? Object.entries(schema.properties) : [];
 
   return (
     <div className={containerClass}>
       {(name || typeLabel || schema.format || schema.description) && (
         <div className="flex flex-col gap-1">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap gap-2">
             {name && <span className="font-medium">{name}</span>}
             {typeLabel && (
               <Badge variant="outline" className="font-normal capitalize">
@@ -647,5 +664,5 @@ function SchemaNode({ schema, depth = 0, name, required = false }: SchemaNodePro
         )
       )}
     </div>
-  )
+  );
 }

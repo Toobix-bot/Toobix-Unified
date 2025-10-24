@@ -1,98 +1,40 @@
 /**
  * 🔄 Memory Transformation System
- * 
+ *
  * Memories are not deleted, they are transformed:
  * - Painful memories can be reframed
  * - Trauma can be integrated
  * - Wisdom can be extracted
  * - Past can be healed without being erased
- * 
+ *
  * Philosophy:
  * "We cannot change what happened. But we can change what it means.
  *  The past is fixed, but our relationship to it is fluid."
  */
 
 import Database from 'better-sqlite3'
+import type {
+  Memory,
+  MemoryTransformation,
+  MemoryLayer,
+  HealingJourney,
+  StoreMemoryParams,
+  ReframeMemoryParams,
+  AddLayerParams,
+  StartHealingJourneyParams
+} from './types'
 
-export interface Memory {
-  id?: number
-  timestamp?: number
-  
-  // Original memory
-  event: string
-  description: string
-  emotionalCharge: number  // -100 (traumatic) to 100 (joyful)
-  
-  // Context
-  context: string
-  participants: string[]
-  
-  // Status
-  isArchived: boolean
-  transformationCount: number
-}
-
-export interface MemoryTransformation {
-  id?: number
-  memoryId: number
-  timestamp?: number
-  
-  // Transformation type
-  type: 'reframe' | 'integrate' | 'heal' | 'wisdom_extract' | 'acceptance'
-  
-  // Old vs New
-  oldInterpretation: string
-  newInterpretation: string
-  
-  // Process
-  howTransformed: string
-  wisdomGained: string
-  
-  // Result
-  emotionalShift: number  // Change in emotional charge
-  healingLevel: number  // 0-100: How much healing occurred
-  
-  // Can it be undone?
-  reversible: boolean
-}
-
-export interface MemoryLayer {
-  id?: number
-  memoryId: number
-  layerNumber: number
-  timestamp?: number
-  
-  // Each layer is a new perspective
-  perspective: string
-  interpretation: string
-  emotionalTone: string
-  
-  // Connection to past layers
-  buildsOn?: number  // Previous layer ID
-  contradicts?: number  // Layer it contradicts
-}
-
-export interface HealingJourney {
-  id?: number
-  memoryId: number
-  startedAt?: number
-  
-  // Process
-  stages: Array<{
-    stage: string
-    description: string
-    completedAt?: number
-  }>
-  
-  // Current state
-  currentStage: string
-  progress: number  // 0-100
-  
-  // Outcome
-  isComplete: boolean
-  completedAt?: number
-  finalWisdom?: string
-}
+// Re-export types for convenience
+export type {
+  Memory,
+  MemoryTransformation,
+  MemoryLayer,
+  HealingJourney,
+  StoreMemoryParams,
+  ReframeMemoryParams,
+  AddLayerParams,
+  StartHealingJourneyParams
+} from './types'
 
 export class MemoryTransformationSystem {
   private db: Database.Database
@@ -190,13 +132,7 @@ export class MemoryTransformationSystem {
   /**
    * Store a memory
    */
-  storeMemory(params: {
-    event: string
-    description: string
-    emotionalCharge: number
-    context: string
-    participants: string[]
-  }): Memory {
+  storeMemory(params: StoreMemoryParams): Memory {
     const memory: Memory = {
       timestamp: Date.now(),
       event: params.event,
@@ -240,12 +176,7 @@ export class MemoryTransformationSystem {
   /**
    * Reframe a memory - change perspective without changing facts
    */
-  reframeMemory(params: {
-    memoryId: number
-    oldInterpretation: string
-    newInterpretation: string
-    howTransformed: string
-  }): MemoryTransformation {
+  reframeMemory(params: ReframeMemoryParams): MemoryTransformation {
     const memory = this.getMemory(params.memoryId)
     if (!memory) throw new Error('Memory not found')
 

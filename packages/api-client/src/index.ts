@@ -1,8 +1,3 @@
-/**
- * Shared API Client for Toobix Unified
- * Works in both Vanilla JS and React environments
- */
-
 // ============================================
 // Types
 // ============================================
@@ -75,125 +70,106 @@ export interface BridgeTool {
   inputSchema?: BridgeToolSchema
 }
 
+// ============================================
+// Utility Functions
+// ============================================
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
 const normalizeSchema = (schema: unknown): BridgeToolSchema | undefined => {
-  if (!isRecord(schema)) {
-    return undefined
-  }
+  if (!isRecord(schema)) return undefined
 
   const normalized: BridgeToolSchema = {}
 
-  if ('type' in schema && (typeof schema.type === 'string' || Array.isArray(schema.type))) {
-    normalized.type = schema.type as string | string[]
-  }
-
-  if ('description' in schema && typeof schema.description === 'string') {
-    normalized.description = schema.description
-  }
-
-  if ('enum' in schema && Array.isArray(schema.enum)) {
-    normalized.enum = schema.enum
-  }
-
-  if ('default' in schema) {
-    normalized.default = schema.default
-  }
-
-  if ('format' in schema && typeof schema.format === 'string') {
-    normalized.format = schema.format
-  }
-
-  if ('required' in schema && Array.isArray(schema.required)) {
-    normalized.required = schema.required.filter((item): item is string => typeof item === 'string')
-  }
-
-  if ('properties' in schema && isRecord(schema.properties)) {
-    const properties: Record<string, BridgeToolSchema> = {}
-
-    for (const [key, value] of Object.entries(schema.properties)) {
-      const normalizedChild = normalizeSchema(value)
-      if (normalizedChild) {
-        properties[key] = normalizedChild
-      }
+  Object.keys(schema).forEach((key) => {
+    switch (key) {
+      case 'type':
+        if (typeof schema[key] === 'string' || Array.isArray(schema[key])) {
+          normalized.type = schema[key]
+        }
+        break
+      case 'description':
+        if (typeof schema[key] === 'string') {
+          normalized.description = schema[key]
+        }
+        break
+      case 'enum':
+        if (Array.isArray(schema[key])) {
+          normalized.enum = schema[key]
+        }
+        break
+      case 'default':
+        normalized.default = schema[key]
+        break
+      case 'format':
+        if (typeof schema[key] === 'string') {
+          normalized.format = schema[key]
+        }
+        break
+      case 'required':
+        if (Array.isArray(schema[key])) {
+          normalized.required = schema[key].filter((item): item is string => typeof item === 'string')
+        }
+        break
+      case 'properties':
+        if (isRecord(schema[key])) {
+          const properties: Record<string, BridgeToolSchema> = {}
+          Object.entries(schema[key]).forEach(([propertyKey, propertyValue]) => {
+            const normalizedChild = normalizeSchema(propertyValue)
+            if (normalizedChild) {
+              properties[propertyKey] = normalizedChild
+            }
+          })
+          if (Object.keys(properties).length > 0) {
+            normalized.properties = properties
+          }
+        }
+        break
+      case 'items':
+        if (Array.isArray(schema[key])) {
+          const normalizedItems = schema[key].map((item) => normalizeSchema(item)).filter((item): item is BridgeToolSchema => Boolean(item))
+          if (normalizedItems.length > 0) {
+            normalized.items = normalizedItems
+          }
+        } else {
+          const normalizedItem = normalizeSchema(schema[key])
+          if (normalizedItem) {
+            normalized.items = normalizedItem
+          }
+        }
+        break
+      case 'anyOf':
+      case 'oneOf':
+      case 'allOf':
+        if (Array.isArray(schema[key])) {
+          const normalizedArray = schema[key].map((entry) => normalizeSchema(entry)).filter((entry): entry is BridgeToolSchema => Boolean(entry))
+          if (normalizedArray.length > 0) {
+            normalized[key] = normalizedArray
+          }
+        }
+        break
+      case 'additionalProperties':
+        if (typeof schema[key] === 'boolean') {
+          normalized.additionalProperties = schema[key]
+        } else {
+          const additionalProps = normalizeSchema(schema[key])
+          if (additionalProps) {
+            normalized.additionalProperties = additionalProps
+          }
+        }
+        break
     }
-
-    if (Object.keys(properties).length > 0) {
-      normalized.properties = properties
-    }
-  }
-
-  if ('items' in schema) {
-    if (Array.isArray(schema.items)) {
-      const normalizedItems = schema.items
-        .map(item => normalizeSchema(item))
-        .filter((item): item is BridgeToolSchema => Boolean(item))
-
-      if (normalizedItems.length > 0) {
-        normalized.items = normalizedItems
-      }
-    } else {
-      const normalizedItem = normalizeSchema(schema.items)
-      if (normalizedItem) {
-        normalized.items = normalizedItem
-      }
-    }
-  }
-
-  if ('anyOf' in schema && Array.isArray(schema.anyOf)) {
-    const normalizedAnyOf = schema.anyOf
-      .map(entry => normalizeSchema(entry))
-      .filter((entry): entry is BridgeToolSchema => Boolean(entry))
-
-    if (normalizedAnyOf.length > 0) {
-      normalized.anyOf = normalizedAnyOf
-    }
-  }
-
-  if ('oneOf' in schema && Array.isArray(schema.oneOf)) {
-    const normalizedOneOf = schema.oneOf
-      .map(entry => normalizeSchema(entry))
-      .filter((entry): entry is BridgeToolSchema => Boolean(entry))
-
-    if (normalizedOneOf.length > 0) {
-      normalized.oneOf = normalizedOneOf
-    }
-  }
-
-  if ('allOf' in schema && Array.isArray(schema.allOf)) {
-    const normalizedAllOf = schema.allOf
-      .map(entry => normalizeSchema(entry))
-      .filter((entry): entry is BridgeToolSchema => Boolean(entry))
-
-    if (normalizedAllOf.length > 0) {
-      normalized.allOf = normalizedAllOf
-    }
-  }
-
-  if ('additionalProperties' in schema) {
-    if (typeof schema.additionalProperties === 'boolean') {
-      normalized.additionalProperties = schema.additionalProperties
-    } else {
-      const additionalProps = normalizeSchema(schema.additionalProperties)
-      if (additionalProps) {
-        normalized.additionalProperties = additionalProps
-      }
-    }
-  }
+  })
 
   return normalized
 }
 
 const normalizeTool = (raw: unknown): BridgeTool | null => {
-  if (!isRecord(raw)) {
-    return null
-  }
+  if (!isRecord(raw)) return null
 
   const name = typeof raw.name === 'string' ? raw.name : undefined
-  if (!name) {
-    return null
-  }
+  if (!name) return null
 
   const description = typeof raw.description === 'string' ? raw.description : undefined
   const inputSchema = normalizeSchema(raw.inputSchema)
@@ -218,13 +194,11 @@ export class BridgeClient {
     this.mcpUrl = `${baseUrl}/mcp`
   }
 
-  // Health check
   async health(): Promise<{ status: string; tools: number }> {
     const res = await fetch(`${this.baseUrl}/health`)
     return res.json()
   }
 
-  // Get stats
   async stats(): Promise<{
     memory: number
     actions: number
@@ -237,7 +211,6 @@ export class BridgeClient {
     return res.json()
   }
 
-  // MCP Tool Call
   private async callTool(name: string, args: any = {}): Promise<any> {
     const res = await fetch(this.mcpUrl, {
       method: 'POST',
@@ -251,12 +224,11 @@ export class BridgeClient {
     })
 
     const data = await res.json()
-    
+
     if (data.error) {
       throw new Error(data.error.message || 'MCP tool call failed')
     }
 
-    // Parse text content
     if (data.result?.content?.[0]?.text) {
       try {
         return JSON.parse(data.result.content[0].text)
@@ -268,10 +240,7 @@ export class BridgeClient {
     return data.result
   }
 
-  // ============================================
   // Story Engine Methods
-  // ============================================
-
   async getStoryState(): Promise<StoryState> {
     return this.callTool('story_state')
   }
@@ -304,15 +273,10 @@ export class BridgeClient {
       return []
     }
 
-    return data.tools
-      .map(tool => normalizeTool(tool))
-      .filter((tool): tool is BridgeTool => Boolean(tool))
+    return data.tools.map(normalizeTool).filter((tool): tool is BridgeTool => Boolean(tool))
   }
 
-  // ============================================
   // Memory Methods
-  // ============================================
-
   async searchMemory(query: string, limit = 10): Promise<any> {
     return this.callTool('memory_search', { query, limit })
   }
@@ -321,10 +285,7 @@ export class BridgeClient {
     return this.callTool('memory_add', { text, tags })
   }
 
-  // ============================================
   // People Methods
-  // ============================================
-
   async searchContacts(query: string): Promise<any> {
     return this.callTool('contact_search', { query })
   }
@@ -341,10 +302,7 @@ export class BridgeClient {
     return this.callTool('interaction_log', { person_id: personId, ...data })
   }
 
-  // ============================================
   // Soul Methods
-  // ============================================
-
   async getSoulState(): Promise<any> {
     return this.callTool('soul_state')
   }
@@ -353,18 +311,12 @@ export class BridgeClient {
     return this.callTool('soul_event', data)
   }
 
-  // ============================================
   // AI Methods
-  // ============================================
-
   async generate(prompt: string, context?: any): Promise<any> {
     return this.callTool('generate', { prompt, context })
   }
 
-  // ============================================
   // Actions Methods
-  // ============================================
-
   async triggerAction(actionId: string, params?: any): Promise<any> {
     return this.callTool('trigger_action', { action_id: actionId, params })
   }
@@ -408,7 +360,7 @@ export class BridgeWebSocket {
         const message = JSON.parse(event.data)
         const listeners = this.listeners.get(message.type)
         if (listeners) {
-          listeners.forEach(fn => fn(message.data))
+          listeners.forEach((fn) => fn(message.data))
         }
       } catch (err) {
         console.error('Failed to parse WebSocket message:', err)

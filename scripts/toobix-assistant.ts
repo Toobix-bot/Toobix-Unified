@@ -33,12 +33,14 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
-function ask(question: string): Promise<string> {
+// Extracted function for asking questions
+async function askQuestion(question: string): Promise<string> {
   return new Promise(resolve => {
     rl.question(question, answer => resolve(answer));
   });
 }
 
+// Extracted function for calling tools
 async function callTool(toolName: string, args: any = {}): Promise<any> {
   try {
     const response = await fetch(`${BRIDGE_URL}/mcp`, {
@@ -66,6 +68,7 @@ async function callTool(toolName: string, args: any = {}): Promise<any> {
   }
 }
 
+// Extracted function for generating responses
 async function generateResponse(prompt: string, systemContext?: string): Promise<string> {
   const result = await callTool('generate', {
     prompt: systemContext ? `${systemContext}\n\nUser: ${prompt}` : prompt,
@@ -75,6 +78,7 @@ async function generateResponse(prompt: string, systemContext?: string): Promise
   return result?.text || 'Entschuldigung, ich konnte keine Antwort generieren.';
 }
 
+// Extracted function for analyzing intent
 async function analyzeIntent(userInput: string): Promise<{
   intent: 'chat' | 'code_read' | 'code_modify' | 'code_suggest' | 'system_info' | 'memory' | 'story';
   entities: any;
@@ -109,6 +113,7 @@ async function analyzeIntent(userInput: string): Promise<{
   return { intent: 'chat', entities: { query: userInput } };
 }
 
+// Extracted function for handling code read
 async function handleCodeRead(query: string): Promise<string> {
   console.log('\n🔍 Analysiere Code...');
   
@@ -122,6 +127,7 @@ async function handleCodeRead(query: string): Promise<string> {
   return '❌ Konnte Code nicht lesen.';
 }
 
+// Extracted function for handling code modify
 async function handleCodeModify(query: string): Promise<string> {
   console.log('\n🔧 Analysiere Änderungsanfrage...');
   
@@ -140,7 +146,7 @@ Anfrage: ${query}`
   
   console.log(`\n💡 Vorschlag:\n${suggestion}\n`);
   
-  const confirm = await ask('❓ Soll ich diese Änderung durchführen? (ja/nein): ');
+  const confirm = await askQuestion('❓ Soll ich diese Änderung durchführen? (ja/nein): ');
   
   if (confirm.toLowerCase() === 'ja' || confirm.toLowerCase() === 'j') {
     console.log('\n✅ Führe Änderung durch...');
@@ -162,6 +168,7 @@ Anfrage: ${query}`
   }
 }
 
+// Extracted function for handling code suggest
 async function handleCodeSuggest(query: string): Promise<string> {
   console.log('\n💭 Generiere Verbesserungsvorschläge...');
   
@@ -182,6 +189,7 @@ async function handleCodeSuggest(query: string): Promise<string> {
   return '💡 Keine spezifischen Vorschläge gefunden.';
 }
 
+// Extracted function for handling system info
 async function handleSystemInfo(): Promise<string> {
   console.log('\n📊 Sammle Systeminformationen...');
   
@@ -215,6 +223,7 @@ async function handleSystemInfo(): Promise<string> {
   return response;
 }
 
+// Extracted function for handling memory
 async function handleMemory(query: string): Promise<string> {
   console.log('\n🔍 Durchsuche Erinnerungen...');
   
@@ -235,6 +244,7 @@ async function handleMemory(query: string): Promise<string> {
   return '💾 Keine passenden Erinnerungen gefunden.';
 }
 
+// Extracted function for handling story
 async function handleStory(): Promise<string> {
   const result = await callTool('story_state');
   
@@ -253,6 +263,7 @@ async function handleStory(): Promise<string> {
   return '📖 Keine Story-Informationen verfügbar.';
 }
 
+// Extracted function for handling chat
 async function handleChat(query: string): Promise<string> {
   // Nutze Consciousness für tiefere Gespräche
   const result = await callTool('consciousness_think', { topic: query });
@@ -272,6 +283,7 @@ async function handleChat(query: string): Promise<string> {
   return response;
 }
 
+// Extracted function for printing banner
 function printBanner() {
   console.clear();
   console.log('╔══════════════════════════════════════════════════════════════╗');
@@ -296,6 +308,7 @@ function printBanner() {
   console.log('═'.repeat(62));
 }
 
+// Extracted function for printing help
 function printHelp() {
   console.log('\n📚 HILFE - Was kann ich tun?\n');
   console.log('🔍 CODE LESEN:');
@@ -324,6 +337,7 @@ function printHelp() {
   console.log('');
 }
 
+// Main function
 async function main() {
   printBanner();
   
@@ -338,7 +352,7 @@ async function main() {
   }
   
   while (true) {
-    const input = await ask('🤖 Du: ');
+    const input = await askQuestion('🤖 Du: ');
     
     const command = input.trim().toLowerCase();
     

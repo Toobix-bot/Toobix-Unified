@@ -375,38 +375,42 @@ class SelfModificationEngine {
         analysis: AnalysisResult
     ): Promise<Modification | null> {
         const originalCode = await readFile(filePath, 'utf-8');
-        
-        // For demonstration: Simple modifications
-        // In real implementation: Use AI/LLM to generate meaningful changes
-        
+
+        // Try AI-powered modification first
+        const aiModification = await this.generateAIModification(filePath, originalCode, analysis);
+        if (aiModification) {
+            return aiModification;
+        }
+
+        // Fallback: Simple pattern-based modifications
         let modifiedCode = originalCode;
         let type = ModificationType.OPTIMIZATION;
         let reason = 'General optimization';
-        
+
         // Example modifications based on patterns
         if (analysis.patterns.includes('missing_docs') && Math.random() > 0.5) {
             // Add a comment at the top
             type = ModificationType.DOCUMENTATION;
             reason = 'Added file-level documentation';
-            
+
             const docComment = `/**
  * Auto-generated documentation
  * Modified by: Self-Modification Engine
  * Date: ${new Date().toISOString()}
- * 
+ *
  * This file has been analyzed and optimized.
  */
 
 `;
-            
+
             modifiedCode = docComment + originalCode;
         }
-        
+
         // Only proceed if actual changes were made
         if (modifiedCode === originalCode) {
             return null;
         }
-        
+
         return {
             id: `mod_${Date.now()}`,
             timestamp: Date.now(),
@@ -419,6 +423,142 @@ class SelfModificationEngine {
             success: null,
             rollbackAvailable: true
         };
+    }
+
+    /**
+     * Generate modification using Groq AI
+     */
+    private async generateAIModification(
+        filePath: string,
+        originalCode: string,
+        analysis: AnalysisResult
+    ): Promise<Modification | null> {
+        const groqApiKey = process.env.GROQ_API_KEY;
+
+        if (!groqApiKey || groqApiKey.includes('your_groq_api_key_here')) {
+            return null; // No API key configured
+        }
+
+        try {
+            // Build prompt based on analysis
+            const prompt = this.buildImprovementPrompt(filePath, originalCode, analysis);
+
+            // Call Groq API
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${groqApiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.3-70b-versatile', // Fast and capable model
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'You are an expert code improvement AI. Generate improved TypeScript code based on analysis. Return ONLY the modified code, no explanations.'
+                        },
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 8000
+                })
+            });
+
+            if (!response.ok) {
+                console.log(`   ⚠️  Groq API error: ${response.status}`);
+                return null;
+            }
+
+            const data = await response.json();
+            let modifiedCode = data.choices[0]?.message?.content?.trim();
+
+            if (!modifiedCode) {
+                return null;
+            }
+
+            // Clean up code fences if present
+            modifiedCode = modifiedCode
+                .replace(/^```typescript\n/, '')
+                .replace(/^```ts\n/, '')
+                .replace(/^```\n/, '')
+                .replace(/\n```$/, '');
+
+            // Validate that changes were made
+            if (modifiedCode === originalCode) {
+                return null;
+            }
+
+            // Determine modification type
+            const type = this.determineModificationType(originalCode, modifiedCode, analysis);
+            const reason = this.generateModificationReason(type, analysis);
+
+            return {
+                id: `mod_${Date.now()}`,
+                timestamp: Date.now(),
+                type,
+                targetFile: filePath,
+                originalCode,
+                modifiedCode,
+                reason,
+                applied: false,
+                success: null,
+                rollbackAvailable: true
+            };
+
+        } catch (error) {
+            console.log(`   ⚠️  AI generation failed: ${error}`);
+            return null;
+        }
+    }
+
+    private buildImprovementPrompt(filePath: string, code: string, analysis: AnalysisResult): string {
+        let prompt = `Improve this TypeScript code from ${filePath}:\n\n`;
+        prompt += `Current metrics:\n`;
+        prompt += `- Complexity: ${analysis.complexity}\n`;
+        prompt += `- Lines: ${analysis.lines}\n`;
+        prompt += `- Functions: ${analysis.functions}\n\n`;
+
+        if (analysis.suggestions.length > 0) {
+            prompt += `Suggested improvements:\n`;
+            analysis.suggestions.forEach(s => prompt += `- ${s}\n`);
+            prompt += '\n';
+        }
+
+        prompt += `CODE:\n${code}\n\n`;
+        prompt += `Return the improved code. Make meaningful improvements while preserving functionality.`;
+
+        return prompt;
+    }
+
+    private determineModificationType(original: string, modified: string, analysis: AnalysisResult): ModificationType {
+        // Simple heuristics
+        if (modified.includes('/**') && !original.includes('/**')) {
+            return ModificationType.DOCUMENTATION;
+        }
+        if (modified.length < original.length * 0.9) {
+            return ModificationType.REFACTORING;
+        }
+        if (modified.includes('TODO') || modified.includes('FIXME')) {
+            return ModificationType.BUG_FIX;
+        }
+        return ModificationType.OPTIMIZATION;
+    }
+
+    private generateModificationReason(type: ModificationType, analysis: AnalysisResult): string {
+        const reasons = {
+            [ModificationType.OPTIMIZATION]: 'AI-optimized for better performance',
+            [ModificationType.REFACTORING]: 'AI-refactored for better structure',
+            [ModificationType.DOCUMENTATION]: 'AI-enhanced documentation',
+            [ModificationType.BUG_FIX]: 'AI-suggested bug fix',
+            [ModificationType.FEATURE_ADD]: 'AI-added feature enhancement',
+            [ModificationType.EXPERIMENT]: 'AI-experimental improvement',
+            [ModificationType.EVOLUTION]: 'AI-evolutionary enhancement'
+        };
+
+        return reasons[type] || 'AI-generated improvement';
     }
     
     private async shouldApplyModification(mod: Modification): Promise<boolean> {

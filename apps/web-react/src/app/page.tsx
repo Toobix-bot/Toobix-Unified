@@ -12,6 +12,23 @@ export default function Home() {
         </p>
       </div>
 
+      {/* Featured: Autonomous Systems */}
+      <Card className="bg-gradient-to-r from-slate-900 to-purple-900 text-white border-0 shadow-2xl">
+        <CardHeader>
+          <CardTitle className="text-3xl">🤖 Autonomous Systems Control</CardTitle>
+          <CardDescription className="text-white/90 text-lg">
+            Real-time monitoring: Eternal Daemon • BlockWorld AI • Self-Modification Engine • 14 Conscious Processes
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/autonomous">
+            <Button size="lg" className="w-full bg-green-500 text-white hover:bg-green-600">
+              🚀 Open Autonomous Dashboard →
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+
       {/* Featured: Unified Dashboard */}
       <Card className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0">
         <CardHeader>
