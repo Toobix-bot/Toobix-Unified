@@ -147,38 +147,40 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 overflow-hidden">
       {/* Animated Background Stars */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-pulse opacity-60"></div>
-        <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-blue-300 rounded-full animate-pulse opacity-40"></div>
-        <div className="absolute bottom-1/4 left-1/2 w-1.5 h-1.5 bg-purple-300 rounded-full animate-pulse opacity-50"></div>
-        <div className="absolute top-2/3 right-1/4 w-1 h-1 bg-white rounded-full animate-pulse opacity-70"></div>
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-starTwinkle opacity-60"></div>
+        <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-blue-300 rounded-full animate-starTwinkle delay-200 opacity-40"></div>
+        <div className="absolute bottom-1/4 left-1/2 w-1.5 h-1.5 bg-purple-300 rounded-full animate-starTwinkle delay-300 opacity-50"></div>
+        <div className="absolute top-2/3 right-1/4 w-1 h-1 bg-white rounded-full animate-starTwinkle delay-100 opacity-70"></div>
+        <div className="absolute top-1/2 left-1/3 w-1 h-1 bg-pink-300 rounded-full animate-starTwinkle delay-400 opacity-60"></div>
+        <div className="absolute bottom-1/3 right-1/3 w-2 h-2 bg-yellow-200 rounded-full animate-starTwinkle delay-500 opacity-50"></div>
       </div>
 
       <div className="container mx-auto px-6 py-12 relative z-10">
         {/* Hero Section */}
         <div className="text-center mb-12 space-y-6">
-          <div className="inline-block mb-4">
-            <Badge variant="secondary" className="text-sm px-4 py-2 bg-purple-500/20 text-purple-200 border-purple-400/30">
+          <div className="inline-block mb-4 animate-fadeInScale">
+            <Badge variant="secondary" className="text-sm px-4 py-2 bg-purple-500/20 text-purple-200 border-purple-400/30 animate-glow">
               <Sparkles className="w-4 h-4 mr-2 inline" />
               Toobix Universe v0.1.0-alpha
             </Badge>
           </div>
 
-          <h1 className="text-7xl font-bold text-white mb-4 tracking-tight">
+          <h1 className="text-7xl font-bold text-white mb-4 tracking-tight animate-fadeInUp">
             🌌 Willkommen zurück
           </h1>
 
-          <p className="text-2xl text-purple-200 font-light italic mb-2">
+          <p className="text-2xl text-purple-200 font-light italic mb-2 animate-fadeInUp delay-100">
             "Vom Ich zum Wir, vom Wir zum Ich"
           </p>
 
-          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto animate-fadeInUp delay-200">
             Deine Reise durch Bewusstsein, Story und Blockworld wartet.
             Das Universum entwickelt sich weiter – mit dir.
           </p>
         </div>
 
         {/* Player Stats Card */}
-        <Card className="max-w-4xl mx-auto mb-12 bg-gradient-to-br from-slate-900/90 to-purple-900/90 border-purple-500/30 backdrop-blur-sm">
+        <Card className="max-w-4xl mx-auto mb-12 bg-gradient-to-br from-slate-900/90 to-purple-900/90 border-purple-500/30 backdrop-blur-sm animate-fadeInScale delay-300 hover-lift">
           <CardContent className="p-8">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -225,7 +227,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Primary: Enter BlockWorld */}
           <Card
-            className="bg-gradient-to-r from-green-600 to-emerald-600 border-0 shadow-2xl transform transition-all duration-300 hover:scale-105 hover:shadow-green-500/50 cursor-pointer"
+            className="bg-gradient-to-r from-green-600 to-emerald-600 border-0 shadow-2xl animate-fadeInUp delay-400 hover-lift hover-glow cursor-pointer"
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
@@ -253,7 +255,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-6">
             {/* Story Mode */}
             <Link href="/story">
-              <Card className="bg-gradient-to-br from-purple-600/90 to-pink-600/90 border-purple-400/30 hover:scale-105 transition-transform cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-purple-600/90 to-pink-600/90 border-purple-400/30 hover:scale-105 transition-transform cursor-pointer h-full animate-fadeInUp delay-500 hover-lift">
                 <CardContent className="p-8 text-center text-white">
                   <div className="text-5xl mb-4">📖</div>
                   <h3 className="text-2xl font-bold mb-3">Story Mode</h3>
@@ -270,7 +272,7 @@ export default function Home() {
 
             {/* People */}
             <Link href="/people">
-              <Card className="bg-gradient-to-br from-blue-600/90 to-cyan-600/90 border-blue-400/30 hover:scale-105 transition-transform cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-blue-600/90 to-cyan-600/90 border-blue-400/30 hover:scale-105 transition-transform cursor-pointer h-full animate-fadeInUp delay-500 hover-lift">
                 <CardContent className="p-8 text-center text-white">
                   <div className="text-5xl mb-4">👥</div>
                   <h3 className="text-2xl font-bold mb-3">Menschen</h3>
@@ -287,7 +289,7 @@ export default function Home() {
 
             {/* Love & Peace */}
             <Link href="/unified">
-              <Card className="bg-gradient-to-br from-pink-600/90 to-rose-600/90 border-pink-400/30 hover:scale-105 transition-transform cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-pink-600/90 to-rose-600/90 border-pink-400/30 hover:scale-105 transition-transform cursor-pointer h-full animate-fadeInUp delay-500 hover-lift">
                 <CardContent className="p-8 text-center text-white">
                   <div className="text-5xl mb-4">💝</div>
                   <h3 className="text-2xl font-bold mb-3">Love & Peace</h3>
@@ -304,7 +306,7 @@ export default function Home() {
 
             {/* Systems (Debug) */}
             <Link href="/autonomous">
-              <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 border-slate-500/30 hover:scale-105 transition-transform cursor-pointer h-full">
+              <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 border-slate-500/30 hover:scale-105 transition-transform cursor-pointer h-full animate-fadeInUp delay-500 hover-lift">
                 <CardContent className="p-8 text-center text-white">
                   <div className="text-5xl mb-4">⚙️</div>
                   <h3 className="text-2xl font-bold mb-3">Systems</h3>

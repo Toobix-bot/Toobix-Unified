@@ -138,8 +138,8 @@ export default function WorldPage() {
       </div>
 
       {/* Left Sidebar - Character Stats */}
-      <div className="absolute left-6 top-24 z-40 w-80">
-        <Card className="bg-slate-900/90 backdrop-blur-lg border-slate-700/50">
+      <div className="absolute left-6 top-24 z-40 w-80 animate-slideInLeft">
+        <Card className="bg-slate-900/90 backdrop-blur-lg border-slate-700/50 hover-lift">
           <CardContent className="p-4">
             <div
               className="flex items-center justify-between mb-3 cursor-pointer"
@@ -209,8 +209,8 @@ export default function WorldPage() {
       </div>
 
       {/* Right Sidebar - Active Quest */}
-      <div className="absolute right-6 top-24 z-40 w-80">
-        <Card className="bg-slate-900/90 backdrop-blur-lg border-slate-700/50 mb-4">
+      <div className="absolute right-6 top-24 z-40 w-80 animate-slideInRight">
+        <Card className="bg-slate-900/90 backdrop-blur-lg border-slate-700/50 mb-4 hover-lift">
           <CardContent className="p-4">
             <div
               className="flex items-center justify-between mb-3 cursor-pointer"
@@ -252,7 +252,7 @@ export default function WorldPage() {
         </Card>
 
         {/* Quick Actions */}
-        <Card className="bg-slate-900/90 backdrop-blur-lg border-slate-700/50">
+        <Card className="bg-slate-900/90 backdrop-blur-lg border-slate-700/50 hover-lift">
           <CardContent className="p-4">
             <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-blue-400" />
@@ -283,8 +283,8 @@ export default function WorldPage() {
       </div>
 
       {/* Bottom Bar - Current Arc */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-40">
-        <Badge variant="secondary" className="text-lg px-6 py-3 bg-purple-900/90 text-purple-200 border-purple-500/30 backdrop-blur-lg">
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-40 animate-fadeInUp delay-200">
+        <Badge variant="secondary" className="text-lg px-6 py-3 bg-purple-900/90 text-purple-200 border-purple-500/30 backdrop-blur-lg animate-glow">
           <Brain className="w-5 h-5 mr-2 inline" />
           {player.currentArc}
         </Badge>
@@ -292,7 +292,7 @@ export default function WorldPage() {
 
       {/* Main Content - BlockWorld (FULLSCREEN) */}
       <div className="absolute inset-0 pt-20 pb-6 px-6">
-        <div className="h-full w-full">
+        <div className="h-full w-full animate-fadeInScale">
           <Card className="h-full bg-slate-900/50 backdrop-blur-sm border-slate-700/50 overflow-hidden">
             <CardContent className="p-6 h-full">
               <BlockWorldPanel />

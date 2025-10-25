@@ -232,8 +232,8 @@ export default function StoryModePage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-purple-950 relative overflow-hidden">
       {/* Animated Background */}
       <div className="fixed inset-0 pointer-events-none opacity-30">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500 rounded-full blur-3xl animate-float delay-300"></div>
       </div>
 
       <div className="container mx-auto px-6 py-12 relative z-10">
@@ -255,7 +255,7 @@ export default function StoryModePage() {
         </div>
 
         {/* Player Stats Header */}
-        <Card className="max-w-4xl mx-auto mb-8 bg-slate-900/80 border-purple-500/30 backdrop-blur-lg">
+        <Card className="max-w-4xl mx-auto mb-8 bg-slate-900/80 border-purple-500/30 backdrop-blur-lg animate-fadeInScale">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -320,7 +320,7 @@ export default function StoryModePage() {
           {/* Active Quest */}
           {activeQuest ? (
             <div className="space-y-6">
-              <div className="text-center">
+              <div className="text-center animate-fadeInUp">
                 <h2 className="text-3xl font-bold text-white mb-2">📖 Aktive Quest</h2>
                 <p className="text-lg text-purple-200">Eine Entscheidung steht bevor...</p>
               </div>
@@ -332,9 +332,9 @@ export default function StoryModePage() {
               />
             </div>
           ) : (
-            <Card className="bg-slate-900/80 border-purple-500/30 backdrop-blur-lg">
+            <Card className="bg-slate-900/80 border-purple-500/30 backdrop-blur-lg animate-fadeInScale">
               <CardContent className="p-12 text-center">
-                <div className="text-6xl mb-6">🌙</div>
+                <div className="text-6xl mb-6 animate-float">🌙</div>
                 <h3 className="text-2xl font-bold text-white mb-4">
                   Keine aktive Quest
                 </h3>
@@ -345,7 +345,7 @@ export default function StoryModePage() {
                   size="lg"
                   onClick={handleGenerateQuest}
                   disabled={loading}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-lg"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6 text-lg animate-bounceIn hover-lift"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
                   {loading ? 'Lädt...' : 'Neue Quest generieren'}
@@ -356,7 +356,7 @@ export default function StoryModePage() {
 
           {/* Story Log (Recent Events) */}
           {events.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-4 animate-fadeInUp delay-200">
               <div className="flex items-center gap-3 mb-4">
                 <Scroll className="w-6 h-6 text-purple-400" />
                 <h3 className="text-2xl font-bold text-white">Story Log</h3>
@@ -403,9 +403,9 @@ export default function StoryModePage() {
           )}
 
           {/* Quick Actions */}
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-4 animate-fadeInUp delay-300">
             <Link href="/world">
-              <Card className="bg-green-600/20 border-green-500/30 hover:bg-green-600/30 transition-colors cursor-pointer h-full">
+              <Card className="bg-green-600/20 border-green-500/30 hover:bg-green-600/30 transition-colors cursor-pointer h-full hover-lift">
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="text-4xl">🌍</div>
                   <div>
@@ -418,7 +418,7 @@ export default function StoryModePage() {
             </Link>
 
             <Link href="/people">
-              <Card className="bg-blue-600/20 border-blue-500/30 hover:bg-blue-600/30 transition-colors cursor-pointer h-full">
+              <Card className="bg-blue-600/20 border-blue-500/30 hover:bg-blue-600/30 transition-colors cursor-pointer h-full hover-lift">
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="text-4xl">👥</div>
                   <div>
