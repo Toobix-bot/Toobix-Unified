@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress'
 import { QuestDialog, Quest as QuestType } from '@/components/story/QuestDialog'
 import { PageTransition } from '@/components/transitions/PageTransition'
 import { ConfettiEffect } from '@/components/effects/ParticleEffect'
+import { useSound } from '@/lib/sounds/useSound'
 import { bridgeClient } from '@/lib/bridge-client'
 import {
   Home,
@@ -69,6 +70,11 @@ export default function StoryModePage() {
   const [isChoosingOption, setIsChoosingOption] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const isMountedRef = useRef(true)
+
+  // Sound effects
+  const { play: playQuestComplete } = useSound('quest-complete')
+  const { play: playClick } = useSound('click')
+  const { play: playSuccess } = useSound('success')
 
   const [player, setPlayer] = useState<PlayerStats>({
     level: 1,
@@ -165,10 +171,14 @@ export default function StoryModePage() {
   const handleQuestChoice = async (choiceId: string) => {
     setIsChoosingOption(true)
     try {
+      // Play initial click sound
+      playClick()
+
       await bridgeClient.chooseStoryOption(choiceId)
 
-      // Trigger confetti celebration
+      // Trigger confetti celebration + quest complete sound
       setShowConfetti(true)
+      playQuestComplete()
       setTimeout(() => setShowConfetti(false), 3000) // Hide after 3s
 
       await new Promise(resolve => setTimeout(resolve, 1000)) // Visual feedback delay
@@ -184,6 +194,7 @@ export default function StoryModePage() {
   // Generate new quest
   const handleGenerateQuest = async () => {
     setLoading(true)
+    playSuccess() // Play success sound when generating new quest
     try {
       await bridgeClient.refreshStoryOptions(true)
       await loadStory()
