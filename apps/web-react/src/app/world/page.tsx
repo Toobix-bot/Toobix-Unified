@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { BlockWorldPanel } from '@/components/autonomous/BlockWorldPanel'
+import { PageTransition } from '@/components/transitions/PageTransition'
 import {
   Home,
   Zap,
@@ -114,7 +115,8 @@ export default function WorldPage() {
   const questPercent = Math.min(100, (activeQuest.progress / activeQuest.maxProgress) * 100)
 
   return (
-    <div className="min-h-screen bg-slate-950 relative overflow-hidden">
+    <PageTransition>
+      <div className="min-h-screen bg-slate-950 relative overflow-hidden">
       {/* Top Navigation Bar */}
       <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-slate-900/95 to-transparent backdrop-blur-md border-b border-slate-700/50">
         <div className="container mx-auto px-6 py-3 flex items-center justify-between">
@@ -300,6 +302,7 @@ export default function WorldPage() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </PageTransition>
   )
 }

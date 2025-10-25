@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { QuestDialog, Quest as QuestType } from '@/components/story/QuestDialog'
+import { PageTransition } from '@/components/transitions/PageTransition'
 import { bridgeClient } from '@/lib/bridge-client'
 import {
   Home,
@@ -229,7 +230,8 @@ export default function StoryModePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-purple-950 relative overflow-hidden">
+    <PageTransition>
+      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-purple-950 relative overflow-hidden">
       {/* Animated Background */}
       <div className="fixed inset-0 pointer-events-none opacity-30">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500 rounded-full blur-3xl animate-float"></div>
@@ -439,6 +441,7 @@ export default function StoryModePage() {
           </p>
         </div>
       </div>
-    </div>
+      </div>
+    </PageTransition>
   )
 }

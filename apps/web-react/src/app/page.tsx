@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { IdleRewardsModal } from '@/components/idle/IdleRewardsModal'
+import { PageTransition } from '@/components/transitions/PageTransition'
 import {
   calculateIdleRewards,
   clearIdleProgress,
@@ -144,7 +145,8 @@ export default function Home() {
         />
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 overflow-hidden">
+      <PageTransition>
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 overflow-hidden">
       {/* Animated Background Stars */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-starTwinkle opacity-60"></div>
@@ -333,7 +335,8 @@ export default function Home() {
           </p>
         </div>
       </div>
-    </div>
+        </div>
+      </PageTransition>
     </>
   )
 }
