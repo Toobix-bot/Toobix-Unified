@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { QuestDialog, Quest as QuestType } from '@/components/story/QuestDialog'
 import { PageTransition } from '@/components/transitions/PageTransition'
+import { ConfettiEffect } from '@/components/effects/ParticleEffect'
 import { bridgeClient } from '@/lib/bridge-client'
 import {
   Home,
@@ -66,6 +67,7 @@ export default function StoryModePage() {
   const [error, setError] = useState<string | null>(null)
   const [activeQuest, setActiveQuest] = useState<QuestType | null>(null)
   const [isChoosingOption, setIsChoosingOption] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
   const isMountedRef = useRef(true)
 
   const [player, setPlayer] = useState<PlayerStats>({
@@ -164,6 +166,11 @@ export default function StoryModePage() {
     setIsChoosingOption(true)
     try {
       await bridgeClient.chooseStoryOption(choiceId)
+
+      // Trigger confetti celebration
+      setShowConfetti(true)
+      setTimeout(() => setShowConfetti(false), 3000) // Hide after 3s
+
       await new Promise(resolve => setTimeout(resolve, 1000)) // Visual feedback delay
       await loadStory()
       setActiveQuest(null) // Clear quest after choice
@@ -230,8 +237,12 @@ export default function StoryModePage() {
   }
 
   return (
-    <PageTransition>
-      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-purple-950 relative overflow-hidden">
+    <>
+      {/* Confetti Effect on Quest Completion */}
+      <ConfettiEffect trigger={showConfetti} />
+
+      <PageTransition>
+        <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-purple-950 relative overflow-hidden">
       {/* Animated Background */}
       <div className="fixed inset-0 pointer-events-none opacity-30">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500 rounded-full blur-3xl animate-float"></div>
@@ -441,7 +452,8 @@ export default function StoryModePage() {
           </p>
         </div>
       </div>
-      </div>
-    </PageTransition>
+        </div>
+      </PageTransition>
+    </>
   )
 }

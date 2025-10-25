@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { IdleRewardsModal } from '@/components/idle/IdleRewardsModal'
 import { PageTransition } from '@/components/transitions/PageTransition'
+import { SparkleEffect } from '@/components/effects/ParticleEffect'
 import {
   calculateIdleRewards,
   clearIdleProgress,
@@ -144,6 +145,9 @@ export default function Home() {
           welcomeMessage={idleRewardsData.welcomeMessage}
         />
       )}
+
+      {/* Continuous Sparkle Effect */}
+      <SparkleEffect />
 
       <PageTransition>
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 overflow-hidden">
