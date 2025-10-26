@@ -12,6 +12,7 @@ import { AchievementNotification } from '@/components/achievements/AchievementNo
 import { LevelUpModal } from '@/components/level/LevelUpModal'
 import { DailyQuestCard } from '@/components/daily-quests/DailyQuestCard'
 import { LunaToast } from '@/components/luna/LunaToast'
+import { XPGainEffect } from '@/components/effects/XPGainEffect'
 import { useSound } from '@/lib/sounds/useSound'
 import { useAchievements, useAchievementTracking } from '@/lib/achievements/useAchievements'
 import { useLevelUp } from '@/lib/level/useLevelUp'
@@ -76,6 +77,8 @@ export default function StoryModePage() {
   const [isChoosingOption, setIsChoosingOption] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [lunaMessage, setLunaMessage] = useState<string | null>(null)
+  const [showXPGain, setShowXPGain] = useState(false)
+  const [xpGained, setXpGained] = useState(0)
   const isMountedRef = useRef(true)
 
   // Sound effects
@@ -207,6 +210,12 @@ export default function StoryModePage() {
       // Update stats for achievement tracking
       updateStats(player.stats)
 
+      // Show XP Gain Animation
+      if (response.xpGained > 0) {
+        setXpGained(response.xpGained)
+        setShowXPGain(true)
+      }
+
       // Show Luna's response as a toast
       if (response.lunaResponse) {
         setLunaMessage(response.lunaResponse)
@@ -302,6 +311,14 @@ export default function StoryModePage() {
         <LunaToast
           message={lunaMessage}
           onClose={() => setLunaMessage(null)}
+        />
+      )}
+
+      {/* XP Gain Animation */}
+      {showXPGain && (
+        <XPGainEffect
+          amount={xpGained}
+          onComplete={() => setShowXPGain(false)}
         />
       )}
 

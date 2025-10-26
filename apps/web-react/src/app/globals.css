@@ -391,3 +391,32 @@
 .animate-shrink {
   animation: shrink linear forwards;
 }
+
+/* XP Gain Animations */
+@keyframes particle-burst {
+  0% {
+    transform: translate(-50%, -50%) translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translateX(100px) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-particle-burst {
+  animation: particle-burst 0.8s ease-out forwards;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
