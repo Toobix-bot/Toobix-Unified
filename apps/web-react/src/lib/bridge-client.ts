@@ -1,10 +1,11 @@
 /**
  * Bridge Client for Backend Communication
  *
- * Connects the React frontend with the Node.js backend (http://localhost:3337)
+ * Connects the React frontend with the Node.js backend (http://localhost:3004)
+ * Story-Idle API running via Eternal Daemon
  */
 
-const BACKEND_URL = 'http://localhost:3337'
+const BACKEND_URL = 'http://localhost:3004'
 
 interface StoryState {
   epoch: string

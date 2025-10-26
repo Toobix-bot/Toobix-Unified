@@ -9,6 +9,7 @@
  * - Building upgrades
  * - Mini-game access
  * - Git commit integration
+ * - Story Engine Integration (NEW)
  *
  * Port: 3004
  *
@@ -299,6 +300,101 @@ class StoryIdleAPIServer {
             return new Response(JSON.stringify({
               story: state.story,
               philosophy: 'Die Geschichte entfaltet sich in diesem Moment'
+            }, null, 2), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+
+          // GET /story/state - Story state for frontend (bridge-client compatible)
+          if (url.pathname === '/story/state') {
+            const state = self.gameState.getState()
+            const player = self.gameState.getPlayer()
+            const stats = self.gameState.getStats()
+
+            // Map game state to story state format expected by frontend
+            const companions = Array.isArray(state.characters)
+              ? state.characters.map((c: any) => ({ name: c.name }))
+              : []
+
+            return new Response(JSON.stringify({
+              epoch: state.story?.chapter || 'Chapter 1',
+              arc: state.story?.arc || 'The Beginning',
+              mood: self.luna.getState().currentMood || 'curious',
+              resources: {
+                level: player.level,
+                erfahrung: player.xp,
+                mut: stats.courage || 5,
+                wissen: stats.wisdom || 5,
+                bewusstsein: stats.consciousness || 5,
+                stabilitaet: stats.stability || 5,
+                inspiration: stats.creativity || 5
+              },
+              companions,
+              buffs: Array.isArray(state.buffs) ? state.buffs : [],
+              options: [] // Will be filled by /story/refresh
+            }, null, 2), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+
+          // GET /story/events - Recent story events
+          if (url.pathname === '/story/events') {
+            const limit = parseInt(url.searchParams.get('limit') || '10')
+            const state = self.gameState.getState()
+
+            // Get recent events from story log or create sample events
+            const events = (state.story?.events || []).slice(-limit).map((event: any, index: number) => ({
+              id: index,
+              timestamp: event.timestamp || new Date().toISOString(),
+              type: event.type || 'story',
+              label: event.label || event.title,
+              description: event.description,
+              effects: event.effects || {}
+            }))
+
+            return new Response(JSON.stringify({
+              events
+            }, null, 2), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+
+          // POST /story/choose - Choose a story option
+          if (url.pathname === '/story/choose' && req.method === 'POST') {
+            const { option } = await req.json()
+
+            // Process the choice - award XP, change stats, etc.
+            const xpGain = 20
+            self.gameState.addXP(xpGain, `Story choice: ${option}`)
+
+            // Award random stat bonuses
+            const statNames = ['courage', 'wisdom', 'consciousness', 'stability', 'creativity']
+            const randomStat = statNames[Math.floor(Math.random() * statNames.length)]
+            self.gameState.addStat(randomStat, 3)
+
+            // Luna reacts
+            const lunaResponse = await self.luna.reactToEvent('story-choice', { choice: option })
+
+            // Save state
+            self.gameState.saveState()
+
+            return new Response(JSON.stringify({
+              success: true,
+              xpGained: xpGain,
+              lunaResponse,
+              message: 'Choice processed successfully'
+            }, null, 2), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+
+          // POST /story/refresh - Generate new story options (placeholder for now)
+          if (url.pathname === '/story/refresh' && req.method === 'POST') {
+            // For now, just acknowledge - can be extended with AI generation later
+            return new Response(JSON.stringify({
+              success: true,
+              message: 'Story options refreshed',
+              philosophy: 'Neue Möglichkeiten entstehen in diesem Moment'
             }, null, 2), {
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             })
