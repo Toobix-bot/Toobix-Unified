@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { BlockWorldPanel } from '@/components/autonomous/BlockWorldPanel'
 import { PageTransition } from '@/components/transitions/PageTransition'
+import { useAchievementTracking } from '@/lib/achievements/useAchievements'
 import {
   Home,
   Zap,
@@ -77,7 +78,13 @@ export default function WorldPage() {
   const [isStatsExpanded, setIsStatsExpanded] = useState(true)
   const [isQuestExpanded, setIsQuestExpanded] = useState(true)
 
+  // Achievement tracking
+  const { visitPage } = useAchievementTracking()
+
   useEffect(() => {
+    // Track page visit
+    visitPage('world')
+
     // Load player stats from API
     const loadPlayerStats = async () => {
       try {

@@ -8,7 +8,9 @@ import { Progress } from '@/components/ui/progress'
 import { QuestDialog, Quest as QuestType } from '@/components/story/QuestDialog'
 import { PageTransition } from '@/components/transitions/PageTransition'
 import { ConfettiEffect } from '@/components/effects/ParticleEffect'
+import { AchievementNotification } from '@/components/achievements/AchievementNotification'
 import { useSound } from '@/lib/sounds/useSound'
+import { useAchievements, useAchievementTracking } from '@/lib/achievements/useAchievements'
 import { bridgeClient } from '@/lib/bridge-client'
 import {
   Home,
@@ -75,6 +77,10 @@ export default function StoryModePage() {
   const { play: playQuestComplete } = useSound('quest-complete')
   const { play: playClick } = useSound('click')
   const { play: playSuccess } = useSound('success')
+
+  // Achievement System
+  const { newAchievement, dismissNewAchievement } = useAchievements()
+  const { questCompleted, visitPage, updateStats, levelUp } = useAchievementTracking()
 
   const [player, setPlayer] = useState<PlayerStats>({
     level: 1,
@@ -176,6 +182,17 @@ export default function StoryModePage() {
 
       await bridgeClient.chooseStoryOption(choiceId)
 
+      // Track quest completion for achievements
+      const choice = activeQuest?.choices.find(c => c.id === choiceId)
+      if (choice?.effects.stat) {
+        questCompleted(choice.effects.stat)
+      } else {
+        questCompleted()
+      }
+
+      // Update stats for achievement tracking
+      updateStats(player.stats)
+
       // Trigger confetti celebration + quest complete sound
       setShowConfetti(true)
       playQuestComplete()
@@ -209,13 +226,16 @@ export default function StoryModePage() {
     isMountedRef.current = true
     loadStory()
 
+    // Track page visit for achievement
+    visitPage('story')
+
     const interval = setInterval(loadStory, 30000)
 
     return () => {
       isMountedRef.current = false
       clearInterval(interval)
     }
-  }, [loadStory])
+  }, [loadStory, visitPage])
 
   const xpPercent = Math.min(100, (player.xp / player.xpToNext) * 100)
   const companions = Array.isArray(state?.companions) ? state.companions : []
@@ -251,6 +271,12 @@ export default function StoryModePage() {
     <>
       {/* Confetti Effect on Quest Completion */}
       <ConfettiEffect trigger={showConfetti} />
+
+      {/* Achievement Notification */}
+      <AchievementNotification
+        achievement={newAchievement}
+        onDismiss={dismissNewAchievement}
+      />
 
       <PageTransition>
         <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-purple-950 relative overflow-hidden">

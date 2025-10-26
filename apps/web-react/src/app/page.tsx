@@ -9,6 +9,8 @@ import { Progress } from '@/components/ui/progress'
 import { IdleRewardsModal } from '@/components/idle/IdleRewardsModal'
 import { PageTransition } from '@/components/transitions/PageTransition'
 import { SparkleEffect } from '@/components/effects/ParticleEffect'
+import { AchievementNotification } from '@/components/achievements/AchievementNotification'
+import { useAchievements } from '@/lib/achievements/useAchievements'
 import {
   calculateIdleRewards,
   clearIdleProgress,
@@ -57,6 +59,9 @@ export default function Home() {
     rewards: Array<{ icon: string; text: string; value: number | string }>
     welcomeMessage: string
   } | null>(null)
+
+  // Achievement System
+  const { newAchievement, dismissNewAchievement } = useAchievements()
 
   useEffect(() => {
     // Check for idle rewards on mount
@@ -145,6 +150,12 @@ export default function Home() {
           welcomeMessage={idleRewardsData.welcomeMessage}
         />
       )}
+
+      {/* Achievement Notification */}
+      <AchievementNotification
+        achievement={newAchievement}
+        onDismiss={dismissNewAchievement}
+      />
 
       {/* Continuous Sparkle Effect */}
       <SparkleEffect />
