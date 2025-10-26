@@ -10,6 +10,7 @@ import { PageTransition } from '@/components/transitions/PageTransition'
 import { ConfettiEffect } from '@/components/effects/ParticleEffect'
 import { AchievementNotification } from '@/components/achievements/AchievementNotification'
 import { LevelUpModal } from '@/components/level/LevelUpModal'
+import { DailyQuestCard } from '@/components/daily-quests/DailyQuestCard'
 import { useSound } from '@/lib/sounds/useSound'
 import { useAchievements, useAchievementTracking } from '@/lib/achievements/useAchievements'
 import { useLevelUp } from '@/lib/level/useLevelUp'
@@ -384,6 +385,13 @@ export default function StoryModePage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Daily Quest Card */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <DailyQuestCard onComplete={() => {
+            loadStory() // Refresh story state after completing daily quest
+          }} />
+        </div>
 
         {/* Main Content Area */}
         <div className="max-w-4xl mx-auto space-y-8">
