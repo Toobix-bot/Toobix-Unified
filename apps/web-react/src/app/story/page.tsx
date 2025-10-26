@@ -11,6 +11,7 @@ import { ConfettiEffect } from '@/components/effects/ParticleEffect'
 import { AchievementNotification } from '@/components/achievements/AchievementNotification'
 import { LevelUpModal } from '@/components/level/LevelUpModal'
 import { DailyQuestCard } from '@/components/daily-quests/DailyQuestCard'
+import { LunaToast } from '@/components/luna/LunaToast'
 import { useSound } from '@/lib/sounds/useSound'
 import { useAchievements, useAchievementTracking } from '@/lib/achievements/useAchievements'
 import { useLevelUp } from '@/lib/level/useLevelUp'
@@ -74,6 +75,7 @@ export default function StoryModePage() {
   const [activeQuest, setActiveQuest] = useState<QuestType | null>(null)
   const [isChoosingOption, setIsChoosingOption] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [lunaMessage, setLunaMessage] = useState<string | null>(null)
   const isMountedRef = useRef(true)
 
   // Sound effects
@@ -205,10 +207,9 @@ export default function StoryModePage() {
       // Update stats for achievement tracking
       updateStats(player.stats)
 
-      // Show Luna's response as a toast/notification
+      // Show Luna's response as a toast
       if (response.lunaResponse) {
-        console.log('🌙 Luna:', response.lunaResponse)
-        // TODO: Add toast notification for Luna response
+        setLunaMessage(response.lunaResponse)
       }
 
       // Trigger confetti celebration + quest complete sound
@@ -295,6 +296,14 @@ export default function StoryModePage() {
         achievement={newAchievement}
         onDismiss={dismissNewAchievement}
       />
+
+      {/* Luna Toast */}
+      {lunaMessage && (
+        <LunaToast
+          message={lunaMessage}
+          onClose={() => setLunaMessage(null)}
+        />
+      )}
 
       {/* Level Up Modal */}
       {levelUpData && (
