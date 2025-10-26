@@ -9,8 +9,10 @@ import { QuestDialog, Quest as QuestType } from '@/components/story/QuestDialog'
 import { PageTransition } from '@/components/transitions/PageTransition'
 import { ConfettiEffect } from '@/components/effects/ParticleEffect'
 import { AchievementNotification } from '@/components/achievements/AchievementNotification'
+import { LevelUpModal } from '@/components/level/LevelUpModal'
 import { useSound } from '@/lib/sounds/useSound'
 import { useAchievements, useAchievementTracking } from '@/lib/achievements/useAchievements'
+import { useLevelUp } from '@/lib/level/useLevelUp'
 import { bridgeClient } from '@/lib/bridge-client'
 import {
   Home,
@@ -82,6 +84,9 @@ export default function StoryModePage() {
   const { newAchievement, dismissNewAchievement } = useAchievements()
   const { questCompleted, visitPage, updateStats, levelUp } = useAchievementTracking()
 
+  // Level-Up System
+  const { showLevelUpModal, levelUpData, checkLevelUp, closeLevelUpModal } = useLevelUp()
+
   const [player, setPlayer] = useState<PlayerStats>({
     level: 1,
     xp: 0,
@@ -114,11 +119,14 @@ export default function StoryModePage() {
 
         // Update player stats from story state
         const resources = storyState.resources || {}
+        const newXp = resources.erfahrung || 0
+        const currentLevel = resources.level || 1
+
         setPlayer(prev => ({
           ...prev,
-          level: resources.level || 1,
-          xp: resources.erfahrung || 0,
-          xpToNext: (resources.level || 1) * 100,
+          level: currentLevel,
+          xp: newXp,
+          xpToNext: (currentLevel + 1) * 100,
           stats: {
             mut: resources.mut || prev.stats.mut,
             weisheit: resources.wissen || prev.stats.weisheit,
@@ -127,6 +135,9 @@ export default function StoryModePage() {
             liebe: resources.inspiration || prev.stats.liebe
           }
         }))
+
+        // Check for level up
+        checkLevelUp(newXp, currentLevel)
 
         // Convert story options to quest format
         if (storyState.options && storyState.options.length > 0) {
@@ -142,7 +153,7 @@ export default function StoryModePage() {
         setLoading(false)
       }
     }
-  }, [])
+  }, [checkLevelUp])
 
   // Convert story options to quest format
   const convertOptionsToQuest = (storyState: StoryState) => {
@@ -277,6 +288,15 @@ export default function StoryModePage() {
         achievement={newAchievement}
         onDismiss={dismissNewAchievement}
       />
+
+      {/* Level Up Modal */}
+      {levelUpData && (
+        <LevelUpModal
+          isOpen={showLevelUpModal}
+          onClose={closeLevelUpModal}
+          levelUpData={levelUpData}
+        />
+      )}
 
       <PageTransition>
         <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-950 to-purple-950 relative overflow-hidden">
