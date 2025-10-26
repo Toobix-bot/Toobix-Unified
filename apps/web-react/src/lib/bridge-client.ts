@@ -92,7 +92,19 @@ class BridgeClient {
   /**
    * Choose a story option
    */
-  async chooseStoryOption(optionId: string): Promise<void> {
+  async chooseStoryOption(optionId: string): Promise<{
+    success: boolean
+    xpGained: number
+    leveledUp: boolean
+    newLevel: number
+    lunaResponse: string
+    newOptions: Array<{
+      id: string
+      label: string
+      rationale?: string
+      expected?: Record<string, number>
+    }>
+  }> {
     try {
       const response = await fetch(`${this.baseUrl}/story/choose`, {
         method: 'POST',
@@ -104,6 +116,7 @@ class BridgeClient {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
+      return await response.json()
     } catch (error) {
       console.error('Failed to choose story option:', error)
       throw error

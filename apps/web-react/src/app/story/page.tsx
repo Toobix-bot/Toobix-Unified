@@ -192,7 +192,7 @@ export default function StoryModePage() {
       // Play initial click sound
       playClick()
 
-      await bridgeClient.chooseStoryOption(choiceId)
+      const response = await bridgeClient.chooseStoryOption(choiceId)
 
       // Track quest completion for achievements
       const choice = activeQuest?.choices.find(c => c.id === choiceId)
@@ -204,6 +204,12 @@ export default function StoryModePage() {
 
       // Update stats for achievement tracking
       updateStats(player.stats)
+
+      // Show Luna's response as a toast/notification
+      if (response.lunaResponse) {
+        console.log('🌙 Luna:', response.lunaResponse)
+        // TODO: Add toast notification for Luna response
+      }
 
       // Trigger confetti celebration + quest complete sound
       setShowConfetti(true)
