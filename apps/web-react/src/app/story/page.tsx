@@ -434,6 +434,11 @@ export default function StoryModePage() {
                   <Sparkles className="w-5 h-5 mr-2" />
                   {loading ? 'Lädt...' : 'Neue Quest generieren'}
                 </Button>
+                <div className="mt-4">
+                  <Badge variant="outline" className="text-xs text-purple-300/60 border-purple-500/30">
+                    ✨ AI-Generated with Groq
+                  </Badge>
+                </div>
               </CardContent>
             </Card>
           )}
