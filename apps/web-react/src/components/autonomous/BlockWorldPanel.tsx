@@ -26,13 +26,13 @@ export function BlockWorldPanel() {
 
   const fetchStatus = async () => {
     try {
-      const response = await fetch('http://localhost:9990/status')
+      const response = await fetch('http://localhost:9990/status', { signal: AbortSignal.timeout(2000) })
       if (response.ok) {
         const data = await response.json()
         setStatus(data)
       }
     } catch (error) {
-      console.error('Failed to fetch BlockBot status:', error)
+      // Service offline - silently fail
     } finally {
       setLoading(false)
     }
@@ -40,19 +40,19 @@ export function BlockWorldPanel() {
 
   const startBot = async () => {
     try {
-      await fetch('http://localhost:9990/start', { method: 'POST' })
+      await fetch('http://localhost:9990/start', { method: 'POST', signal: AbortSignal.timeout(2000) })
       setTimeout(fetchStatus, 1000)
     } catch (error) {
-      console.error('Failed to start bot:', error)
+      // Service offline - silently fail
     }
   }
 
   const stopBot = async () => {
     try {
-      await fetch('http://localhost:9990/stop', { method: 'POST' })
+      await fetch('http://localhost:9990/stop', { method: 'POST', signal: AbortSignal.timeout(2000) })
       setTimeout(fetchStatus, 1000)
     } catch (error) {
-      console.error('Failed to stop bot:', error)
+      // Service offline - silently fail
     }
   }
 

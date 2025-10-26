@@ -18,6 +18,7 @@ import {
   idleManager
 } from '@/lib/idle/idle-progression'
 import { Gamepad2, Zap, Heart, Book, Users, Sparkles, Settings } from 'lucide-react'
+import { bridgeClient } from '@/lib/bridge-client'
 
 interface PlayerStats {
   name: string
@@ -109,25 +110,22 @@ export default function Home() {
     // Load player stats from API
     const loadPlayerStats = async () => {
       try {
-        const response = await fetch('http://localhost:3337/story/state')
-        if (response.ok) {
-          const data = await response.json()
-          const resources = data.resources || {}
-          setPlayer(prev => ({
-            ...prev,
-            level: resources.level || 1,
-            xp: resources.erfahrung || 0,
-            xpToNext: (resources.level || 1) * 100,
-            currentArc: data.arc || 'Das Erwachen',
-            stats: {
-              mut: resources.mut || prev.stats.mut,
-              weisheit: resources.wissen || prev.stats.weisheit,
-              bewusstsein: resources.bewusstsein || prev.stats.bewusstsein,
-              frieden: resources.stabilitaet || prev.stats.frieden,
-              liebe: resources.inspiration || prev.stats.liebe
-            }
-          }))
-        }
+        const data = await bridgeClient.getStoryState()
+        const resources = data.resources || {}
+        setPlayer(prev => ({
+          ...prev,
+          level: resources.level || 1,
+          xp: resources.erfahrung || 0,
+          xpToNext: (resources.level || 1) * 100,
+          currentArc: data.arc || 'Das Erwachen',
+          stats: {
+            mut: resources.mut || prev.stats.mut,
+            weisheit: resources.wissen || prev.stats.weisheit,
+            bewusstsein: resources.bewusstsein || prev.stats.bewusstsein,
+            frieden: resources.stabilitaet || prev.stats.frieden,
+            liebe: resources.inspiration || prev.stats.liebe
+          }
+        }))
       } catch (error) {
         console.error('Failed to load player stats:', error)
       }
@@ -240,103 +238,59 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Main Game Entrance */}
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Primary: Enter BlockWorld */}
-          <Card
-            className="bg-gradient-to-r from-green-600 to-emerald-600 border-0 shadow-2xl animate-fadeInUp delay-400 hover-lift hover-glow cursor-pointer"
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-          >
-            <CardContent className="p-12 text-center">
-              <div className="text-7xl mb-6 animate-bounce">🎮</div>
-              <h2 className="text-4xl font-bold text-white mb-4">
-                BlockWorld betreten
-              </h2>
-              <p className="text-xl text-green-100 mb-8">
-                Deine 3D-Welt wartet. Der BlockBot AI Agent hat {Math.floor(Math.random() * 50) + 10} neue Ressourcen gesammelt.
-              </p>
-              <Link href="/world">
-                <Button
-                  size="lg"
-                  className="text-2xl px-12 py-8 bg-white text-green-700 hover:bg-green-50 font-bold shadow-xl"
-                >
-                  <Gamepad2 className="w-8 h-8 mr-3" />
-                  Welt Betreten
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+        {/* Quick Actions - Clean & Simple */}
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-2xl font-bold text-purple-200 mb-6 text-center">🎯 Quick Actions</h2>
 
-          {/* Secondary Options Grid */}
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Story Mode */}
+            {/* Story Mode - Primary */}
             <Link href="/story">
-              <Card className="bg-gradient-to-br from-purple-600/90 to-pink-600/90 border-purple-400/30 hover:scale-105 transition-transform cursor-pointer h-full animate-fadeInUp delay-500 hover-lift">
-                <CardContent className="p-8 text-center text-white">
-                  <div className="text-5xl mb-4">📖</div>
-                  <h3 className="text-2xl font-bold mb-3">Story Mode</h3>
-                  <p className="text-purple-100 mb-4">
-                    Epische Quests, Companions & Progression
-                  </p>
-                  <Badge variant="secondary" className="bg-purple-800/50 text-purple-100">
-                    <Book className="w-4 h-4 mr-2 inline" />
-                    {player.currentArc}
-                  </Badge>
+              <Card className="bg-gradient-to-br from-purple-600/90 to-pink-600/90 border-purple-400/30 hover:scale-105 transition-all cursor-pointer h-full animate-fadeInUp hover-lift hover-glow">
+                <CardContent className="p-8">
+                  <div className="flex items-start gap-4">
+                    <div className="text-5xl">📖</div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-white mb-2">Story Mode</h3>
+                      <p className="text-purple-100 mb-3">
+                        AI-generated Quests mit Luna
+                      </p>
+                      <Badge variant="secondary" className="bg-purple-800/50 text-purple-100">
+                        <Book className="w-4 h-4 mr-2 inline" />
+                        {player.currentArc}
+                      </Badge>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </Link>
 
-            {/* People */}
-            <Link href="/people">
-              <Card className="bg-gradient-to-br from-blue-600/90 to-cyan-600/90 border-blue-400/30 hover:scale-105 transition-transform cursor-pointer h-full animate-fadeInUp delay-500 hover-lift">
-                <CardContent className="p-8 text-center text-white">
-                  <div className="text-5xl mb-4">👥</div>
-                  <h3 className="text-2xl font-bold mb-3">Menschen</h3>
-                  <p className="text-blue-100 mb-4">
-                    Beziehungen, Circles & Momente
-                  </p>
-                  <Badge variant="secondary" className="bg-blue-800/50 text-blue-100">
-                    <Users className="w-4 h-4 mr-2 inline" />
-                    0 Verbindungen
-                  </Badge>
+            {/* BlockWorld - Primary */}
+            <Link href="/world">
+              <Card className="bg-gradient-to-br from-green-600/90 to-emerald-600/90 border-green-400/30 hover:scale-105 transition-all cursor-pointer h-full animate-fadeInUp hover-lift hover-glow">
+                <CardContent className="p-8">
+                  <div className="flex items-start gap-4">
+                    <div className="text-5xl">🎮</div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-white mb-2">BlockWorld</h3>
+                      <p className="text-green-100 mb-3">
+                        Deine 3D-Welt erkunden
+                      </p>
+                      <Badge variant="secondary" className="bg-green-800/50 text-green-100">
+                        <Gamepad2 className="w-4 h-4 mr-2 inline" />
+                        3D Universe
+                      </Badge>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </Link>
+          </div>
 
-            {/* Love & Peace */}
-            <Link href="/unified">
-              <Card className="bg-gradient-to-br from-pink-600/90 to-rose-600/90 border-pink-400/30 hover:scale-105 transition-transform cursor-pointer h-full animate-fadeInUp delay-500 hover-lift">
-                <CardContent className="p-8 text-center text-white">
-                  <div className="text-5xl mb-4">💝</div>
-                  <h3 className="text-2xl font-bold mb-3">Love & Peace</h3>
-                  <p className="text-pink-100 mb-4">
-                    Dankbarkeit, Acts of Kindness & Harmonie
-                  </p>
-                  <Badge variant="secondary" className="bg-pink-800/50 text-pink-100">
-                    <Heart className="w-4 h-4 mr-2 inline" />
-                    87 Love Points
-                  </Badge>
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* Systems (Debug) */}
-            <Link href="/autonomous">
-              <Card className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 border-slate-500/30 hover:scale-105 transition-transform cursor-pointer h-full animate-fadeInUp delay-500 hover-lift">
-                <CardContent className="p-8 text-center text-white">
-                  <div className="text-5xl mb-4">⚙️</div>
-                  <h3 className="text-2xl font-bold mb-3">Systems</h3>
-                  <p className="text-slate-300 mb-4">
-                    Autonomous, Consciousness & Tools
-                  </p>
-                  <Badge variant="secondary" className="bg-slate-600/50 text-slate-200">
-                    <Settings className="w-4 h-4 mr-2 inline" />
-                    Debug Mode
-                  </Badge>
-                </CardContent>
-              </Card>
-            </Link>
+          {/* System Info */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-purple-300/60">
+              Nutze die Sidebar links für weitere Features
+            </p>
           </div>
         </div>
 

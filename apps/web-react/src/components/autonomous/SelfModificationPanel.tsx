@@ -51,7 +51,7 @@ export function SelfModificationPanel() {
 
   const fetchSession = async () => {
     try {
-      const response = await fetch('http://localhost:3337/evolution-session')
+      const response = await fetch('http://localhost:9999/evolution-session', { signal: AbortSignal.timeout(2000) })
       if (response.ok) {
         const data = await response.json()
         setSessionLog(data)
@@ -59,13 +59,13 @@ export function SelfModificationPanel() {
     } catch (error) {
       // Try local file as fallback
       try {
-        const fileResponse = await fetch('/api/read-evolution')
+        const fileResponse = await fetch('/api/read-evolution', { signal: AbortSignal.timeout(2000) })
         if (fileResponse.ok) {
           const data = await fileResponse.json()
           setSessionLog(data)
         }
       } catch (err) {
-        console.error('Failed to fetch session:', err)
+        // Service offline - silently fail
       }
     } finally {
       setLoading(false)

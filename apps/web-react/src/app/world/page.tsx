@@ -23,6 +23,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 import Link from 'next/link'
+import { bridgeClient } from '@/lib/bridge-client'
 
 interface PlayerStats {
   level: number
@@ -88,25 +89,22 @@ export default function WorldPage() {
     // Load player stats from API
     const loadPlayerStats = async () => {
       try {
-        const response = await fetch('http://localhost:3337/story/state')
-        if (response.ok) {
-          const data = await response.json()
-          const resources = data.resources || {}
-          setPlayer(prev => ({
-            ...prev,
-            level: resources.level || 1,
-            xp: resources.erfahrung || 0,
-            xpToNext: (resources.level || 1) * 100,
-            currentArc: data.arc || 'Das Erwachen',
-            stats: {
-              mut: resources.mut || prev.stats.mut,
-              weisheit: resources.wissen || prev.stats.weisheit,
-              bewusstsein: resources.bewusstsein || prev.stats.bewusstsein,
-              frieden: resources.stabilitaet || prev.stats.frieden,
-              liebe: resources.inspiration || prev.stats.liebe
-            }
-          }))
-        }
+        const data = await bridgeClient.getStoryState()
+        const resources = data.resources || {}
+        setPlayer(prev => ({
+          ...prev,
+          level: resources.level || 1,
+          xp: resources.erfahrung || 0,
+          xpToNext: (resources.level || 1) * 100,
+          currentArc: data.arc || 'Das Erwachen',
+          stats: {
+            mut: resources.mut || prev.stats.mut,
+            weisheit: resources.wissen || prev.stats.weisheit,
+            bewusstsein: resources.bewusstsein || prev.stats.bewusstsein,
+            frieden: resources.stabilitaet || prev.stats.frieden,
+            liebe: resources.inspiration || prev.stats.liebe
+          }
+        }))
       } catch (error) {
         console.error('Failed to load player stats:', error)
       }

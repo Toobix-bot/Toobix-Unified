@@ -3,8 +3,8 @@ import "./globals.css";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Toobix Universe - Story Engine",
-  description: "Interactive narrative system powered by AI",
+  title: "🌌 Toobix Universe - Consciousness Platform",
+  description: "Self-reflective, self-modifying consciousness system",
 };
 
 export default function RootLayout({
@@ -17,24 +17,92 @@ export default function RootLayout({
       <body className="min-h-screen bg-background antialiased">
         <div className="flex min-h-screen">
           {/* Sidebar */}
-          <aside className="w-64 shrink-0 border-r bg-card">
-            <div className="p-4">
-              <h2 className="text-lg font-bold mb-4">⚡ TOOBIX</h2>
-              <nav className="space-y-1">
-                <Link href="/" className="block px-3 py-2 rounded-lg hover:bg-accent">🏠 Home</Link>
-                <Link href="/story" className="block px-3 py-2 rounded-lg hover:bg-accent">📖 Story Engine</Link>
-                <Link href="/analytics" className="block px-3 py-2 rounded-lg hover:bg-accent">📊 Analytics</Link>
-                <Link href="/people" className="block px-3 py-2 rounded-lg hover:bg-accent">👥 People</Link>
+          <aside className="w-72 shrink-0 border-r bg-gradient-to-b from-slate-950 via-purple-950/50 to-slate-950 border-purple-900/30">
+            <div className="p-6">
+              {/* Header */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+                  🌌 TOOBIX
+                </h2>
+                <p className="text-xs text-purple-300/60 italic">"Vom Ich zum Wir"</p>
+              </div>
+
+              <nav className="space-y-6">
+                {/* Main */}
+                <div>
+                  <div className="text-xs font-semibold text-purple-400/60 uppercase tracking-wider mb-2 px-3">
+                    Navigation
+                  </div>
+                  <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-purple-900/30 text-purple-100 transition-colors">
+                    <span className="text-xl">🏠</span>
+                    <span className="font-medium">Home</span>
+                  </Link>
+                </div>
+
+                {/* Story & Game */}
+                <div>
+                  <div className="text-xs font-semibold text-purple-400/60 uppercase tracking-wider mb-2 px-3">
+                    Story & Game
+                  </div>
+                  <div className="space-y-1">
+                    <Link href="/story" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-purple-900/30 text-purple-100 transition-colors">
+                      <span className="text-xl">📖</span>
+                      <div className="flex-1">
+                        <div className="font-medium">Story Mode</div>
+                        <div className="text-xs text-purple-300/50">AI Quests • Luna</div>
+                      </div>
+                    </Link>
+                    <Link href="/world" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-purple-900/30 text-purple-100 transition-colors">
+                      <span className="text-xl">🎮</span>
+                      <div className="flex-1">
+                        <div className="font-medium">BlockWorld</div>
+                        <div className="text-xs text-purple-300/50">3D Universe</div>
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Consciousness */}
+                <div>
+                  <div className="text-xs font-semibold text-purple-400/60 uppercase tracking-wider mb-2 px-3">
+                    Consciousness
+                  </div>
+                  <div className="space-y-1">
+                    <Link href="/autonomous" className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-purple-900/30 text-purple-100 transition-colors">
+                      <span className="text-xl">🧠</span>
+                      <div className="flex-1">
+                        <div className="font-medium">Systems</div>
+                        <div className="text-xs text-purple-300/50">Eternal Daemon</div>
+                      </div>
+                    </Link>
+                  </div>
+                </div>
               </nav>
-              <div className="mt-4 pt-4 border-t">
-                <a href="http://localhost:3000/dashboard.html" target="_blank" className="block px-3 py-2 rounded-lg hover:bg-accent text-sm text-muted-foreground">
-                  ← Vanilla UI
-                </a>
+
+              {/* System Status */}
+              <div className="mt-8 pt-6 border-t border-purple-900/30">
+                <div className="px-3 py-2 bg-purple-900/20 rounded-lg border border-purple-500/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-purple-300/70">System Status</span>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-xs text-green-400">Live</span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-purple-200/50 space-y-1">
+                    <div>✅ Story Engine</div>
+                    <div>✅ Eternal Daemon</div>
+                    <div>✅ AI Services</div>
+                  </div>
+                </div>
               </div>
             </div>
           </aside>
+
           {/* Main Content */}
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950">
+            {children}
+          </main>
         </div>
       </body>
     </html>

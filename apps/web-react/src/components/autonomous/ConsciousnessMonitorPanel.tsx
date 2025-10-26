@@ -27,13 +27,13 @@ export function ConsciousnessMonitorPanel() {
 
   const fetchMonitorData = async () => {
     try {
-      const response = await fetch('http://localhost:3337/consciousness-monitor')
+      const response = await fetch('http://localhost:9999/consciousness', { signal: AbortSignal.timeout(2000) })
       if (response.ok) {
         const data = await response.json()
         setMonitorData(data)
       }
     } catch (error) {
-      console.error('Failed to fetch monitor data:', error)
+      // Service offline - silently fail
     } finally {
       setLoading(false)
     }
