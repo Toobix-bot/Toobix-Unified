@@ -8,6 +8,7 @@ const services = [
   { id: 'daemon', port: 9999 },
   { id: 'port-manager', port: 9988 },
   { id: 'service-consciousness', port: 9989 },
+  { id: 'groq-api', port: 9987 },
   { id: 'blockworld-ai', port: 9990 },
   { id: 'expression', port: 9991 },
   { id: 'reality-integration', port: 9992 },
@@ -20,6 +21,7 @@ const services = [
   { id: 'bridge', port: 3337 },
   { id: 'ai-sandbox', port: 3003 },
   { id: 'story-idle', port: 3004 },
+  { id: 'life-game-chat', port: 3005 },
 ]
 
 async function checkHealth(port: number): Promise<{ ok: boolean; data?: any; error?: string; ms: number }>{
@@ -27,10 +29,10 @@ async function checkHealth(port: number): Promise<{ ok: boolean; data?: any; err
   const timeout = setTimeout(() => controller.abort(), 800)
   const started = performance.now()
   try {
-    const res = await fetch(http://localhost:/health, { signal: controller.signal })
+    const res = await fetch(`http://localhost:${port}/health`, { signal: controller.signal })
     const ms = Math.round(performance.now() - started)
     clearTimeout(timeout)
-    if (!res.ok) return { ok: false, error: HTTP , ms }
+    if (!res.ok) return { ok: false, error: `HTTP ${res.status}`, ms }
     const data = await res.json().catch(() => ({}))
     return { ok: true, data, ms }
   } catch (e: any) {
@@ -66,7 +68,7 @@ const server = Bun.serve({
     }
 
     if (url.pathname === '/' || url.pathname === '/status') {
-      return new Response(Health Aggregator\nGET /health\nGET /aggregate, { headers: { 'content-type': 'text/plain' } })
+      return new Response('Health Aggregator\nGET /health\nGET /aggregate', { headers: { 'content-type': 'text/plain' } })
     }
 
     return new Response('Not found', { status: 404 })

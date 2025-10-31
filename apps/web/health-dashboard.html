@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Toobix Universe - Health Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .service-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+        .service-card.online {
+            border-left: 5px solid #4ade80;
+        }
+        .service-card.offline {
+            border-left: 5px solid #f87171;
+            opacity: 0.6;
+        }
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .service-name {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .service-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .service-status.online {
+            background: #4ade80;
+            color: #000;
+        }
+        .service-status.offline {
+            background: #f87171;
+            color: #fff;
+        }
+        .service-info {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        .service-ms {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 3px 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            font-size: 0.85em;
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 30px;
+            background: #4ade80;
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(74, 222, 128, 0.4);
+            transition: all 0.3s;
+        }
+        .refresh-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(74, 222, 128, 0.6);
+        }
+        .loading {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 50px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌌 Toobix Universe Health Dashboard</h1>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-label">Online Services</div>
+                <div class="stat-number" id="online-count">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Offline Services</div>
+                <div class="stat-number" id="offline-count">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">System Status</div>
+                <div class="stat-number" id="system-status">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Response Time</div>
+                <div class="stat-number" id="avg-response">-</div>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">Loading services...</div>
+        <div class="services-grid" id="services"></div>
+    </div>
+
+    <button class="refresh-btn" onclick="loadHealth()">🔄 Refresh</button>
+
+    <script>
+        const HEALTH_URL = 'http://localhost:3010/aggregate'
+
+        async function loadHealth() {
+            try {
+                document.getElementById('loading').style.display = 'block'
+                document.getElementById('services').innerHTML = ''
+
+                const response = await fetch(HEALTH_URL)
+                const data = await response.json()
+
+                // Update stats
+                document.getElementById('online-count').textContent = data.ok
+                document.getElementById('offline-count').textContent = data.down
+                document.getElementById('system-status').textContent = data.status === 'ok' ? '✅ Healthy' : '⚠️ Degraded'
+
+                // Calculate avg response time
+                const avgMs = Math.round(
+                    data.results.filter(s => s.ok).reduce((sum, s) => sum + s.ms, 0) / data.ok
+                )
+                document.getElementById('avg-response').textContent = `${avgMs}ms`
+
+                // Render services
+                const servicesHTML = data.results
+                    .sort((a, b) => b.ok - a.ok)
+                    .map(service => `
+                        <div class="service-card ${service.ok ? 'online' : 'offline'}">
+                            <div class="service-header">
+                                <div class="service-name">${service.id}</div>
+                                <div class="service-status ${service.ok ? 'online' : 'offline'}">
+                                    ${service.ok ? '🟢 Online' : '🔴 Offline'}
+                                </div>
+                            </div>
+                            <div class="service-info">Port: ${service.port}</div>
+                            ${service.ok ? `
+                                <div class="service-ms">⚡ ${service.ms}ms</div>
+                                ${service.data ? `
+                                    <div class="service-info">
+                                        ${JSON.stringify(service.data).substring(0, 100)}...
+                                    </div>
+                                ` : ''}
+                            ` : `
+                                <div class="service-info" style="color: #fca5a5;">
+                                    ${service.error}
+                                </div>
+                            `}
+                        </div>
+                    `).join('')
+
+                document.getElementById('services').innerHTML = servicesHTML
+                document.getElementById('loading').style.display = 'none'
+
+            } catch (error) {
+                document.getElementById('loading').innerHTML = `
+                    <div style="color: #fca5a5;">
+                        ❌ Failed to load health data: ${error.message}
+                    </div>
+                `
+            }
+        }
+
+        // Auto-refresh every 5 seconds
+        setInterval(loadHealth, 5000)
+
+        // Initial load
+        loadHealth()
+    </script>
+</body>
+</html>
