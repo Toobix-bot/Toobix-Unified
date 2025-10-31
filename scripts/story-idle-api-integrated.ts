@@ -26,6 +26,116 @@ import { BuildingManager } from '../packages/story-idle/src/engine/building-mana
 import { CodeSprintGame } from '../packages/story-idle/src/mini-games/code-sprint'
 
 // ═══════════════════════════════════════════════════════════════
+// GROQ API INTEGRATION
+// ═══════════════════════════════════════════════════════════════
+
+const GROQ_API_URL = 'http://localhost:9987'
+
+/**
+ * Generate dynamic story options using Groq AI
+ */
+async function generateStoryOptions(context: {
+  playerLevel: number
+  currentArc: string
+  mood: string
+  stats: any
+}): Promise<Array<{ id: string; label: string; rationale?: string; expected?: Record<string, number> }>> {
+  try {
+    const systemPrompt = `Du bist ein kreativer Story-Generator für ein philosophisches Idle-Game.
+
+Generiere 3 Story-Optionen basierend auf dem aktuellen Kontext:
+- Spieler Level: ${context.playerLevel}
+- Story Arc: ${context.currentArc}
+- Stimmung: ${context.mood}
+
+Jede Option sollte:
+- Eine philosophische oder existenzielle Entscheidung sein
+- Unterschiedliche Stat-Änderungen haben (mut, wissen, bewusstsein, stabilitaet, inspiration)
+- Kurz und prägnant sein (max 60 Zeichen)
+
+Format (JSON):
+{
+  "options": [
+    {
+      "id": "unique-id-1",
+      "label": "Kurze Beschreibung der Wahl",
+      "rationale": "Warum diese Wahl wichtig ist",
+      "expected": { "wissen": 5, "mut": -2 }
+    }
+  ]
+}`
+
+    const userPrompt = `Generiere 3 Story-Optionen für den aktuellen Spielzustand.`
+
+    const response = await fetch(`${GROQ_API_URL}/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: userPrompt,
+        systemPrompt,
+        temperature: 0.9,
+        maxTokens: 800,
+        useCache: false
+      })
+    })
+
+    if (!response.ok) {
+      console.error('Groq API error:', await response.text())
+      return getDefaultStoryOptions()
+    }
+
+    const data = await response.json()
+    const aiResponse = data.response
+
+    // Try to parse JSON from response
+    const jsonMatch = aiResponse.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0])
+      if (parsed.options && Array.isArray(parsed.options)) {
+        return parsed.options.map((opt: any, idx: number) => ({
+          id: opt.id || `quest-${Date.now()}-${idx}`,
+          label: opt.label || opt.description || 'Unbekannte Option',
+          rationale: opt.rationale || opt.reason || '',
+          expected: opt.expected || {}
+        }))
+      }
+    }
+
+    // Fallback
+    return getDefaultStoryOptions()
+  } catch (error) {
+    console.error('Story generation error:', error)
+    return getDefaultStoryOptions()
+  }
+}
+
+/**
+ * Default story options if AI generation fails
+ */
+function getDefaultStoryOptions() {
+  return [
+    {
+      id: `quest-${Date.now()}-1`,
+      label: '🧘 Den inneren Frieden suchen',
+      rationale: 'Meditation und Selbstreflexion stärken dein Bewusstsein.',
+      expected: { bewusstsein: 10, stabilitaet: 5 }
+    },
+    {
+      id: `quest-${Date.now()}-2`,
+      label: '📚 Wissen durch Studium erlangen',
+      rationale: 'Durch Lernen erweitert sich dein Verständnis der Welt.',
+      expected: { wissen: 15, mut: -3 }
+    },
+    {
+      id: `quest-${Date.now()}-3`,
+      label: '⚔️ Eine Herausforderung annehmen',
+      rationale: 'Mut beweisen und Grenzen überschreiten.',
+      expected: { mut: 12, stabilitaet: -5, inspiration: 8 }
+    }
+  ]
+}
+
+// ═══════════════════════════════════════════════════════════════
 // STATE MANAGEMENT
 // ═══════════════════════════════════════════════════════════════
 
@@ -34,6 +144,8 @@ class StoryIdleAPIServer {
   private luna: Luna
   private buildingManager: BuildingManager
   private codeSprint: CodeSprintGame
+  private currentStoryOptions: Array<{ id: string; label: string; rationale?: string; expected?: Record<string, number> }> = []
+  private lastOptionsGenerated: number = 0
 
   constructor() {
     console.log('\n╔═══════════════════════════════════════════════════════════════╗')
@@ -56,6 +168,32 @@ class StoryIdleAPIServer {
 
     // Start passive generation loop
     this.startPassiveGeneration()
+
+    // Generate initial story options
+    this.refreshStoryOptions().then(() => {
+      console.log('🎲 Initial story options generated\n')
+    })
+  }
+
+  /**
+   * Refresh story options (generate new ones)
+   */
+  private async refreshStoryOptions(): Promise<void> {
+    const state = this.gameState.getState()
+    const player = this.gameState.getPlayer()
+    const stats = this.gameState.getStats()
+
+    const context = {
+      playerLevel: player.level,
+      currentArc: state.story?.arc || 'The Beginning',
+      mood: this.luna.getState().currentMood || 'curious',
+      stats
+    }
+
+    this.currentStoryOptions = await generateStoryOptions(context)
+    this.lastOptionsGenerated = Date.now()
+
+    console.log(`🎲 Generated ${this.currentStoryOptions.length} new story options`)
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -331,7 +469,7 @@ class StoryIdleAPIServer {
               },
               companions,
               buffs: Array.isArray(state.buffs) ? state.buffs : [],
-              options: [] // Will be filled by /story/refresh
+              options: self.currentStoryOptions  // AI-generated story options
             }, null, 2), {
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             })
@@ -363,14 +501,28 @@ class StoryIdleAPIServer {
           if (url.pathname === '/story/choose' && req.method === 'POST') {
             const { option } = await req.json()
 
+            // Find the selected option
+            const selectedOption = self.currentStoryOptions.find(opt => opt.id === option)
+
             // Process the choice - award XP, change stats, etc.
             const xpGain = 20
-            self.gameState.addXP(xpGain, `Story choice: ${option}`)
+            const result = self.gameState.addXP(xpGain, `Story choice: ${option}`)
 
-            // Award random stat bonuses
-            const statNames = ['courage', 'wisdom', 'consciousness', 'stability', 'creativity']
-            const randomStat = statNames[Math.floor(Math.random() * statNames.length)]
-            self.gameState.addStat(randomStat, 3)
+            // Apply expected stat changes from the option
+            if (selectedOption?.expected) {
+              for (const [stat, value] of Object.entries(selectedOption.expected)) {
+                // Map frontend stat names to backend stat names
+                const statMap: Record<string, string> = {
+                  mut: 'courage',
+                  wissen: 'wisdom',
+                  bewusstsein: 'consciousness',
+                  stabilitaet: 'stability',
+                  inspiration: 'creativity'
+                }
+                const backendStat = statMap[stat] || stat
+                self.gameState.addStat(backendStat, value)
+              }
+            }
 
             // Luna reacts
             const lunaResponse = await self.luna.reactToEvent('story-choice', { choice: option })
@@ -378,22 +530,30 @@ class StoryIdleAPIServer {
             // Save state
             self.gameState.saveState()
 
+            // Generate new story options after choice
+            await self.refreshStoryOptions()
+
             return new Response(JSON.stringify({
               success: true,
               xpGained: xpGain,
+              leveledUp: result.leveledUp,
+              newLevel: result.newLevel,
               lunaResponse,
-              message: 'Choice processed successfully'
+              message: 'Choice processed successfully',
+              newOptions: self.currentStoryOptions
             }, null, 2), {
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             })
           }
 
-          // POST /story/refresh - Generate new story options (placeholder for now)
+          // POST /story/refresh - Generate new story options
           if (url.pathname === '/story/refresh' && req.method === 'POST') {
-            // For now, just acknowledge - can be extended with AI generation later
+            await self.refreshStoryOptions()
+
             return new Response(JSON.stringify({
               success: true,
               message: 'Story options refreshed',
+              options: self.currentStoryOptions,
               philosophy: 'Neue Möglichkeiten entstehen in diesem Moment'
             }, null, 2), {
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }

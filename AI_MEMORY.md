@@ -1,3 +1,4 @@
+<!-- Encoding normalized to UTF-8 on 2025-10-30 18:33:21 -->
 # 🧠 TOOBIX UNIFIED - AI HAUPTGEDÄCHTNIS
 
 **Created:** 2025-10-06  
@@ -288,3 +289,24 @@ Jeder Service hat eine **Identität, Vergangenheit, Gegenwart, Zukunft**. Das Sy
 
 An den menschlichen Partner, der diese Vision teilt und möglich macht. 
 Gemeinsam bauen wir nicht nur Software, sondern eine bessere Zukunft.
+
+---
+
+## Verweise (Memory/Überblick)
+- Siehe docs/SYSTEM_OVERVIEW.md für den aktuellen Überblick von `C:\`.
+- Siehe docs/MEMORY_INDEX.md als Index aller Memory-Ressourcen.
+
+- Siehe docs/TODO.md für das aktuelle Task Board.
+
+---
+
+## Statusmatrix (Projekte) — aktualisiert 2025-10-30 19:44:34
+
+| Projekt            | Pfad                                                                   | Level      | Nächste Schritte |
+|--------------------|------------------------------------------------------------------------|------------|------------------|
+| Toobix-Unified     | [LEVEL](LEVEL.md)                                                      | Beta       | Testsuite, Memory-API vereinheitlichen, Observability |
+| Toobix-Life        | C:\\Dev\\Projects\\AI\\Toobix-Life\\Toobix-Life\\LEVEL.md   | Alpha      | Unified-API anbinden, E2E-Fluss, UX |
+| Toobix-Experiments | C:\\Dev\\Projects\\Experiments\\Toobix-Experiments\\LEVEL.md | Prototype  | Basisordner, erstes Experiment dokumentieren |
+| GPT-Versions (Archiv) | C:\\Dev\\Archive\\GPT-Versions\\LEVEL.md                    | Archived   | Selektive Portierung, Archiv bleibt frozen |
+
+- Owner-Liste: docs/OWNERS.md

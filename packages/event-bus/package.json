@@ -1,0 +1,16 @@
+{
+  "name": "@toobix/event-bus",
+  "version": "1.0.0",
+  "description": "Toobix Universe Event Bus - Central communication hub",
+  "type": "module",
+  "main": "src/event-bus.ts",
+  "scripts": {
+    "dev": "bun run src/event-bus.ts",
+    "start": "bun run src/event-bus.ts"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "ws": "^8.14.2"
+  }
+}
